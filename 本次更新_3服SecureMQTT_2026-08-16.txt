@@ -1,0 +1,34 @@
+S丐 v1.6.1 — 三服联机更新（2026-08-16）
+
+【服务器选择】
+1服：Railway 外服
+- 描述：境外主服务器，大概率需要 VPN 才能访问。
+- 保留现有 WebSocket 联机逻辑。
+
+2服：家庭服
+- 目前只保留 WebSocket 传输接口，不实现家庭服务器。
+- 后续可通过 window.s7ConfigureHomeServer("ws://..." / "wss://...") 配置并启用。
+
+3服：Secure MQTT 灾备服
+- 浏览器直接连接 wss://broker.emqx.io:8084/mqtt。
+- 不需要本机常驻服务器。
+- 房主浏览器承担房间权威状态机；公共 Broker 只负责消息转发/retained 状态保存。
+- RoomSecret + AES-256-GCM。
+- Host/Player ECDSA P-256 签名。
+- Host↔Player ECDH P-256 点对点密钥，用于 BP 私密命令。
+- seq 防重放、stateVersion、防旧状态。
+- retained 只用于权威 state；command 不 retained。
+- 支持房间创建/加入/密码/Ready/模式设置/BP/阵型/开战/结算/断线恢复等。
+- 3服不写正式排行榜。
+
+【战斗同步红线】
+- battleStart 仅交换 Battle Seed、模式、速度、结束规则、双方初始阵型。
+- 开战后不发送植物/僵尸/子弹/血量/帧状态，不做持续或实时战斗状态同步。
+- 双方继续使用固定逻辑 Tick + Battle RNG 独立演算。
+- 本地战斗结束后才发送 battleResult。
+
+【已执行验证】
+- verify_project：349 assets / 24 scripts / 0 errors / 0 warnings。
+- MQTT mock integration：mqtt-wire、retained-lobby、ecdh-join、room-state、lane-select、formation、battleStart-boundary、battleResult-after-end 全通过。
+- FAST_ENTRY 构建与验证通过。
+- 单文件重建与验证通过（349 个嵌入资产 hash 0 错误、24 个脚本语法 PASS）。

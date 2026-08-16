@@ -1,0 +1,29 @@
+{
+  "name": "pvz-s7-modular-dev",
+  "private": true,
+  "type": "module",
+  "version": "1.2.4",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "vite --host 0.0.0.0",
+    "verify": "python3 tools/verify_project.py",
+    "build:fast": "python3 tools/build_fast_entry.py",
+    "validate:fast": "python3 tools/validate_fast_entry.py",
+    "build:single": "python3 tools/build_singlefile.py",
+    "validate:single": "python3 tools/validate_singlefile.py",
+    "release": "python3 tools/verify_project.py && python3 tools/build_fast_entry.py && python3 tools/validate_fast_entry.py",
+    "release:single": "python3 tools/verify_project.py && python3 tools/build_singlefile.py && python3 tools/validate_singlefile.py",
+    "test:experience": "node tools/test_experience_transmission.js",
+    "test:cold": "node tools/test_cold_action_clock.js",
+    "test:feature": "python3 tools/test_sniper_garg_cold_firelotus.py",
+    "test:invariants": "python3 tools/test_spawn_cap_invariants.py",
+    "test:critical": "python3 tools/test_critical_split.py"
+  },
+  "devDependencies": {
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "ws": "^8.21.3"
+  }
+}

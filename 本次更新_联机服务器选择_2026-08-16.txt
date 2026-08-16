@@ -1,0 +1,39 @@
+S丐 v1.6.1 —— 联机服务器选择层（2026-08-16）
+
+本次只搭建 1服 / 2服 / 3服 的选择界面与 Transport 接口骨架，不改变战斗模拟框架。
+
+1服：Railway
+- transport: websocket
+- 当前直接可用
+- URL 保持现有 Railway WebSocket 地址
+
+2服：家庭服
+- transport: websocket
+- 当前先预留接口，不内置固定家庭 IPv6 地址
+- 后续家庭服务器启动后，可调用：
+  window.s7ConfigureHomeServer("ws://[IPv6]:端口")
+  或 wss:// 地址。
+- 地址会保存到 localStorage: pvz_s7_home_server_url
+- 配置后 2服卡片自动变为可进入，并复用现有 WebSocket 房间协议。
+
+3服：Secure MQTT 灾备服
+- transport: mqtt
+- Broker 接口已登记为 wss://broker.emqx.io:8084/mqtt
+- 当前选择界面和 Transport 类型已预留；正式 MQTT 房间业务尚未接入本游戏版本。
+
+公开接口：
+- window.s7GetMultiplayerServers()
+- window.s7GetSelectedMultiplayerServer()
+- window.s7SelectMultiplayerServer(id)
+- window.s7ConfigureHomeServer(url)
+- window.s7ShowServerSelect()
+- window.s7HideServerSelect()
+
+界面流程：
+主菜单“联机对战” -> 服务器选择 -> 1服/2服/3服
+1服进入原联机大厅；大厅“返回”回到服务器选择；服务器选择“返回”回主菜单。
+
+重要架构约束：
+- 本次没有加入任何战斗过程实时/持续状态同步。
+- 1服现有联机战斗仍保持固定逻辑 Tick + Battle RNG 的本地独立演算模式。
+- 2服/3服后续接入也应遵守同一约束。

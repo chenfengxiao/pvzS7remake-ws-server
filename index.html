@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="S丐版" name="apple-mobile-web-app-title"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta content="#061013" name="theme-color"/>
+<title>S丐版 1.7.1</title>
+
+<link href="./src/styles/main.css" rel="stylesheet"/></head>
+<body>
+<div id="rotateNotice">
+</div>
+<div id="startScreen">
+<div class="dialog">
+<h1>
+        🌿 S丐版 1.7.1
+      </h1>
+<h2>
+        5 行 × 9+1 列 · 飞升/元素/盲盒出怪/指令僵尸 · iPad Safari 兼容输入层
+      </h2>
+<div class="cols">
+<div>
+<div class="ruleBox">
+<b>数据口径</b><br/>植物 HP、攻击伤害、1.4s 速射周期、灰烬 1800、投手 2.925s、地刺 1s、啃食 4/厘秒、窝瓜 100 厘秒、玉米炮首弹 700 厘秒/后续 34.75s 等均按上传的 PVZ1 数据整理写入常量。僵尸血量按“本体总血量+防具层”建模：原本有临界段者按临界值=floor(本体总血量/3)重划分；冰车与投篮车固定199点临界值且本体总血量不变；巨人、蹦极等其余无临界类型保持无临界。
+          </div>
+<div class="ruleBox">
+<b>盲盒规则</b><br/>恢复 S7 原本的盲盒方式：常规出怪先生成盲盒路障，盲盒路障被打掉后再开出本次预定的普通/变种僵尸；指令僵尸直接入场并携带若干指令盲盒。
+          </div>
+<div class="ruleBox">
+<b>出怪与速度</b><br/>每条路按当前对局分钟数对应的密度表动态出怪；常规出怪先生成盲盒路障，指令僵尸则直接入场并携带特殊指令盲盒。出怪点按“进场点到最早可伤点距离估算”：从第 9/10 列交界处向右偏移对应距离出生。僵尸判定点跨过第 9/10 列交界处后，植物才会开始索敌与攻击。速度在总表的最小/最大速度范围内缓慢浮动。
+          </div>
+</div>
+<div>
+<div class="ruleBox">
+<b>操作</b><br/>开始后可自由布阵；选右侧植物卡，再点棋盘格即可叠种。铲子删除最上层植物，手套先选植物再放到新格。<span class="kbd">空格</span>暂停。
+          </div>
+<div class="ruleBox">
+<b>说明</b><br/>这是单文件 HTML Canvas 实现。视觉风格与 PVZTS 类似，但核心数据和代码结构重写；未使用旧斗蛐蛐版战斗逻辑。
+          </div>
+<div class="ruleBox">
+<b>重要</b><br/>底层已整理为统一回合式内核：4 厘秒固定逻辑帧；布阵阶段不推进战斗；开战后每行每回合按“出怪 → 植物 → 敌方僵尸 → 友方僵尸 → 子弹 → 清理”执行。代码采用单一更新入口，核心流程集中在 updateLaneTurn / update。
+          </div>
+</div>
+</div>
+<div class="row" style="margin-top:14px">
+<button class="primary" id="startBtn">进入斗蛐蛐</button> <button id="randomBtn">随机布阵开赛</button> <button class="primary" id="battleBtn">联机对战</button>
+<div class="quadLauncher">
+<button id="quadTestBtn">进入 2×2 宫格（4平面 / 20路）</button> <label class="quadSizeControl quadDesktopOnly" for="quadSizeRange"><span>宫格数量</span> <input id="quadSizeRange" max="10" min="2" step="1" type="range" value="2"/><output for="quadSizeRange" id="quadSizeValue">2×2 · 4平面 · 20路</output></label> <span class="mobileQuadBadge quadMobileOnly">手机版固定使用已验证的 2×2 四宫格：4 个平面，共 20 路。</span>
+</div>
+<label class="pill"><input checked="" id="allowStackMode" type="checkbox"/> 允许叠种</label> <button id="randomValidHomeBtn">随机合规：关 G</button>
+</div>
+</div>
+</div>
+
+<!-- 联机服务器选择 -->
+<div class="hidden" id="serverSelectScreen">
+<div class="dialog serverSelectDialog">
+<h1>🌐 选择联机服务器</h1>
+<p class="serverSelectLead">请选择本次进入的联机线路。三个服务器的房间彼此独立。</p>
+<div class="serverChoiceGrid">
+<button class="serverChoiceCard serverReady" data-server-id="1" id="serverChoice1">
+  <span class="serverChoiceHead"><b>1服</b><em>主服</em></span>
+  <strong>Railway 外服</strong>
+  <span>WebSocket · 境外主服务器</span>
+  <small>大概率需要 VPN 才能访问</small>
+</button>
+<button class="serverChoiceCard serverReady" data-server-id="2" id="serverChoice2">
+  <span class="serverChoiceHead"><b>2服</b><em>家庭服</em></span>
+  <strong>家庭反向隧道</strong>
+  <span>iMac 权威服 · MQTT/WSS 出站接入</span>
+  <small id="server2StatusText">已接入 · 家庭电脑需开机</small>
+</button>
+<button class="serverChoiceCard serverReady" data-server-id="3" id="serverChoice3">
+  <span class="serverChoiceHead"><b>3服</b><em>灾备服</em></span>
+  <strong>Secure MQTT</strong>
+  <span>公共 MQTT Broker · 无常驻自建服务器</span>
+  <small>已接入 · 国内无代理实测通过</small>
+</button>
+</div>
+<div id="serverSelectHint" class="serverSelectHint">1服为外服，大概率需要 VPN；2服为家庭权威服务器，通过反向 MQTT/WSS 隧道接入，无需开放家庭公网端口；3服为 Secure MQTT 灾备服。</div>
+<div class="row" style="margin-top:14px;justify-content:center">
+<button class="danger" id="serverSelectBackBtn">返回</button>
+</div>
+</div>
+</div>
+
+<!-- 联机大厅 -->
+<div class="hidden" id="lobbyScreen">
+<div class="dialog">
+<h1>🌿 联机大厅 <span id="lobbyServerBadge" class="lobbyServerBadge"></span></h1>
+<div class="lobbyTop">
+<div class="lobbyNickRow">
+<label>昵称：</label><input id="lobbyNick" type="text" maxlength="16" placeholder="输入昵称"/>
+<span class="lobbyStatus" id="lobbyStatus">⚪ 未连接</span>
+</div>
+<div id="lobbyStatsRow" style="margin-top:6px;font-size:13px;color:#9fb7c6;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap">
+<span>场次: <b id="lobbyStatGames" style="color:#f59e0b">0</b></span>
+<span>总积分: <b id="lobbyStatScore" style="color:#38bdf8">0</b></span>
+<span>平均分: <b id="lobbyStatAvg" style="color:#a78bfa">0</b></span>
+<button id="lobbyUploadBtn" style="font-size:12px;padding:2px 10px;border:1px solid #38bdf8;border-radius:4px;background:transparent;color:#38bdf8;cursor:pointer">📤 上传</button>
+<span id="lobbyUploadStatus" style="color:#9fb7c6;font-size:12px"></span>
+</div>
+</div>
+<div class="lobbyRoomList">
+<table><thead><tr><th class="colRoomId">房号</th><th class="colRoomName">房间</th><th class="colPlayers">人数</th><th class="colStatus">状态</th></tr></thead><tbody id="lobbyRoomTbody"></tbody></table>
+<div class="lobbyEmpty" id="lobbyEmpty">暂无房间，点击"创建房间"开始</div>
+</div>
+<div class="row" style="margin-top:12px">
+<button class="primary" id="lobbyCreateBtn">创建房间</button> <button id="lobbyJoinByIdBtn">加入房间</button> <button id="lobbyRefreshBtn">刷新</button> <button id="lobbyLeaderboardBtn">🏆 排行榜</button> <button class="danger" id="lobbyBackBtn">返回</button>
+</div>
+</div>
+</div>
+
+<!-- 联机创建/加入弹窗 -->
+<div class="hidden" id="lobbyDialog">
+<div class="dialog" style="max-width:400px">
+<h1 id="lobbyDialogTitle">创建房间</h1>
+<div class="lobbyDiaFields">
+<label>房间名：<input id="lobbyDialogName" type="text" maxlength="20" placeholder="输入房间名"/></label>
+<label id="lobbyDialogRoomIdLabel" class="hidden">房间号：<input id="lobbyDialogRoomId" type="text" maxlength="8" placeholder="输入房间号"/></label>
+<label>密码（可选）：<input id="lobbyDialogPass" type="text" maxlength="10" placeholder="留空无密码"/></label>
+<label>最大人数：
+<select id="lobbyDialogMaxPlayers">
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5" selected>5</option>
+</select></label>
+<label>模式：
+<select id="lobbyDialogMode">
+<option value="532" selected>532 模式</option>
+<option value="42421">42421 模式</option>
+<option value="51x5">51x5 模式</option>
+<option value="2p-turn">双人BP(轮流)</option>
+<option value="2p-blind">无先手双人BP</option>
+<option value="multi">多人BP</option>
+<option value="2p-assign">带指定双人BP</option>
+</select></label>
+</div>
+<div class="row" style="margin-top:14px">
+<button class="primary" id="lobbyDialogConfirm">确认</button> <button id="lobbyDialogCancel">取消</button>
+</div>
+</div>
+</div>
+
+<!-- 房间内界面 -->
+<div class="hidden" id="roomScreen">
+<div class="dialog" style="max-width:560px">
+<h1>🌿 房间 <span id="roomIdDisplay"></span></h1>
+<div class="roomMeta"><span id="roomHostDisplay"></span> · <span id="roomModeDisplay"></span> · <span id="roomMaxPlayersDisplay"></span></div>
+
+<div class="roomSection" id="roomHostControls" style="display:none">
+<h3>⚙️ 房主设置</h3>
+<div class="roomHostRow">
+<label>模式：<select id="roomModeSelect"><option value="532">532</option><option value="42421">42421</option><option value="51x5">51x5</option><option value="2p-turn">双人BP(轮流)</option><option value="2p-blind">无先手双人BP</option><option value="multi">多人BP</option><option value="2p-assign">带指定双人BP</option></select></label>
+<label>人数上限：<select id="roomMaxPlayersSelect"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+<label>模拟速度：<span id="roomSpeedBtns"><button class="roomSpeedBtn selected" data-speed="1">1×</button><button class="roomSpeedBtn" data-speed="2">2×</button><button class="roomSpeedBtn" data-speed="4">4×</button></span></label>
+<label>结束条件：<button class="roomEndModeBtn" id="roomEndModeBtn">全灭结束</button></label>
+<label>观战：<button class="roomEndModeBtn" id="roomToggleSpecBtn" style="border-color:#a78bfa;color:#a78bfa">关闭</button></label>
+<label>重随机：<button class="roomEndModeBtn" id="roomToggleRerollBtn" style="border-color:#f59e0b;color:#f59e0b">开启</button></label>
+<label>Ban选：<button class="roomEndModeBtn" id="roomToggleBanBtn" style="border-color:#ef4444;color:#ef4444">关闭</button></label>
+<label>以pick代ban：<button class="roomEndModeBtn" id="roomTogglePickAsBanBtn" style="border-color:#38bdf8;color:#38bdf8">关闭</button></label>
+</div>
+</div>
+
+<div class="row" style="margin-top:14px;justify-content:center">
+<button class="primary" id="roomStartGameBtn">开始游戏</button>
+<button class="danger" id="roomLeaveBtn">离开房间</button>
+</div>
+<!-- 玩家列表+踢人固定在底部 -->
+<div id="roomScreenPlayerList" class="roomPlayerListCompact" style="margin-top:12px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
+</div>
+</div>
+
+<!-- 选路界面 -->
+<div class="hidden" id="laneSelectScreen">
+<div class="dialog" style="max-width:560px;text-align:center">
+<h1>🛣️ 选择路线</h1>
+<p style="color:#9fb7c6;margin:8px 0">选择你要防守的路线，先到先得！</p>
+<div id="laneSelectGrid"></div>
+<p style="color:#6b8b9c;font-size:13px;margin-top:10px">所有玩家选完后自动开始BP选将</p>
+<div id="laneSelectPlayerList" class="roomPlayerListCompact" style="margin-top:10px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
+</div>
+</div>
+
+<!-- 战斗进行中界面 -->
+<div class="hidden" id="battleScreen">
+<div class="dialog" style="max-width:400px;text-align:center">
+<h1>⚔️ 战斗中</h1>
+<p style="color:#9fb7c6;margin:16px 0">种子: <span id="battleSeedDisplay"></span></p>
+<div id="battlePlantsDisplay" style="font-size:14px;color:#a78bfa;margin:6px 0;max-width:320px"></div>
+<div id="battleTimer" style="font-size:36px;font-weight:bold;color:#38bdf8;font-family:monospace;margin:12px 0">00:00</div>
+<div id="battleHostControls" style="display:none;margin:8px 0">
+<button class="danger" id="battleStopBtn">停止模拟</button>
+<button class="danger" id="battleKickBtn">踢人</button>
+</div>
+<p style="color:#6b8b9c;font-size:13px">坚持得越久，排名越高！</p>
+</div>
+</div>
+
+<!-- 结算界面 -->
+<div class="hidden" id="resultScreen">
+<div class="dialog" style="max-width:500px">
+<h1>🏆 战斗结算</h1>
+<div id="resultRanking" style="margin:12px 0"></div>
+<div id="resultStats" style="margin-top:10px;padding-top:10px;border-top:1px solid #334;text-align:center;display:none">
+  <div id="resultScoreDisplay" style="color:#38bdf8;font-size:16px;margin-bottom:4px"></div>
+  <div id="resultCareerStats" style="color:#9fb7c6;font-size:13px;margin-bottom:8px"></div>
+  <div><button id="resultUploadBtn" class="primary" style="font-size:13px;padding:4px 14px">📤 上传战绩</button><span id="resultUploadStatus" style="color:#9fb7c6;font-size:12px;margin-left:8px"></span></div>
+</div>
+<div class="row" style="margin-top:14px;justify-content:center">
+<button class="primary" id="resultBackBtn">返回房间</button>
+</div>
+</div>
+</div>
+
+<!-- 排行榜弹窗 -->
+<div class="hidden" id="leaderboardDialog">
+<div class="dialog" style="max-width:520px">
+<h1>🏆 排行榜</h1>
+<div class="lbSortRow" style="margin:8px 0;display:flex;gap:6px;justify-content:center">
+<button class="lbSortBtn primary" data-sort="totalScore">按积分</button>
+<button class="lbSortBtn" data-sort="games">按场次</button>
+<button class="lbSortBtn" data-sort="avgScore">按平均分</button>
+</div>
+<div id="leaderboardBody" style="margin:10px 0;max-height:360px;overflow-y:auto"></div>
+<div class="row" style="margin-top:10px;justify-content:center">
+<button id="lbCloseBtn">关闭</button>
+</div>
+</div>
+</div>
+
+<!-- BP 植物选择弹窗 -->
+<div class="hidden" id="bpOverlay">
+<div class="dialog" style="max-width:640px">
+<h1 id="bpTitle">选择植物</h1>
+<p id="bpRoundInfo" style="color:#9fb7c6;margin:8px 0"></p>
+<div id="bpHistory" style="display:none;margin:6px 0;padding:6px 10px;border:1px solid #334;border-radius:6px;background:#0a1c2a"></div>
+<div id="bpPlantGrid" class="bpGrid"></div>
+<div id="bpSelectedWrap" style="margin:10px 0">
+<span style="color:#9fb7c6;font-size:13px">本轮已选：</span>
+<span id="bpSelected"></span>
+</div>
+<div class="row" style="margin-top:10px;justify-content:center">
+<button class="primary" id="bpConfirmBtn" disabled>确认选择</button>
+</div>
+<div id="bpPlayerList" class="roomPlayerListCompact" style="margin-top:10px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
+</div>
+</div>
+
+<!-- 新BP模式弹窗 -->
+<div class="hidden" id="bpModeOverlay">
+<div class="dialog" style="max-width:720px">
+<h1 id="bpModeTitle">BP 选将</h1>
+<p id="bpModeInfo" style="color:#9fb7c6;margin:8px 0"></p>
+<div id="bpModeTopSlots" style="margin:8px 0"></div>
+<div id="bpModeStatus" style="margin:6px 0;font-size:13px;color:#38bdf8"></div>
+<div id="bpModePlantGrid" class="bpGrid"></div>
+<div id="bpModeBottomSlots" style="margin:8px 0"></div>
+<div class="row" style="margin-top:10px;justify-content:center">
+<button class="primary" id="bpModeConfirmBtn" disabled>确认选择</button>
+</div>
+<div id="bpModePlayerList" class="roomPlayerListCompact" style="margin-top:10px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
+</div>
+</div>
+
+<!-- 阵型编辑弹窗 -->
+<div class="hidden" id="formationOverlay">
+<div class="dialog" style="max-width:500px">
+<h1>🌿 调整阵型</h1>
+<p style="color:#9fb7c6;font-size:13px;margin:8px 0">拖动调整植物顺序（左侧 = 后排，右侧 = 前排）</p>
+<div id="formationSlots" class="formationSlots"></div>
+<div class="row" style="margin-top:14px;justify-content:center">
+<button class="primary" id="formationConfirmBtn">确认上传阵型</button>
+</div>
+<div id="formationPlayerList" class="roomPlayerListCompact" style="margin-top:10px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
+</div>
+</div>
+
+<div class="hidden" id="quadTest">
+<div class="quadToolbar">
+<span class="quadTitle" id="quadTitleText">2×2 宫格并行测试</span> <span class="quadNote" id="quadSummaryText">4 个完整5×9平面独立运行，共20路。</span>
+</div>
+<div id="quadViewport">
+<div id="quadStrip">
+</div>
+</div>
+<div id="quadControls">
+<div class="quadControlHead">
+<span class="quadTargetLabel">操作目标：</span> <span class="quadDesktopTargetControls"><button id="quadPrevTargetBtn" title="选择上一平面">上一图</button> <select aria-label="选择操作目标" id="quadTargetSelect"></select> <button id="quadNextTargetBtn" title="选择下一平面">下一图</button> <button id="quadFocusBtn" title="让当前平面占满显示区">聚焦选中</button> </span><span class="quadMobileTargetControls"><button class="quadMapSelect selected" data-quad-target="1">图1</button> <button class="quadMapSelect" data-quad-target="2">图2</button> <button class="quadMapSelect" data-quad-target="3">图3</button> <button class="quadMapSelect" data-quad-target="4">图4</button> <button class="quadMapSelect" data-quad-target="all">全部</button> </span><span id="quadTargetText">当前：测试图1</span> <button class="primary" id="quadRestartBtn">重新开始全部</button> <button id="quadPauseBtn">全部暂停</button> <button id="quadResumeBtn">全部继续</button> <button class="danger" id="quadExitBtn">退出多宫格</button>
+</div>
+<div class="quadOpsGrid">
+<button class="primary" data-quad-action="startWave">开始/停止出怪 P</button> <button data-quad-action="pause">暂停/继续 Space</button> <button data-quad-action="run">运行 R</button> <button data-quad-action="restart">重开布局</button> <button data-quad-action="clearPlants">清植物 X</button> <button data-quad-action="killZombies">秒杀僵尸 Z</button> <button data-quad-action="validate">铲种检测 T</button> <button data-quad-action="toggleRandomValid">随机合规 G</button> <button data-quad-action="randomFront">前排随机 Y</button> <button data-quad-action="randomBack">后排随机 J</button> <button data-quad-action="toggleCards">僵尸卡槽 H</button> <button data-quad-action="shovel">铲子 Q</button> <button data-quad-action="glove">手套 E</button> <button data-quad-action="upgrade">升级 W</button> <button data-quad-action="slow">减速 A</button> <button data-quad-action="resetSpeed">1× C</button> <button data-quad-action="saveLayout">存阵容 S</button> <button data-quad-action="loadLayout">读阵容 L</button> <button data-quad-action="fast">加速 D</button> <button data-quad-action="normal">放置 Esc</button> <button data-quad-action="toggleText">文字 B</button> <button class="danger" data-quad-action="finish">结束</button> <button data-quad-action="revive1">复活1行 1</button> <button data-quad-action="revive2">复活2行 2</button> <button data-quad-action="revive3">复活3行 3</button> <button data-quad-action="revive4">复活4行 4</button> <button data-quad-action="revive5">复活5行 5</button> <button data-quad-action="stack">叠种：切换</button>
+</div>
+</div>
+</div>
+<div id="game">
+<canvas id="canvas">
+</canvas>
+<div aria-label="总卡槽" class="hidden" id="mobileCardPool">
+<div class="mobilePoolTop"><span>总卡槽：先点常用槽位，再点这里的植物或僵尸替换</span><button class="primary" id="mobilePoolCloseBtn">关闭</button></div>
+<div class="mobilePoolColumns">
+<div class="mobilePoolColumn"><div class="mobilePoolTitle">植物</div><div class="mobilePoolGrid" id="mobilePlantCards"></div></div>
+<div class="mobilePoolColumn"><div class="mobilePoolTitle">僵尸Ⅰ</div><div class="mobilePoolGrid" id="mobileZombieCardsA"></div></div>
+<div class="mobilePoolColumn"><div class="mobilePoolTitle">僵尸Ⅱ</div><div class="mobilePoolGrid" id="mobileZombieCardsB"></div></div>
+</div>
+</div>
+<button class="iosTop" id="btnRank">排名</button><button class="iosTop" id="btnCards">卡槽</button><button class="iosTop" id="btnOps">操作</button><button class="iosTop" id="btnSpeed">1×</button>
+<div class="hint">
+    PVZ1 原版数据斗蛐蛐：第 10 列不可种；僵尸从 9/10 列交界处外侧按表偏移出生，跨过交界后才可被攻击；选卡后点格子布阵。
+  </div>
+<div id="side">
+<div class="panel opsPanel">
+<div class="panelHeader">
+<span>比赛状态</span><span id="clock">00:00</span>
+</div>
+<div class="panelBody">
+<div class="statusGrid" id="statusGrid">
+</div>
+<div class="opGrid">
+<button class="primary" id="startWave">开始/停止出怪 P</button><button id="pauseBtn">暂停 Space</button><button id="runBtn">运行 R</button> <button id="restartBtn">重开布局</button><button id="clearBtn">清植物 X</button><button id="killZombiesBtn">秒杀僵尸 Z</button> <button id="validateBtn">铲种检测 T</button><button id="randomValidBtn">随机合规：关 G</button><button id="randomFrontBtn">前排随机 Y</button><button id="randomBackBtn">后排随机 J</button><button id="toggleCardsBtn">僵尸卡槽 H</button><button id="shovelBtn">铲子 Q</button> <button id="gloveBtn">手套 E</button><button id="upgradeBtn">升级 W</button> <button id="slowBtn">减速 A</button><button id="resetSpeedBtn">1× C</button><button id="saveLayoutBtn">存阵容 S</button><button id="loadLayoutBtn">读阵容 L</button><button id="fastBtn">加速 D</button> <button class="primary" id="quadGameBtn">四宫格</button> <button id="normalBtn">放置</button><button id="textBtn">文字 B</button><button id="animModeBtn">动画：旧版 V</button><button id="endModeBtn">结束条件：全灭 U</button><button class="danger" id="endBtn">结束 Esc</button> <button id="reviveRow1Btn">复活1行 1</button><button id="reviveRow2Btn">复活2行 2</button><button id="reviveRow3Btn">复活3行 3</button> <button id="reviveRow4Btn">复活4行 4</button><button id="reviveRow5Btn">复活5行 5</button> <button id="stackBtn">叠种：开</button><button id="batchPlantBtn">批量种植 N</button>
+</div>
+</div>
+</div>
+<div class="panel cardsPanel">
+<div class="panelHeader">
+<span>植物卡槽</span><span id="selectedText">未选择</span>
+</div>
+<div class="panelBody">
+<div class="cards" id="cards">
+</div>
+</div>
+</div>
+<div class="panel rankPanel">
+<div class="panelHeader">
+<span>实时排名</span><span>存活优先</span>
+</div>
+<div class="panelBody">
+<table class="miniTable" id="rank">
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden" id="modal">
+<div class="dialog">
+<h1 id="modalTitle">
+</h1>
+<div id="modalBody">
+</div>
+<div class="row" style="margin-top:12px">
+<button class="primary" id="modalClose">关闭</button>
+</div>
+</div>
+</div>
+<div class="hidden" id="resultModal">
+<div class="dialog">
+<h1>
+      🏁 比赛结束
+    </h1>
+<h2 id="resultTitle">
+</h2>
+<div id="resultBody">
+</div>
+<div class="row" style="margin-top:12px">
+<button class="primary" id="againBtn">再来一局</button><button id="backBtn">回首页</button>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Script order is authoritative; see config/script-order.json -->
+<script src="./src/js/00_asset_paths.js"></script>
+<script src="./src/js/00_bootstrap.js"></script>
+<script src="./src/js/09_visual_calibration.js"></script>
+<script src="./src/js/10_animation_core.js"></script>
+<script src="./src/js/11_animation_plants.js"></script>
+<script src="./src/js/12_animation_zombies.js"></script>
+<script src="./src/js/13_projectiles_effects.js"></script>
+<script src="./src/js/20_config_rules.js"></script>
+<script src="./src/js/21_entity_registry.js"></script>
+<script src="./src/js/30_state_geometry.js"></script>
+<script src="./src/js/31_query_collision.js"></script>
+<script src="./src/js/40_projectiles_helpers.js"></script>
+<script src="./src/js/50_plant_simulation.js"></script>
+<script src="./src/js/51_damage_combat.js"></script>
+<script src="./src/js/60_zombie_simulation.js"></script>
+<script src="./src/js/70_rendering.js"></script>
+<script src="./src/js/80_ui_quad.js"></script>
+<script src="./src/js/90_s7_progression.js"></script>
+<script src="./src/js/91_s7_elements_shooting.js"></script>
+<script src="./src/js/92_s7_plant_actions.js"></script>
+<script src="./src/js/93_s7_special_systems.js"></script>
+<script src="./src/js/94_s7_blind_commands_main.js"></script>
+<script src="./src/js/95_s7_multiplayer_tab_guard.js"></script>
+<script src="./src/js/95_s7_mqtt_transport.js"></script>
+<script src="./src/js/95_s7_home_tunnel_transport.js"></script>
+<script src="./src/js/96_battle_mode.js"></script>
+</body>
+</html>

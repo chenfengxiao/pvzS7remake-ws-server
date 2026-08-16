@@ -1,0 +1,22 @@
+﻿加载顺序,文件,职责,原单文件行范围
+1,src/js/00_asset_paths.js,开发版资源路径解析器,
+2,src/js/00_bootstrap.js,启动、设备适配、Canvas、固定帧与通用工具,40-263
+3,src/js/10_animation_core.js,动画时间轴、资源注册表、LayeredSpritePose,264-797
+4,src/js/11_animation_plants.js,植物动画资源与状态接口,798-1323
+5,src/js/12_animation_zombies.js,僵尸动画资源、植物头僵尸与状态接口,1324-1593
+6,src/js/13_projectiles_effects.js,机枪攻击、弹体注册表、喷射特效与动画解析,1594-2574
+7,src/js/20_config_rules.js,速度、时间、植物与僵尸基础配置,2575-3167
+8,src/js/21_entity_registry.js,植物/僵尸注册表、工厂、状态初始化,3168-4315
+9,src/js/30_state_geometry.js,场景状态、坐标、网格、基础实体查询,4316-4769
+10,src/js/31_query_collision.js,目标选择、碰撞、飞行/潜地判定,4770-5080
+11,src/js/40_projectiles_helpers.js,子弹创建、出弹插口、实体辅助与性能裁剪,5081-5774
+12,src/js/50_plant_simulation.js,植物被动、事件队列、植物更新与移除,5775-6518
+13,src/js/51_damage_combat.js,伤害、击杀、元素命中、子弹结算与巨人投掷,6519-8213
+14,src/js/60_zombie_simulation.js,僵尸移动、啃食、特殊接触、投篮车与蹦极,8214-9564
+15,src/js/70_rendering.js,主绘制流程、植物/僵尸/子弹/特效渲染,9565-10692
+16,src/js/80_ui_quad.js,卡牌、面板、输入事件、多宫格与 Worker 调度,10693-12521
+17,src/js/90_s7_progression.js,S7 等级、经验、配置刷新与组合关系,12522-13795
+18,src/js/91_s7_elements_shooting.js,元素层数、统一射击、特殊弹道与延迟射击,13796-14873
+19,src/js/92_s7_plant_actions.js,大喷/忧郁/向日葵/机枪/大嘴花/窝瓜等植物动作,14874-16738
+20,src/js/93_s7_special_systems.js,三线大招、推车、炮塔及持续系统,16739-17131
+21,src/js/94_s7_blind_commands_main.js,盲盒、指令僵尸、站位校验、自检与 wire 启动,17132-18110

@@ -1,0 +1,14 @@
+{
+  "name": "PVZ S丐版 1.7.1",
+  "version": "1.7.1",
+  "entry": "index.html",
+  "runtimeModel": "ordered classic scripts sharing global lexical bindings",
+  "fixedFrameSeconds": 0.04,
+  "assetCount": 349,
+  "scriptCount": 26,
+  "sourceSha256": "b8407f419531fe15e8325ffa7f6fb2872c5873a5eac42f4980144c4f9cb8106b",
+  "fastEntry": "dist/S7_FAST_ENTRY.html",
+  "sourceArchive": "S丐_1.7.1.zip",
+  "networkArchitecture": "1服 Railway WebSocket / 2服 iMac authority via reverse MQTT-WSS tunnel / 3服 browser-host Secure MQTT",
+  "battleNetworking": "initial conditions + deterministic local simulation + final battleResult; no live battle-state sync"
+}

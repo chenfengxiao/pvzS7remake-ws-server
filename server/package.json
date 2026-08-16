@@ -1,0 +1,12 @@
+{
+  "name": "pvz-s7-modular-dev",
+  "private": true,
+  "type": "module",
+  "version": "1.2.4",
+  "dependencies": {
+    "ws": "^8.21.3"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

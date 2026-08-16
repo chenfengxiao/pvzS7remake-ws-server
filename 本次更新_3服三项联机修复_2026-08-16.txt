@@ -1,0 +1,28 @@
+S丐 v1.6.1｜3服 Secure MQTT 三项联机修复
+日期：2026-08-16
+
+修复：
+1. 房主开始游戏/开始战斗后，房客偶发停留在“未开始”界面。
+   - 不再只依赖 MQTT 瞬时 event。
+   - retained roomUpdate 成为权威兜底：laneSelect 可恢复进入选路；battling 携带 battleInit 可恢复进入战斗。
+   - battleInit 仅包含 battleStart 初始条件（seed、模式、速度、结束条件、初始阵型），绝不包含植物/僵尸/子弹/血量/帧等战斗过程状态。
+
+2. 房主提交阵容后，房客界面偶发误显示“自己已经提交”。
+   - 阵型页提交状态改为始终以 roomUpdate 中“当前玩家自身 uploaded”字段为权威来源。
+   - 别人上传不会再改变本机提交按钮/等待状态。
+
+3. 房客被踢后偶发仍停留在房间/BP页面。
+   - kicked direct 仍保留低延迟提示。
+   - 新增 retained roomUpdate 兜底：若权威玩家列表中已不存在本 playerId，客户端强制退出房间。
+   - 离房清理补齐 BP Mode Overlay 与当前弹窗。
+
+验证：
+- verify_project.py：349 assets / 24 scripts / 0 errors / 0 warnings
+- test_mqtt_transport_mock.js：通过
+- test_mqtt_three_reported_bugs.js：通过
+- FAST_ENTRY build + validate：通过
+- Single-file build + validate：通过
+
+架构约束：
+- 未加入任何战斗过程实时/持续同步。
+- 3服仍是 battleStart 初始条件 + 本地固定 Tick/Battle RNG 独立演算 + battleResult 结算。

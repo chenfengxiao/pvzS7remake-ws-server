@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "file": "src/js/00_asset_paths.js",
+      "description": "开发版资源路径解析器",
+      "lines": 4
+    },
+    {
+      "file": "src/js/00_bootstrap.js",
+      "description": "启动、设备适配、Canvas、固定帧与通用工具",
+      "sourceLines": [
+        40,
+        263
+      ],
+      "lines": 252
+    },
+    {
+      "file": "src/js/09_visual_calibration.js",
+      "description": "逐贴图中位可见高度（仅尺寸归一化；位置已离线写入贴图）",
+      "lines": 9
+    },
+    {
+      "file": "src/js/10_animation_core.js",
+      "description": "动画时间轴、资源注册表、LayeredSpritePose",
+      "sourceLines": [
+        264,
+        797
+      ],
+      "lines": 590
+    },
+    {
+      "file": "src/js/11_animation_plants.js",
+      "description": "植物动画资源与状态接口",
+      "sourceLines": [
+        798,
+        1323
+      ],
+      "lines": 596
+    },
+    {
+      "file": "src/js/12_animation_zombies.js",
+      "description": "僵尸动画资源、植物头僵尸与状态接口",
+      "sourceLines": [
+        1324,
+        1593
+      ],
+      "lines": 275
+    },
+    {
+      "file": "src/js/13_projectiles_effects.js",
+      "description": "机枪攻击、弹体注册表、喷射特效与动画解析",
+      "sourceLines": [
+        1594,
+        2574
+      ],
+      "lines": 1025
+    },
+    {
+      "file": "src/js/20_config_rules.js",
+      "description": "速度、时间、植物与僵尸基础配置",
+      "sourceLines": [
+        2575,
+        3167
+      ],
+      "lines": 595
+    },
+    {
+      "file": "src/js/21_entity_registry.js",
+      "description": "植物/僵尸注册表、工厂、状态初始化",
+      "sourceLines": [
+        3168,
+        4315
+      ],
+      "lines": 1152
+    },
+    {
+      "file": "src/js/30_state_geometry.js",
+      "description": "场景状态、坐标、网格、基础实体查询",
+      "sourceLines": [
+        4316,
+        4769
+      ],
+      "lines": 456
+    },
+    {
+      "file": "src/js/31_query_collision.js",
+      "description": "目标选择、碰撞、飞行/潜地判定",
+      "sourceLines": [
+        4770,
+        5080
+      ],
+      "lines": 333
+    },
+    {
+      "file": "src/js/40_projectiles_helpers.js",
+      "description": "子弹创建、出弹插口、实体辅助与性能裁剪",
+      "sourceLines": [
+        5081,
+        5774
+      ],
+      "lines": 703
+    },
+    {
+      "file": "src/js/50_plant_simulation.js",
+      "description": "植物被动、事件队列、植物更新与移除",
+      "sourceLines": [
+        5775,
+        6518
+      ],
+      "lines": 746
+    },
+    {
+      "file": "src/js/51_damage_combat.js",
+      "description": "伤害、击杀、元素命中、子弹结算与巨人投掷",
+      "sourceLines": [
+        6519,
+        8213
+      ],
+      "lines": 1747
+    },
+    {
+      "file": "src/js/60_zombie_simulation.js",
+      "description": "僵尸移动、啃食、特殊接触、投篮车与蹦极",
+      "sourceLines": [
+        8214,
+        9564
+      ],
+      "lines": 1378
+    },
+    {
+      "file": "src/js/70_rendering.js",
+      "description": "主绘制流程、植物/僵尸/子弹/特效渲染",
+      "sourceLines": [
+        9565,
+        10692
+      ],
+      "lines": 1178
+    },
+    {
+      "file": "src/js/80_ui_quad.js",
+      "description": "卡牌、面板、输入事件、多宫格与 Worker 调度",
+      "sourceLines": [
+        10693,
+        12521
+      ],
+      "lines": 1837
+    },
+    {
+      "file": "src/js/90_s7_progression.js",
+      "description": "S7 等级、经验、配置刷新与组合关系",
+      "sourceLines": [
+        12522,
+        13795
+      ],
+      "lines": 1276
+    },
+    {
+      "file": "src/js/91_s7_elements_shooting.js",
+      "description": "元素层数、统一射击、特殊弹道与延迟射击",
+      "sourceLines": [
+        13796,
+        14873
+      ],
+      "lines": 1088
+    },
+    {
+      "file": "src/js/92_s7_plant_actions.js",
+      "description": "大喷/忧郁/向日葵/机枪/大嘴花/窝瓜等植物动作",
+      "sourceLines": [
+        14874,
+        16738
+      ],
+      "lines": 1873
+    },
+    {
+      "file": "src/js/93_s7_special_systems.js",
+      "description": "三线大招、推车、炮塔及持续系统",
+      "sourceLines": [
+        16739,
+        17131
+      ],
+      "lines": 401
+    },
+    {
+      "file": "src/js/94_s7_blind_commands_main.js",
+      "description": "盲盒、指令僵尸、站位校验、自检与 wire 启动",
+      "sourceLines": [
+        17132,
+        18112
+      ],
+      "lines": 1203
+    },
+    {
+      "file": "src/js/95_s7_multiplayer_tab_guard.js",
+      "description": "同一浏览器同服单实例联机锁；不同服务器可分别同时进入"
+    },
+    {
+      "file": "src/js/95_s7_mqtt_transport.js",
+      "description": "Secure MQTT 灾备服：最小 MQTT 客户端、加密传输与房主权威房间状态机"
+    },
+    {
+      "file": "src/js/95_s7_home_tunnel_transport.js",
+      "description": "2服家庭权威服务器反向 MQTT/WSS 隧道 Transport；不开放家庭公网入站端口"
+    },
+    {
+      "file": "src/js/96_battle_mode.js",
+      "description": "联机大厅、服务器选择、BP/阵型/战斗与 Transport 适配"
+    }
+  ]
+}

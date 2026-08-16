@@ -1,0 +1,53 @@
+S7 2服家庭服务器（v1.6.1）
+============================
+
+默认客户端地址：
+ws://[240e:b8f:5c28:d201:e6:c038:b0d3:c61e]:8080
+
+服务器实现：
+直接复用 server/server.js，与 1服 Railway 使用同一套 WebSocket 房间协议。
+2服与1服、3服房间完全独立。
+
+【最简单启动】
+双击：2服_启动.command
+或者 Terminal：
+cd "项目目录/server"
+HOST="::" PORT=8080 node server.js
+
+【推荐：自动守护】
+首次双击：2服_安装自动守护.command
+安装后：
+- macOS 登录后自动启动
+- Node 进程意外退出后自动重启
+- 不需要一直留着 Terminal 窗口
+
+【手动重启】
+双击：2服_重启.command
+或者（未安装自动守护时）：
+cd "项目目录/server"
+HOST="::" PORT=8080 node server.js
+
+【查看状态】
+双击：2服_状态.command
+或 Terminal：
+curl -6 'http://[::1]:8080/health'
+正常应返回 {"ok":true,...}
+
+【停止/卸载自动守护】
+双击：2服_卸载自动守护.command
+
+【公网 IPv6 发生变化】
+游戏中 F12 -> Console：
+s7ConfigureHomeServer("ws://[新的IPv6]:8080")
+
+恢复本包默认地址：
+s7ResetHomeServer()
+
+查看当前 2服地址：
+s7GetHomeServerURL()
+
+注意：
+1. 家庭电脑关机时 2服不可用。
+2. 外部设备能否连接还取决于家庭公网 IPv6 入站是否可达。
+3. 当前 2服是 ws://；如果未来把游戏部署到 HTTPS 网站，建议升级为 WSS/DDNS。
+4. 战斗过程仍然是客户端固定 Tick + Battle RNG 独立演算，不进行战斗实时状态同步。

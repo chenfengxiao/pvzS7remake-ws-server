@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "coordinateSpace": "source-frame pixels",
+  "policy": "Only visually confirmed cross-state baseline errors are baked. Deliberate jump, bite, fall and recoil motion remains in the art.",
+  "assets": {
+    "assets/final_runtime/ladder_attack_new.webp": {
+      "frameWidth": 240,
+      "frameHeight": 311,
+      "columns": 3,
+      "frameCount": 6,
+      "shift": [
+        0,
+        42
+      ],
+      "reason": "放梯后啃食帧脚底比携梯/行走状态高42像素",
+      "sourceSha256": "5b875dd8c6d2e04ac5eaec38b93bc24184a4ddc9f25823bdfcd6f2022854c157",
+      "correctedSha256": "2f314b58d4603492c1e474c1fa5a35ee2cc60ff8e2cd4ea8a00e30649866b383"
+    },
+    "assets/final_runtime/digger_walk.webp": {
+      "frameWidth": 303,
+      "frameHeight": 414,
+      "columns": 8,
+      "frameCount": 16,
+      "shift": [
+        0,
+        7
+      ],
+      "reason": "出土后行走帧脚底基线比啃食/出土完成状态高13像素",
+      "sourceSha256": "84056d679c915986b4f7878e3b15f30dbe0d9caccf758bc271fdfd2bc700d01c",
+      "correctedSha256": "f2e1fa814311027ebc2f176cd402a9842296b00494906973c29b346be10e92ec",
+      "optimizationNote": "原已审核的基线修正先应用，再逐帧等比缩小至 50%；7px 为 13px 缩放后的整数落点。"
+    },
+    "assets/final_runtime/pogo_walk.webp": {
+      "frameWidth": 240,
+      "frameHeight": 263,
+      "columns": 8,
+      "frameCount": 16,
+      "shift": [
+        0,
+        15
+      ],
+      "reason": "脱杆行走帧脚底比持杆移动状态高15像素",
+      "sourceSha256": "4421608c175234eeafaf4daaa8717df2af1fe7f53169c0349d6b606a2c926d6f",
+      "correctedSha256": "e6e7068449cd718c0206b1f475d562e6cf4bac18b248c6094d5805b2b129fadd"
+    },
+    "assets/final_runtime/pogo_attack.webp": {
+      "frameWidth": 240,
+      "frameHeight": 263,
+      "columns": 8,
+      "frameCount": 16,
+      "shift": [
+        0,
+        15
+      ],
+      "reason": "脱杆啃食帧与脱杆行走使用同一地面基线",
+      "sourceSha256": "8fb247d0ec55ad2e7d97459c840dceb6e6d5bb52f2bf4ce6ffe0d11b25337f93",
+      "correctedSha256": "ab4d813e0eed94a816beb315f8e237423c5d34478812fdbc36275a835d20a980"
+    },
+    "assets/final_runtime/pogo_death.webp": {
+      "frameWidth": 240,
+      "frameHeight": 263,
+      "columns": 8,
+      "frameCount": 24,
+      "shift": [
+        0,
+        12
+      ],
+      "reason": "脱杆死亡序列的落地基线与同角色地面状态对齐",
+      "sourceSha256": "83886d8e75783a35d98fa1b9099ac1d20740185bee191f29f5741603a20d73cb",
+      "correctedSha256": "625719707f4266ed58ccbd279e63de7e3019dddd9f89fc0417ad5390af604363"
+    },
+    "assets/zombies_b05a/pole_run.png": {
+      "frameWidth": 348,
+      "frameHeight": 218,
+      "columns": 8,
+      "frameCount": 10,
+      "shift": [
+        0,
+        -4
+      ],
+      "reason": "持杆奔跑脚底基线比弃杆行走/啃食低4像素",
+      "sourceSha256": "654c1e9542ae58531f914c412453c13cef2c2b33562426bf8cf2f2e9ded5b3be",
+      "correctedSha256": "df6d853eac21ff7fd42df6785b48b93ffa1d4aab7effd7bbcc9c758a141c1d15"
+    },
+    "assets/plants_video_dual/cattail_skill.png": {
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "columns": 5,
+      "frameCount": 10,
+      "shift": [
+        0,
+        5
+      ],
+      "reason": "猫尾草技能帧底座比待机帧高5像素",
+      "sourceSha256": "aaa5a04658518cca755828e0493965a22c12f60e697a1d8c8a3150dd4d8405df",
+      "correctedSha256": "89dd2f0ddbb15ec730ee1c45b1b401225d8af1b4a1172507091f3626afad9b4b"
+    }
+  }
+}
