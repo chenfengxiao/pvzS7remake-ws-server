@@ -654,12 +654,20 @@ function _initLobby() {
 // 5. 状态更新 & WS 消息处理
 // ============================================================
 
-function _updateStatus(st) {
+function _updateStatus(st, serverOverride) {
   var el = _$.lobbyStatus;
+  if (!el) return;
+  // [1.7.2 hotfix] 状态文案必须绑定到“本次正在进入的服务器”，不能沿用上一服退出时留下的 DOM 文本。
+  var cfg = serverOverride || _activeServer();
+  var kind = _transportKind(cfg);
   if (st === "connected") { el.textContent = "✅ 已连接"; el.style.color = "#22c55e"; _firstConnectTime = 0; }
   else if (st === "reconnecting") { el.textContent = "⏳ 重连中…"; el.style.color = "#f59e0b"; }
-  else {
-    var kind = _transportKind(_activeServer());
+  else if (st === "connecting") {
+    if (kind === "mqtt") el.textContent = "⏳ MQTT 连接中…";
+    else if (kind === "home-tunnel") el.textContent = "⏳ 2服隧道连接中…";
+    else el.textContent = "⏳ 连接中…";
+    el.style.color = "#f59e0b";
+  } else {
     if (kind === "mqtt") {
       el.textContent = "⚪ MQTT 未连接"; el.style.color = "#9fb7c6";
     } else if (kind === "home-tunnel") {
@@ -1194,6 +1202,8 @@ window.s7ShowLobby = function() {
   _$.lobbyScreen.classList.remove("hidden");
   _lobbyVisible = true;
   if (_$.lobbyServerBadge) _$.lobbyServerBadge.textContent = cfg.label + " · " + cfg.name;
+  // 每次进入大厅先按当前线路重置状态，避免上一服务器的“未连接”文案串到新服务器。
+  _updateStatus("connecting", cfg);
   s7WSConnect();
   _$.lobbyNick.value = _nick;
   _updateLobbyStats();
