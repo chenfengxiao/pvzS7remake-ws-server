@@ -475,7 +475,7 @@
       return riders
     }
 
-    function s7RandomHpFraction(isGarg) {
+    function s7RandomHpFraction(isGarg = false) {
       const minute = Math.max(0, (state?.time || 0) / 60);
       let choices;
       if (minute < 4) choices = [1, 2, 3];
@@ -495,6 +495,12 @@
         frac = Math.min(frac, maxFrac)
       }
       return frac
+    }
+
+    function s7CapGargHpFractionForEarlyGame(frac) {
+      const minute = Math.max(0, (state?.time || 0) / 60);
+      const maxFrac = minute < 5 ? 1 : minute < 7 ? 2 : minute < 9 ? 3 : 5;
+      return Math.min(frac, maxFrac)
     }
 
     function s7RecalcZombieXp(z) {
@@ -582,12 +588,8 @@
     }
 
     function s7ClearRedGigaNonHugeStates(z) {
-      if (!z || z.type !== "giga") return false;
-      z.s7 = z.s7 || {};
-      const hadForbiddenState = !!z.s7.variant;
-      z.s7.variant = false;
-      z.emoji = String(z.emoji || "").replace(/✨/g, "");
-      return hadForbiddenState
+      // v0.4 允许红眼变种拥有武装/突进，且可与超大化同时存在；兼容旧调用但不再清除 variant。
+      return false
     }
 
     function s7RefreshGiantDisplay(z) {
@@ -631,25 +633,20 @@
       const isVariantGiant = !!z.s7.variant && variantAllowed;
       if (!variantAllowed) z.s7.variant = false;
       if (z.type === "garg") {
-        // 巨大化：仅变种巨人满血必定触发，变种非满血20%，非变种满血20%、非变种非满血不触发。
-        const hugeChance = isVariantGiant ? (fullHp ? 1 : .2) : (fullHp ? .2 : 0);
-        if (s7GiantRoll(hugeChance)) s7MakeHugeWhiteGarg(z);
-        const armChance = .7 + s7CommandCount("break", z.row) * .08;
-        if (s7GiantRoll(armChance)) s7AddGiantArmedArmor(z);
-        if (!z.s7.hugeGarg) {
+        // v0.4：巨大化独立判定，满血必定，否则20%；可与武装/突进同时存在。
+        if (s7GiantRoll(fullHp ? 1 : .2)) s7MakeHugeWhiteGarg(z);
+        if (isVariantGiant) {
+          const armChance = .7 + s7CommandCount("break", z.row) * .08;
           const chargeChance = .3 + s7CommandCount("push", z.row) * .08;
+          if (s7GiantRoll(armChance)) s7AddGiantArmedArmor(z);
           if (s7GiantRoll(chargeChance)) s7AddGiantCharge(z)
         }
       } else if (z.type === "giga") {
-        // 巨大化：仅变种红眼满血必定触发，变种非满血5%，非变种满血5%、非变种非满血不触发。
-        const superChance = isVariantGiant ? (fullHp ? 1 : .05) : (fullHp ? .05 : 0);
-        if (s7GiantRoll(superChance)) s7MakeSuperRedGiga(z);
-        // 红眼武装/突进概率固定，不受指令加成（仅白眼受 +8%/只 加成）。
-        const armChance = .7;
-        if (s7GiantRoll(armChance)) s7AddGiantArmedArmor(z);
-        if (!z.s7.superGiga) {
-          const chargeChance = .3;
-          if (s7GiantRoll(chargeChance)) s7AddGiantCharge(z)
+        // v0.4：红眼巨大化独立判定，满血必定，否则5%；武装/突进只属于变种且彼此独立。
+        if (s7GiantRoll(fullHp ? 1 : .05)) s7MakeSuperRedGiga(z);
+        if (isVariantGiant) {
+          if (s7GiantRoll(.7)) s7AddGiantArmedArmor(z);
+          if (s7GiantRoll(.3)) s7AddGiantCharge(z)
         }
       }
       s7RefreshGiantDisplay(z);
@@ -766,9 +763,10 @@
         return sled
       }
       const isGarg = type === "garg" || type === "giga";
-      const frac = s7RandomHpFraction(isGarg);
-      // v0.3.4：先抽血量分数，再以1~3档0%、4~5档50%为基础，叠加对应指令僵尸每只+8%。
-      const finalVariant = s7ResolveOpenVariant(variant, frac, category, wasFriendly, command, row);
+      const rawFrac = s7RandomHpFraction(false);
+      // v0.4：变种巨人的出现不受前期巨人血量压制。先用原始血量档判变种，再只压制非变种巨人的最终血量档。
+      const finalVariant = s7ResolveOpenVariant(variant, rawFrac, category, wasFriendly, command, row);
+      const frac = isGarg && !finalVariant ? s7CapGargHpFractionForEarlyGame(rawFrac) : rawFrac;
       const nz = makeZombie(type, row, x, {
         variant: finalVariant,
         category: category,

@@ -1365,8 +1365,8 @@
         return
       }
       if (b.goldenMelon) {
-        // 金瓜为2格AOE（设计文档）：命中点前后1格内全部僵尸受到80伤害。
-        const goldenDmg = Math.max(5, Math.round(26 - (2 - 1) * 21 / 51)) + (b.splashBonus || 0);
+        // v0.4：金瓜继承普通西瓜80基础伤害，并改为命中点左右2格无衰减AOE。
+        const goldenDmg = 80 + (b.splashBonus || 0);
         let n = 0;
         for (const q of state.zombies)
           if (q !== z && !q.dead && !q.friendly && q.row === z.row && Math.abs(q.x - z.x) <= 2 && !(q.landingInvuln >
@@ -1652,7 +1652,7 @@
           ignore2: true,
           system: true
         });
-        if (!z.dead) z.x = Math.min(COLS + .3, z.x + .625);
+        if (!z.dead) s7ApplyZombieKnockback(z, .625, { maxX: COLS + .3, reason: "地刺王击退变种冰车" });
         addEffect(p.row, p.col + .5, "地刺王击退变种冰车·-100", "#f87171", .6);
         return true
       }

@@ -357,7 +357,8 @@
       if (!state || !p || p.dead) return;
       const z = state.zombies.find(q => q && !q.dead && q.id === payload.zombieId);
       if (!z) return;
-      z.x = Math.min(COLS + .3, Math.max(z.x, payload.fromX ?? z.x) + 1.5);
+      const targetX = Math.min(COLS + .3, Math.max(z.x, payload.fromX ?? z.x) + 1.5);
+      s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "保护伞弹飞" });
       z.attackCd = Math.max(z.attackCd || 0, .5);
       addEffect(z.row, z.x, "保护伞弹飞120px", "#bae6fd", .45)
     }
@@ -418,7 +419,7 @@
           const deathHp = Math.max(1, p.s7.lastHpBeforeDamage || p.maxHp);
           for (const q of state.zombies)
             if (!q.dead && !q.friendly && q.row === p.row && Math.abs(q.x - (p.col + .5)) <= 1.5) {
-              q.x = Math.min(COLS - .5, q.x + .625);
+              s7ApplyZombieKnockback(q, .625, { maxX: COLS - .5, reason: "大蒜毒爆击退" });
               s7ApplyElement(q, "poison", deathHp * 2, p, {
                 ignoreTargetState: true
               })

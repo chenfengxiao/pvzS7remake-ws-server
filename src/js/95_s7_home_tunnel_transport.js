@@ -52,7 +52,7 @@ function HomeTunnelTransport(){
   this.broker=saved.broker||DEFAULT_BROKER;
   this.channel=saved.channel||DEFAULT_CHANNEL;
   this.secret=saved.key||DEFAULT_KEY;
-  this.gameVersion="1.7.1";
+  this.gameVersion="1.7.2";
   this.mqtt=null;
   this.brokerConnected=false;
   this.connected=false;

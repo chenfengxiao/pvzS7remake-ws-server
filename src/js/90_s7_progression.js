@@ -987,8 +987,11 @@
       const butterChance = s7KernelButterChance(lv, dist);
       let kind = "kernel";
       if (s7BattleRandom() < .005) kind = "cob";
-      else if (lv >= 3 && s7BattleRandom() < .15) kind = "bigButter";
-      else if (s7BattleRandom() < butterChance) kind = "butter";
+      else {
+        const isButter = s7BattleRandom() < butterChance;
+        if (isButter && lv >= 3 && s7BattleRandom() < .15) kind = "bigButter";
+        else if (isButter) kind = "butter"
+      }
       return {
         kind, targetId:z.id, targetX:z.x, targetRow:z.row, level:lv,
         bounceCount:s7KernelBounceCount(lv), createdFrame:state?.frame || 0
@@ -1088,7 +1091,8 @@
         addEffect(row, z.x, "玉米炮", "#facc15");
         return true
       }
-      if (lv >= 3 && s7BattleRandom() < .15) {
+      const isButter = s7BattleRandom() < butterChance;
+      if (isButter && lv >= 3 && s7BattleRandom() < .15) {
         const targets = s7KernelCellTargets(z, lv >= 5);
         for (const q of targets) {
           const didButterHit = s7DirectHit(q, 80, p, {
@@ -1099,7 +1103,7 @@
         addEffect(z.row, z.x, lv >= 5 ? "大黄油80全格" : "大黄油80·直击+同格2", "#facc15");
         return true
       }
-      if (s7BattleRandom() < butterChance) {
+      if (isButter) {
         addPultBullet(p, z, 40, {
           kind: "butter",
           stun: isAbnormalImmuneZombie(z) ? 0 : lv >= 3 ? 5 : 4,

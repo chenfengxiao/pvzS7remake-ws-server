@@ -15,7 +15,7 @@
 // 2. 联机 Transport（1服 WebSocket；2服反向 MQTT 隧道；3服 Secure MQTT）
 // ============================================================
 
-var GAME_VERSION = "1.7.1";
+var GAME_VERSION = "1.7.2";
 
 // 业务层继续只认“当前线路”，传输层可独立替换。
 // 1服：Railway WebSocket。

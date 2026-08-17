@@ -141,6 +141,8 @@
           z.emoji = z.s7.immortalBodyEmoji || (z.s7.variant ? "✨🧟" : "🧟");
           addEffect(z.row, z.x, z.s7.variant ? "亡唤出土" : "不朽出土", "#d6d3d1", .55)
         }
+        // 击退属于独立物理位移，不受寒意/眩晕/冰冻动作倍率影响；每逻辑帧只推进一次。
+        s7AdvanceZombieKnockback(z, dt);
         if (z.pogoAirTimer > 0) z.pogoAirTimer = Math.max(0, z.pogoAirTimer - actionDt);
         if (z.flyingImp || z.impLandingPending) {
           z.airTimer = (z.airTimer || 0) - actionDt;
@@ -388,9 +390,6 @@
           continue
         }
         if (z.stun > 0) continue;
-        // 凛风的逐帧击退必须先于接触与巨人落锤判定。旧实现只在“无植物接触”的
-        // 移动分支末尾执行，导致巨人一旦进入砸击状态就完全吃不到这类击退。
-        s7AdvanceQueuedBloverPush(z);
         let p = frontPlantForZombie(z);
         if (p && z.type === "snorkel" && z.diving && s7HasCommand("raid", z.row) && z.x < 5.25) {
           p = null
@@ -692,33 +691,71 @@
       return true
     }
 
-    function s7MoveZombieByKnockback(z, nextX, opt = {}) {
-      if (!z || z.dead || !Number.isFinite(nextX)) return 0;
+    const S7_KNOCKBACK_DURATION = 1;
+    const S7_KNOCKBACK_DECAY = 8;
+
+    // 所有“击退”统一进入速度脉冲：v(t)=C*e^(-kt)，持续1秒。
+    // C按积分归一化，因此在未触碰场地边界时，0~1秒的位移积分严格等于旧版击退距离。
+    function s7QueueZombieKnockback(z, distance, opt = {}) {
+      const amount = finiteNumber(distance, 0);
+      if (!z || z.dead || Math.abs(amount) <= 1e-9) return 0;
       const before = finiteNumber(z.x, 0);
       const minX = Number.isFinite(opt.minX) ? opt.minX : -1;
       const maxX = Number.isFinite(opt.maxX) ? opt.maxX : COLS + .3;
-      z.x = clamp(nextX, minX, maxX);
-      // 击退只改变位置；若巨人正在举锤，锁定与倒计时原样保留。
-      return z.x - before
+      const allowed = clamp(before + amount, minX, maxX) - before;
+      if (Math.abs(allowed) <= 1e-9) return 0;
+      z.s7KnockbackImpulses = finiteArray(z.s7KnockbackImpulses);
+      z.s7KnockbackImpulses.push({
+        distance: allowed,
+        elapsed: 0,
+        duration: S7_KNOCKBACK_DURATION,
+        decay: S7_KNOCKBACK_DECAY,
+        minX,
+        maxX,
+        reason: opt.reason || "击退"
+      });
+      return allowed
+    }
+
+    function s7MoveZombieByKnockback(z, nextX, opt = {}) {
+      if (!z || z.dead || !Number.isFinite(nextX)) return 0;
+      return s7QueueZombieKnockback(z, nextX - finiteNumber(z.x, 0), opt)
     }
 
     function s7ApplyZombieKnockback(z, distance, opt = {}) {
-      const amount = finiteNumber(distance, 0);
-      if (!z || z.dead || Math.abs(amount) <= 1e-9) return 0;
-      return s7MoveZombieByKnockback(z, finiteNumber(z.x, 0) + amount, opt)
+      return s7QueueZombieKnockback(z, distance, opt)
     }
 
-    function s7AdvanceQueuedBloverPush(z) {
-      if (!z?.s7BloverPush || !(z.s7BloverPush.remaining > 0)) return 0;
-      const push = Math.min(S7_BLOVER_PUSH_PER_FRAME, z.s7BloverPush.remaining);
-      const rightLimit = z.type === "blackolive" ? DAMAGE_BOUNDARY_X + 1.5 : COLS - .5;
-      const moved = s7ApplyZombieKnockback(z, push, {
-        maxX: rightLimit,
-        reason: "凛风击退"
-      });
-      z.s7BloverPush.remaining = Math.max(0, z.s7BloverPush.remaining - Math.max(0, moved));
-      if (z.s7BloverPush.remaining <= 1e-9 || moved <= 1e-9) delete z.s7BloverPush;
-      return moved
+    function s7AdvanceZombieKnockback(z, dt) {
+      const impulses = finiteArray(z?.s7KnockbackImpulses);
+      if (!z || z.dead || !impulses.length || !(dt > 0)) return 0;
+      let totalMoved = 0;
+      const keep = [];
+      for (const imp of impulses) {
+        const distance = finiteNumber(imp?.distance, 0);
+        const duration = Math.max(1e-6, finiteNumber(imp?.duration, S7_KNOCKBACK_DURATION));
+        const decay = Math.max(1e-6, finiteNumber(imp?.decay, S7_KNOCKBACK_DECAY));
+        const t0 = clamp(finiteNumber(imp?.elapsed, 0), 0, duration);
+        const t1 = Math.min(duration, t0 + dt);
+        if (Math.abs(distance) <= 1e-12 || t1 <= t0) continue;
+        const norm = 1 - Math.exp(-decay * duration);
+        const step = distance * (Math.exp(-decay * t0) - Math.exp(-decay * t1)) / norm;
+        const before = finiteNumber(z.x, 0);
+        const minX = Number.isFinite(imp.minX) ? imp.minX : -1;
+        const maxX = Number.isFinite(imp.maxX) ? imp.maxX : COLS + .3;
+        z.x = clamp(before + step, minX, maxX);
+        const moved = z.x - before;
+        totalMoved += moved;
+        // 触边后沿用旧版“最多推到边界”的口径，不再保留未完成的越界位移。
+        const blocked = Math.abs(moved - step) > 1e-9;
+        if (!blocked && t1 < duration - 1e-12) {
+          imp.elapsed = t1;
+          keep.push(imp)
+        }
+      }
+      if (keep.length) z.s7KnockbackImpulses = keep;
+      else delete z.s7KnockbackImpulses;
+      return totalMoved
     }
 
     function s7LockGargSmashTarget(z, target, kind = "plant") {
@@ -811,15 +848,18 @@
       damagePlant(p, dmg, z);
       addEffect(p.row, p.col + .5, label, kind === "smash" ? "#f87171" : "#fde68a");
       if (p.key === "tallnut" && kind === "crush" && z && !z.dead && (z.type === "zomboni" || z.type === "catapult")) {
-        z.x = Math.min(COLS + .3, Math.max(z.x + 1.25, p.col + 1.75));
+        const targetX = Math.min(COLS + .3, Math.max(z.x + 1.25, p.col + 1.75));
+        s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "高坚果车辆击退" });
         z.attackCd = Math.max(z.attackCd || 0, 1);
         addEffect(z.row, z.x, z.type === "catapult" ? "投篮车被高坚果击退" : "冰车被高坚果击退", "#d8b4fe")
       } else if (p.key === "gloom" && kind === "crush" && z && !z.dead && z.type === "zomboni") {
-        z.x = Math.min(COLS + .3, Math.max(z.x + .625, p.col + 1.125));
+        const targetX = Math.min(COLS + .3, Math.max(z.x + .625, p.col + 1.125));
+        s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "忧郁菇车辆击退" });
         z.attackCd = Math.max(z.attackCd || 0, .75);
         addEffect(z.row, z.x, "曾哥击退冰车0.625格", "#c084fc", .5)
       } else if (p.key === "chomper" && kind === "crush" && z && !z.dead && z.type === "zomboni") {
-        z.x = Math.min(COLS + .3, Math.max(z.x + .625, p.col + 1.125));
+        const targetX = Math.min(COLS + .3, Math.max(z.x + .625, p.col + 1.125));
+        s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "大嘴花车辆击退" });
         z.attackCd = Math.max(z.attackCd || 0, .75);
         addEffect(z.row, z.x, "大嘴花击退冰车0.625格", "#fca5a5", .5)
       }

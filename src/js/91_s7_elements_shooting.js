@@ -912,7 +912,10 @@
                   if (s7DirectHit(t, dmg, p, {
                       ignore2: true
                     })) squashHitCount++;
-                  if (lv2 >= 3) t.x += lv2 >= 5 ? .06 : .03
+                  if (lv2 >= 3) s7ApplyZombieKnockback(t, lv2 >= 5 ? .06 : .03, {
+                    maxX: COLS + .3,
+                    reason: "窝瓜砸击击退"
+                  })
                 } const survivor = state.zombies.filter(t => !t.dead && t.row === p.row && s7SquashAoeTouchesZombie(t,
                 p.s7.squashTargetX)).sort((a, b) => Math.abs(a.x - p.s7.squashTargetX) - Math.abs(b.x - p.s7
                 .squashTargetX))[0];

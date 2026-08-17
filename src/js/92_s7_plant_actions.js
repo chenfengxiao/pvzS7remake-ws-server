@@ -359,6 +359,7 @@
     const S7_MELON_RULE = Object.freeze({
       goldChance: .005,
       chainChanceByLevel: Object.freeze([.3, .3, .45, .45, .6, .6]),
+      chainInterval: .6,
       growthChance: .75,
       baseDamage: 80,
       baseAoe: .75,
@@ -427,8 +428,6 @@
       return Math.max(0, (total - 1) * interval)
     }
     const S7_BLOVER_KNOCKBACK = .2;
-    const S7_BLOVER_PUSH_PER_FRAME = 1 / 20;
-    const S7_BLOVER_PUSH_FRAMES = 4;
 
     // -----------------------------------------------------------------------------
 
@@ -440,20 +439,20 @@
 
     function s7ApplyBloverKnockback(z) {
       if (!z || z.dead || z.type === "blackolive") return 0;
-      if (!z.s7BloverPush) z.s7BloverPush = {
-        remaining: S7_BLOVER_KNOCKBACK
-      };
-      else z.s7BloverPush.remaining = S7_BLOVER_KNOCKBACK;
-      return S7_BLOVER_KNOCKBACK
+      const rightLimit = z.type === "blackolive" ? DAMAGE_BOUNDARY_X + 1.5 : COLS - .5;
+      return s7ApplyZombieKnockback(z, S7_BLOVER_KNOCKBACK, {
+        maxX: rightLimit,
+        reason: "凛风击退"
+      })
     }
 
     // -----------------------------------------------------------------------------
 
     // S7植物/元素 / s7ChomperLevelCap
 
-    // [原源码行 12441] 逐帧击退：每帧向右移动 1/20 格，持续 4 帧（0.16 秒）
+    // [1.7.2] 击退统一改为1秒指数衰减速度；积分位移严格保持原击退距离。
 
-    // [原源码行 12442] 期间僵尸正常移动不受阻断，最终位移 = 正常移动 + 击退
+    // 僵尸正常移动不受阻断，最终位置 = 正常移动 + 击退积分。
 
     // -----------------------------------------------------------------------------
 
@@ -1129,6 +1128,8 @@
               })
             }
             let prob = [.005, .0075, .01, .01, .01, .01][lv] + (lv >= 3 ? p.s7.ultProbBonus || 0 : 0);
+            // 3阶“上限2.5%”约束基础+永久叠加部分；5阶距离加成在此上限之后额外叠加。
+            if (lv >= 3) prob = Math.min(.025, prob);
             if (lv >= 5) {
               const nearby = state.zombies.filter(t => !t.dead && !t.friendly && rows3.includes(t.row) &&
                 canPlantTargetZombie(t, {
@@ -1137,12 +1138,11 @@
                 })).map(t => Math.max(0, t.x - (col + .5)));
               if (nearby.length) {
                 const nearestDist = Math.min(...nearby);
-                const distFromStart = Math.max(0, Math.min(9, 9 - nearestDist));
-                const distSteps = Math.floor(distFromStart / .5);
-                prob += distSteps * .003
+                const distanceSteps = clamp((nearestDist - .5) / .5, 0, 9);
+                prob += distanceSteps * .003
               }
             }
-            prob = Math.min(lv >= 5 ? .0385 : .025, prob);
+            prob = clamp(prob, 0, 1);
             if (s7BattleRandom() < prob) {
               s7ThreepeaterUlt(p, false);
               if (lv >= 3) {
@@ -1330,16 +1330,14 @@
           if (!z) return false;
           s7TriggerUserGridPlantAction(p,.72);
           const arr = lv >= 2 ? [30, 20, 15] : [25, 15, 10];
-          const randomBigStarThisAttack = s7BattleRandom() < S7_GHOST_RULE.bigStarChanceByLevel[lv];
           let volleySeq = 0;
           const fireVolley = (base, mode = "normal") => {
-            // 基础攻击只滚一次7%/10%（同组至多1颗大星）；
-            // 5级连射2次成功后的连击：每颗子弹独立10%概率大星（可多颗）。
-            const useBigStar = mode === "base" && randomBigStarThisAttack;
-            const bigStarSlot = useBigStar ? Math.floor(s7BattleRandom() * arr.length) : -1;
+            // v0.4：普通攻击/普通连射的前两颗子弹各自独立滚7%/10%；
+            // 5级连射2次成功后的后续连击改为每颗子弹各自独立10%。
             const ghostVolleyId = `${p.id}:${state.frame}:${volleySeq++}`;
             arr.forEach((d, i) => {
-              if (i === bigStarSlot || mode === "forced" && s7BattleRandom() < S7_GHOST_RULE.bigStarChanceByLevel[lv])
+              const bigStarEligible = mode === "forced" || i < 2;
+              if (bigStarEligible && s7BattleRandom() < S7_GHOST_RULE.bigStarChanceByLevel[lv])
                 s7Shoot(p, z, lv >= 1 ? 140 : 100, {
                 kind: "star",
                 bigStar: true,
@@ -1753,7 +1751,7 @@
           while (shots < 64 && s7BattleRandom() < chainChance) shots++;
           let fired = 0;
           for (let i = 0; i < shots; i++) {
-            const delay = i * .325;
+            const delay = i * S7_MELON_RULE.chainInterval;
             if (groundTarget && s7BattleRandom() < S7_MELON_RULE.goldChance) {
               addPultBullet(p, groundTarget, 0, {
                 kind: "goldenMelon",
