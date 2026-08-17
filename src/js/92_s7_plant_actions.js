@@ -438,9 +438,8 @@
     // -----------------------------------------------------------------------------
 
     function s7ApplyBloverKnockback(z) {
-      // [1.7.2 hotfix] 凛风击退只作用于已经进入可伤线的地面僵尸。
-      // 地下矿工、以及仍在9/10可伤线外的入场僵尸都不能被风提前推回去。
-      if (!z || z.dead || isUnderground(z) || !isDamageableZombie(z) || z.type === "blackolive") return 0;
+      // 凛风击退作用于所有地面僵尸（含地下矿工）
+      if (!z || z.dead || !isDamageableZombie(z) || z.type === "blackolive") return 0;
       const rightLimit = z.type === "blackolive" ? DAMAGE_BOUNDARY_X + 1.5 : COLS - .5;
       return s7ApplyZombieKnockback(z, S7_BLOVER_KNOCKBACK, {
         maxX: rightLimit,
