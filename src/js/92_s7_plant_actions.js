@@ -1713,9 +1713,10 @@
           let hit = 0;
           for (const q of targets) {
             const dmg = s7FumeDirectDamage(p, q, lv);
+            // 只有可伤线内的僵尸造成的实质伤害才计为灵魂孢子命中
             if (s7DirectHit(q, dmg, p, {
                 ignore2: true
-              })) hit++
+              }) && isDamageableZombie(q)) hit++
           }
           if (lv >= 3) {
             const extracted = hit * (lv >= 5 ? S7_FUME_RULE.level5SoulMultiplier : 1);
