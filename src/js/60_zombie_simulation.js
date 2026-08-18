@@ -961,7 +961,21 @@
           .key === "tallnut");
         if (canLadder) {
           z.s7 = z.s7 || {};
-          z.s7.ladderPlaceUntil = finiteNumber(state?.time, 0) + s7ZombieActionDuration(z, .75);
+          const now = finiteNumber(state?.time, 0);
+          if (finiteNumber(z.s7.ladderWindupUntil, 0) <= 0 || z.s7.ladderWindupTarget !== p.id) {
+            z.s7.ladderWindupTarget = p.id;
+            z.s7.ladderWindupUntil = now + s7ZombieActionDuration(z, 2);
+            z.s7.ladderPlaceUntil = z.s7.ladderWindupUntil;
+            addEffect(z.row, z.x, "架梯前摇", "#e5e7eb", .8);
+            return true
+          }
+          if (now < z.s7.ladderWindupUntil) {
+            z.s7.ladderPlaceUntil = z.s7.ladderWindupUntil;
+            return true
+          }
+          delete z.s7.ladderWindupUntil;
+          delete z.s7.ladderWindupTarget;
+          z.s7.ladderPlaceUntil = now + s7ZombieActionDuration(z, .75);
           p.laddered = true;
           p.ladderExpire = state.time + 300;
           z.s7.ladderUsesRemaining = Math.max(0, finiteNumber(z.s7?.ladderUsesRemaining, 1) - 1);

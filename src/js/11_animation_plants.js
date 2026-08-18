@@ -530,7 +530,7 @@
           'zombie.b05b.ducky.attack': .6,
           'zombie.b05b.snorkel.dive': .6,
           'zombie.b05b.snorkel.attack': .8,
-          'zombie.final.balloon_fly': .2,
+          'zombie.final.balloon_fly': 1,
           'zombie.final.balloon_walk': .2,
           // 扶梯整体已经缩为 3/5；仅新增的“带梯走路”恢复到缩放前大小。
           'zombie.final.ladder_carry': 1 / .6

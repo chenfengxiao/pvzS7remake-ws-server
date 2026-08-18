@@ -144,6 +144,10 @@
         const m=S7_B05A_POLE_MANIFEST[key], total=m.durations.reduce((a,b)=>a+b,0), frames=Math.max(1,Math.round(total/(S7_ANIMATION_FIXED_DT*1000)));
         S7_ANIM.registerClip({id,frames,loop:!key.includes('jump'),source:{kind:'jspvz-pole',asset:key},layers:{body:{asset:`zombie.b05a.${key}`,z:0,pixelScale:.0049,pivotX:.5,pivotY:.77,tracks:{frameIndex:s7B03BNormalizedFrameTrack(m.durations,frames,!key.includes('jump'))}}}});
       }
+      for(const [key,m] of Object.entries(S7_B05A_POLE_MANIFEST)) {
+        const total=m.durations.reduce((a,b)=>a+b,0), frames=Math.max(1,Math.round(total/(S7_ANIMATION_FIXED_DT*1000)));
+        S7_ANIM.registerClip({id:`zombie.b05a.polecmd.${key}`,frames,loop:!key.includes('jump'),source:{kind:'jspvz-pole',asset:key},layers:{body:{asset:`zombie.b05a.${key}`,z:0,pixelScale:.0055,pivotX:.5,pivotY:.77,tracks:{frameIndex:s7B03BNormalizedFrameTrack(m.durations,frames,!key.includes('jump'))}}}});
+      }
     }
     s7RegisterB05APole();
 
@@ -197,7 +201,7 @@
       "giga_hammer":{file:"giga_hammer.webp",frameWidth:320,frameHeight:216,columns:8,frameCount:24,frameMs:70,loop:false,family:"giant",pivotY:0.82},
       "giga_throw":{file:"giga_throw.webp",frameWidth:320,frameHeight:216,columns:8,frameCount:24,frameMs:70,loop:false,family:"giant",pivotY:0.82},
       "giga_death":{file:"giga_death.webp",frameWidth:320,frameHeight:216,columns:8,frameCount:22,frameMs:70,loop:false,family:"giant",pivotY:0.82},
-      "balloon_fly":{file:"balloon_fly.webp",frameWidth:280,frameHeight:230,columns:8,frameCount:14,frameMs:82,loop:true,family:"air",pivotY:0.74},
+      "balloon_fly":{file:"balloon_fly.webp",frameWidth:280,frameHeight:230,columns:8,frameCount:14,frameMs:82,loop:true,family:"air",pivotY:0.74,pixelScale:.0089},
       "balloon_pop":{file:"balloon_pop.webp",frameWidth:280,frameHeight:230,columns:8,frameCount:24,frameMs:70,loop:false,family:"air",pivotY:0.74},
       "balloon_walk":{file:"balloon_walk_new.webp",frameWidth:514,frameHeight:674,columns:5,frameCount:20,frameMs:80,loop:true,family:"air",pivotY:0.74,pixelScale:.006},
       "balloon_attack":{file:"balloon_attack.webp",frameWidth:280,frameHeight:230,columns:8,frameCount:16,frameMs:82,loop:true,family:"air",pivotY:0.74},
@@ -216,12 +220,12 @@
       "bungee_descend":{file:"bungee_descend.webp",frameWidth:256,frameHeight:222,columns:8,frameCount:24,frameMs:82,loop:true,family:"air",pivotY:0.74},
       "bungee_grab":{file:"bungee_grab.webp",frameWidth:256,frameHeight:222,columns:8,frameCount:24,frameMs:70,loop:false,family:"air",pivotY:0.74},
       "bungee_ascend":{file:"bungee_ascend.webp",frameWidth:256,frameHeight:222,columns:8,frameCount:22,frameMs:70,loop:false,family:"air",pivotY:0.74},
-      "digger_underground":{file:"digger_underground.webp",frameWidth:228,frameHeight:138,columns:8,frameCount:14,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.0041},
-      "digger_surface":{file:"digger_surface.webp",frameWidth:272,frameHeight:430,columns:8,frameCount:16,frameMs:80,loop:false,family:"normal",pivotY:0.78,pixelScale:.0082},
-      "digger_stun":{file:"digger_stun.webp",frameWidth:301,frameHeight:427,columns:8,frameCount:29,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.0082},
-      "digger_walk":{file:"digger_walk.webp",frameWidth:303,frameHeight:414,columns:8,frameCount:32,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.0082},
-      "digger_attack":{file:"digger_attack.webp",frameWidth:296,frameHeight:411,columns:8,frameCount:13,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.0082},
-      "digger_death":{file:"digger_death.webp",frameWidth:308,frameHeight:373,columns:8,frameCount:31,frameMs:80,loop:false,family:"normal",pivotY:0.78,pixelScale:.0082},
+      "digger_underground":{file:"digger_underground.webp",frameWidth:228,frameHeight:138,columns:8,frameCount:14,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.00246},
+      "digger_surface":{file:"digger_surface.webp",frameWidth:272,frameHeight:430,columns:8,frameCount:16,frameMs:80,loop:false,family:"normal",pivotY:0.78,pixelScale:.00492},
+      "digger_stun":{file:"digger_stun.webp",frameWidth:301,frameHeight:427,columns:8,frameCount:29,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.00492},
+      "digger_walk":{file:"digger_walk.webp",frameWidth:303,frameHeight:414,columns:8,frameCount:32,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.00492},
+      "digger_attack":{file:"digger_attack.webp",frameWidth:296,frameHeight:411,columns:8,frameCount:13,frameMs:80,loop:true,family:"normal",pivotY:0.78,pixelScale:.00492},
+      "digger_death":{file:"digger_death.webp",frameWidth:308,frameHeight:373,columns:8,frameCount:31,frameMs:80,loop:false,family:"normal",pivotY:0.78,pixelScale:.00492},
       "pogo_move":{file:"pogo_move.webp",frameWidth:240,frameHeight:263,columns:8,frameCount:14,frameMs:82,loop:true,family:"normal",pivotY:0.78},
       "pogo_walk":{file:"pogo_walk_trimmed.webp",frameWidth:240,frameHeight:263,columns:8,frameCount:10,frameMs:82,loop:true,family:"normal",pivotY:0.78},
       "pogo_attack":{file:"pogo_attack.webp",frameWidth:240,frameHeight:263,columns:8,frameCount:16,frameMs:82,loop:true,family:"normal",pivotY:0.78},

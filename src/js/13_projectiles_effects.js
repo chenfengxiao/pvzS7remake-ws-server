@@ -382,10 +382,10 @@
         if ((z.jumpMove||0)>0 || z.jumping) {
           const initial=Math.max(.01,finiteNumber(z.s7?.poleJumpInitial,finiteNumber(z.jumpMove,1)));
           const ratio=clamp(finiteNumber(z.jumpMove,0)/initial,0,1);
-          return ratio>.45 ? {state:"vault.up.cmdPolecmd",clipId:"zombie.b05a.pole.jump"} : {state:"vault.down.cmdPolecmd",clipId:"zombie.b05a.pole.jump2"};
+          return ratio>.45 ? {state:"vault.up.cmdPolecmd",clipId:"zombie.b05a.polecmd.pole.jump"} : {state:"vault.down.cmdPolecmd",clipId:"zombie.b05a.polecmd.pole.jump2"};
         }
-        if (!z.jumped) return {state:"run.withPole.cmdPolecmd",clipId:"zombie.b05a.pole.run"};
-        return attacking ? {state:"attack.noPole.cmdPolecmd",clipId:"zombie.b05a.pole.attack"} : {state:"walk.noPole.cmdPolecmd",clipId:"zombie.b05a.pole.walk"};
+        if (!z.jumped) return {state:"run.withPole.cmdPolecmd",clipId:"zombie.b05a.polecmd.pole.run"};
+        return attacking ? {state:"attack.noPole.cmdPolecmd",clipId:"zombie.b05a.polecmd.pole.attack"} : {state:"walk.noPole.cmdPolecmd",clipId:"zombie.b05a.polecmd.pole.walk"};
       }
       if (z?.type === "warflag" || z?.type === "tacticflag") {
         if (z.dying) return {state:"head.drop",clipId:"zombie.b04a.head.drop"};
