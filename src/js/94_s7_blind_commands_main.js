@@ -763,7 +763,7 @@
         return sled
       }
       const isGarg = type === "garg" || type === "giga";
-      const rawFrac = s7RandomHpFraction(false);
+      const rawFrac = command ? 5 : s7RandomHpFraction(false);
       // v0.4：变种巨人的出现不受前期巨人血量压制。先用原始血量档判变种，再只压制非变种巨人的最终血量档。
       const finalVariant = s7ResolveOpenVariant(variant, rawFrac, category, wasFriendly, command, row);
       const frac = isGarg && !finalVariant ? s7CapGargHpFractionForEarlyGame(rawFrac) : rawFrac;
