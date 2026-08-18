@@ -1295,7 +1295,7 @@ wss.on("connection", (ws) => {
 // Railway 1服默认不启用，因此不会争抢家庭服 MQTT channel。
 homeTunnel = startHomeMqttTunnel({
   enabled: process.env.S7_HOME_TUNNEL === "1",
-  serverVersion: "1.7.2",
+  serverVersion: "1.7.3",
   onOpen: (sock) => registerConnection(sock),
   onMessage: (sock, raw) => receiveConnectionMessage(sock, raw),
   onClose: (sock) => closeConnection(sock)
