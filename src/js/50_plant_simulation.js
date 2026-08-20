@@ -534,13 +534,19 @@
       // 从框架上避免篮球、非豌豆子弹和邻格子弹误走同一保护分支。
       if (p.key === "umbrella" && isOrdinaryBite) {
         // 啃咬保护伞的僵尸在0.5s后向右弹飞120px（1.5格），保护伞自身受20点伤害。
+        // 同一僵尸已有待结算的弹飞事件时不重复排队：避免快速连啃堆叠多个弹飞，
+        // 导致僵尸还没跑回来就被连续弹飞多次。
         if (Number.isFinite(src.x)) {
-          p.s7.umbrellaFleeSrcId = src.id;
-          schedulePlantEvent(p, Math.round(.5 / FIXED_FRAME_DT), "umbrellaFlee", {
-            zombieId: src.id,
-            fromX: src.x
-          });
-          addEffect(p.row, p.col + .5, "0.5s后弹飞", "#bae6fd", .4)
+          const fleePending = finiteArray(state.pendingPlantEvents).some(ev => ev.type === "umbrellaFlee" &&
+            ev.payload?.zombieId === src.id);
+          if (!fleePending) {
+            p.s7.umbrellaFleeSrcId = src.id;
+            schedulePlantEvent(p, Math.round(.5 / FIXED_FRAME_DT), "umbrellaFlee", {
+              zombieId: src.id,
+              fromX: src.x
+            });
+            addEffect(p.row, p.col + .5, "0.5s后弹飞", "#bae6fd", .4)
+          }
         }
         p.hp -= 20;
         if (p.hp <= 0) plantDie(p);

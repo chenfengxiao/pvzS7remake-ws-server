@@ -158,7 +158,10 @@
           e.lastColdMultiple = Math.floor(highestCrossedThreshold / 5)
         }
       } else if (type === "fire") {
-        if (e.cold > 0) {
+        // 冻结/冰封期间受到燃焰攻击不触发火融寒意：寒意层与硬控一起保留，
+        // 燃焰层照常叠加，待控制结束后再由后续元素附着自然结算克制反应。
+        const hardFrozen = (z.freeze || 0) > 0 || (e.iceBound || 0) > 0;
+        if (e.cold > 0 && !hardFrozen) {
           const coldBefore = e.cold;
           e.cold = 0;
           e.coldT = s7ColdDecayIntervalForRow(z.row);
