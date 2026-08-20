@@ -347,20 +347,9 @@
         if (ev.type === "explodenutDeath") resolveExplodenutDeath(p, ev.payload || {});
         else if (ev.type === "gloomPulse") s7ResolveGloomPulse(p, ev.payload || {});
         else if (ev.type === "marigoldExtra" && typeof p.s7?.marigoldProduce === "function") p.s7.marigoldProduce(ev
-          .payload?.item);
-        else if (ev.type === "umbrellaFlee") s7ResolveUmbrellaFlee(p, ev.payload || {})
+          .payload?.item)
       }
       state.pendingPlantEvents = remain
-    }
-
-    function s7ResolveUmbrellaFlee(p, payload = {}) {
-      if (!state || !p || p.dead) return;
-      const z = state.zombies.find(q => q && !q.dead && q.id === payload.zombieId);
-      if (!z) return;
-      const targetX = Math.min(COLS + .3, Math.max(z.x, payload.fromX ?? z.x) + 1.5);
-      s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "保护伞弹飞" });
-      z.attackCd = Math.max(z.attackCd || 0, .5);
-      addEffect(z.row, z.x, "保护伞弹飞120px", "#bae6fd", .45)
     }
 
     function plantDie(p) {
@@ -533,20 +522,13 @@
       // 僵尸远程豌豆只在子弹命中入口结算小伞；damagePlant 不再提供“所有子弹通吃”的兜底，
       // 从框架上避免篮球、非豌豆子弹和邻格子弹误走同一保护分支。
       if (p.key === "umbrella" && isOrdinaryBite) {
-        // 啃咬保护伞的僵尸在0.5s后向右弹飞120px（1.5格），保护伞自身受20点伤害。
-        // 同一僵尸已有待结算的弹飞事件时不重复排队：避免快速连啃堆叠多个弹飞，
-        // 导致僵尸还没跑回来就被连续弹飞多次。
-        if (Number.isFinite(src.x)) {
-          const fleePending = finiteArray(state.pendingPlantEvents).some(ev => ev.type === "umbrellaFlee" &&
-            ev.payload?.zombieId === src.id);
-          if (!fleePending) {
-            p.s7.umbrellaFleeSrcId = src.id;
-            schedulePlantEvent(p, Math.round(.5 / FIXED_FRAME_DT), "umbrellaFlee", {
-              zombieId: src.id,
-              fromX: src.x
-            });
-            addEffect(p.row, p.col + .5, "0.5s后弹飞", "#bae6fd", .4)
-          }
+        // 啃咬保护伞的僵尸立即向右弹飞1.5格（120px），保护伞自身受20点伤害。
+        // 攻击冷却覆盖整个击退飞行时长，确保一次接触只咬一口，不会出现连啃很多口。
+        if (Number.isFinite(src.x) && !src.dead) {
+          const targetX = Math.min(COLS + .3, src.x + 1.5);
+          s7MoveZombieByKnockback(src, targetX, { maxX: COLS + .3, reason: "保护伞弹飞" });
+          src.attackCd = Math.max(src.attackCd || 0, S7_KNOCKBACK_DURATION);
+          addEffect(src.row, src.x, "保护伞弹飞120px", "#bae6fd", .45)
         }
         p.hp -= 20;
         if (p.hp <= 0) plantDie(p);
