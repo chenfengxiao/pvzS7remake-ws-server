@@ -1634,7 +1634,7 @@
     // -----------------------------------------------------------------------------
 
     function isSpikePunctureVehicle(z) {
-      return !!z && !z.dead && (z.type === "zomboni" || z.type === "catapult")
+      return !!z && !z.dead && (z.type === "zomboni" || z.type === "catapult" || z.type === "bobsledSled")
     }
 
     function spikerockTouchingVehicle(z) {
@@ -1646,14 +1646,14 @@
     function trySpikerockPunctureVehicle(z) {
       const p = spikerockTouchingVehicle(z);
       if (!p) return false;
-      // 变种冰车不被地刺王秒杀，改为100伤害+击退50px（0.625格=50px）。
-      if (z.type === "zomboni" && z.s7?.variant) {
+      // 变种冰车/变种雪橇不被地刺王秒杀，改为100伤害+击退50px（0.625格=50px）。
+      if ((z.type === "zomboni" || z.type === "bobsledSled") && z.s7?.variant) {
         s7DirectHit(z, 100, p, {
           ignore2: true,
           system: true
         });
-        if (!z.dead) s7ApplyZombieKnockback(z, .625, { maxX: COLS + .3, reason: "地刺王击退变种冰车" });
-        addEffect(p.row, p.col + .5, "地刺王击退变种冰车·-100", "#f87171", .6);
+        if (!z.dead) s7ApplyZombieKnockback(z, .625, { maxX: COLS + .3, reason: "地刺王击退变种车辆" });
+        addEffect(p.row, p.col + .5, "地刺王击退变种车辆·-100", "#f87171", .6);
         return true
       }
       killZombie(z, {
