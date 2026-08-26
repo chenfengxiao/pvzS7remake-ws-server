@@ -850,7 +850,7 @@
         ctx.fillText(armorLabel, x, y - layout.cell * .38)
       }
       const e = z.s7Elem;
-      if (e) {
+      if (e && entityTextVisible) {
         let parts = [];
         if (e.cold > 0) parts.push("寒" + Math.floor(e.cold));
         if (e.fire > 0) parts.push("焰" + Math.floor(e.fire));
