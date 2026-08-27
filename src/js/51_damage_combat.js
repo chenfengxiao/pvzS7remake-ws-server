@@ -56,6 +56,8 @@
     function damageZombie(z, amount, opt = {}) {
       if (!z || z.dead) return false;
       if (z.flags?.bungee) return false;
+      // Versus Target: immune to instant-kill/ash/laneWipe; only take numeric damage
+      if (z.versusObjective && (opt.ash || opt.instantKill || opt.laneWipe)) return false;
       if (!canAffectZombieState(z, opt)) return false;
       if (killIfBodyHpDepleted(z, opt)) return true;
       if (opt.zombieAttacker && !opt.zombieAttacker.dead) z._lastAttacker = opt.zombieAttacker;
@@ -468,6 +470,8 @@
         delete z.s7.gargSmashInterruptedFrame
       }
       z.dead = true;
+      // Versus Target death notification
+      if (z.versusObjective) try { window.S7VersusBattle?.handleTargetDeath?.(z) } catch (_) {}
       if (z.s7KelpGrabbed) s7KelpReleaseTarget(z, true);
       if (z.s7?.command && !z.s7.commandRemoved) {
         const category = z.s7.category || z.s7.commandCategory;

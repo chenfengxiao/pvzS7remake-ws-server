@@ -100,6 +100,35 @@
     };
   });
 
+  // Single source of truth for Versus rules. All modules MUST reference this.
+  const VERSUS_RULES = Object.freeze({
+    startResource: 75,
+    drawAtSeconds: 2400,
+    suddenDeathAtSeconds: 300,
+    skySupplyIntervalSeconds: 20,
+    skySupplyAmount: 50,
+    targetCount: 5,
+    targetKillsToWin: 3,
+    targetX: 9.0,
+    targetHp: 200,
+    targetDamageStageThresholds: Object.freeze([60, 100, 160]),
+    plantColumns: Object.freeze([0, 5]),
+    zombieColumns: Object.freeze([6, 8]),
+    freePlantCores: Object.freeze([{row:1,col:0},{row:3,col:0}]),
+    freeZombieCores: Object.freeze([{row:1,x:8.5},{row:3,x:8.5}]),
+    gravestoneHp: 400,
+    gravestoneCost: 50,
+    twinCost: 100,
+    twinProductionAmount: 25,
+    twinProductionPeriodSeconds: 10,
+    twinBrightenSeconds: 1.0,
+    mowerHomeX: -0.5,
+    mowerTriggerX: -0.35,
+    houseEntryX: -0.5,
+    bp6: "B2-P3-B2-P2",
+    bp7: "B2-P3-B2-P3"
+  });
+
   const versus = freezeTree({
     id: "versus",
     version: "0.1.0-balance-lab",
@@ -121,8 +150,8 @@
       ]
     },
     economy: {
-      startingSun: 150,
-      startingBrain: 150,
+      startingSun: 75,
+      startingBrain: 75,
       plantCore: { id: "twinSunflower", resourceCost: 250, hp: 500, productionAmount: 25, productionPeriodSeconds: 10, pureEconomy: true },
       zombieCore: { id: "zombieGravestone", resourceCost: 50, hp: 400, productionAmount: 25, productionPeriodSeconds: 10, pureEconomy: true }
     },
@@ -193,4 +222,5 @@
   const api = Object.freeze({ profiles, getProfile, assertIsolation });
   root.S7FeatureProfiles = api;
   root.S7_VERSUS_PROFILE = versus;
+  root.S7_VERSUS_RULES = VERSUS_RULES;
 })(typeof window !== "undefined" ? window : globalThis);

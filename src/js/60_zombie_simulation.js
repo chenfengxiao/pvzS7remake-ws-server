@@ -314,7 +314,7 @@
                 z.row = nr
               }
             }
-            if (!z.friendly && z.x < -.35 && !z.dying) defeatLane(z.row);
+            if (!z.friendly && z.x < -.35 && !z.dying) { if(state.versus?.active){window.S7VersusBattle?.handleHomeApproach?.(z)} else defeatLane(z.row); }
             if (z.friendly && z.x > COLS + .6) z.dead = true;
             continue
           }
@@ -513,7 +513,7 @@
         if (z.type === "football" && s7HasCommand("break", z.row) && moveNextX < moveOldX - 1e-9) {
           z.s7.footballRunTime = (z.s7.footballRunTime || 0) + actionDt
         }
-        if (!z.friendly && groundWalkDir < 0 && z.x < -.35 && !z.dying) defeatLane(z.row);
+        if (!z.friendly && groundWalkDir < 0 && z.x < -.35 && !z.dying) { if(state.versus?.active){window.S7VersusBattle?.handleHomeApproach?.(z)} else defeatLane(z.row); }
         // 自然出土矿工向右返回；走出右侧边界后直接离场，不触发本路失败。
         if (!z.friendly && groundWalkDir > 0 && z.x > COLS + .6) z.dead = true;
         if (z.friendly && z.x > COLS + .6) z.dead = true
@@ -1177,7 +1177,7 @@
           if (p && trySpecialContact(z, p, actionDt)) return;
           const sp = currentSpeed(z, moveDt);
           z.x -= sp * moveDt;
-          if (z.x < -.35) defeatLane(z.row);
+          if (z.x < -.35) { if(state.versus?.active){window.S7VersusBattle?.handleHomeApproach?.(z)} else defeatLane(z.row); }
           return
         }
       }
