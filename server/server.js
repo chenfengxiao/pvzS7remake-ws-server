@@ -416,6 +416,15 @@ function closeConnection(ws) {
   }
 }
 
+
+function versusDraftPhases(slots,bp){
+  const picks=slots===7?6:5,out=[];
+  const round=(kind,n)=>{for(let i=0;i<n;i++){out.push({actorSide:"zombie",kind,targetSide:kind==="ban"?"plant":"zombie"});out.push({actorSide:"plant",kind,targetSide:kind==="ban"?"zombie":"plant"});}};
+  if(bp){round("ban",2);round("pick",3);round("ban",2);round("pick",slots===7?3:2);}
+  else round("pick",picks);
+  return out;
+}
+
 // handler
 function handle(ws, raw) {
   let msg; try { msg = JSON.parse(raw); } catch { return; }
@@ -442,7 +451,7 @@ function handle(ws, raw) {
   if (msg.type === "versusSwapSides") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;const v=room.versus,[a,b]=[v.sides.plant,v.sides.zombie];v.sides.plant=b;v.sides.zombie=a;sync(room);return;}
   if (msg.type === "versusRules") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;room.versus.slots=msg.slots===7?7:6;room.versus.bp=!!msg.bp;sync(room);return;}
   if (msg.type === "versusStartDraft") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;const v=room.versus;if(!v.sides.plant||!v.sides.zombie){send(ws,{type:"error",message:"双方必须先抢好阵营"});return;}v.picks={plant:[],zombie:[]};v.bans={plant:[],zombie:[]};v.step=0;v.draftStarted=true;v.draftDone=false;room.state="versusDraft";bcast(room,{type:"versusDraftState",room:roomInfo(room)});sync(room);return;}
-  if (msg.type === "versusDraftAction") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="versusDraft")return;const v=room.versus,picks=v.slots-1,banSteps=v.bp?10:0,total=banSteps+picks*2;if(v.step>=total)return;let actorSide,kind;if(v.step<banSteps){actorSide=v.step%2===0?"zombie":"plant";kind="ban";}else{actorSide=(v.step-banSteps)%2===0?"zombie":"plant";kind="pick";}if(v.sides[actorSide]!==pid){send(ws,{type:"error",message:"还没轮到你"});return;}const id=String(msg.cardId||"");const targetSide=kind==="ban"?(actorSide==="zombie"?"plant":"zombie"):actorSide;const valid=targetSide==="plant"?ALLOWED_PLANT_KEYS.has(id):/^[a-zA-Z0-9_]+$/.test(id);if(!valid){send(ws,{type:"error",message:"卡牌无效"});return;}const used=[...v.picks.plant,...v.picks.zombie,...v.bans.plant,...v.bans.zombie];if(used.includes(id)){send(ws,{type:"error",message:"该卡已被选择/Ban"});return;}if(kind==="ban")v.bans[targetSide].push(id);else v.picks[actorSide].push(id);v.step++;if(v.step>=total){v.draftDone=true;room.state="versusReady";}bcast(room,{type:"versusDraftState",room:roomInfo(room)});sync(room);return;}
+  if (msg.type === "versusDraftAction") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="versusDraft")return;const v=room.versus,phases=versusDraftPhases(v.slots,!!v.bp),total=phases.length;if(v.step>=total)return;const ph=phases[v.step],actorSide=ph.actorSide,kind=ph.kind,targetSide=ph.targetSide;if(v.sides[actorSide]!==pid){send(ws,{type:"error",message:"还没轮到你"});return;}const id=String(msg.cardId||"");const valid=targetSide==="plant"?ALLOWED_PLANT_KEYS.has(id):/^[a-zA-Z0-9_]+$/.test(id);if(!valid){send(ws,{type:"error",message:"卡牌无效"});return;}const used=[...v.picks.plant,...v.picks.zombie,...v.bans.plant,...v.bans.zombie];if(used.includes(id)){send(ws,{type:"error",message:"该卡已被选择/Ban"});return;}if(kind==="ban")v.bans[targetSide].push(id);else v.picks[actorSide].push(id);v.step++;if(v.step>=total){v.draftDone=true;room.state="versusReady";}bcast(room,{type:"versusDraftState",room:roomInfo(room)});sync(room);return;}
   if (msg.type === "versusStartBattle") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="versusReady")return;room.state="battling";room.versus.frameSeq=0;room.versus.inputSeq={};room.versus.winner=null;room.versus.reason=null;bcast(room,{type:"versusBattleStart",seed:room.seed,hostId:room.hostId,sides:room.versus.sides,slots:room.versus.slots,bp:room.versus.bp,picks:room.versus.picks});sync(room);return;}
   if (msg.type === "versusFrame") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="battling"||room.hostId!==pid)return;const seq=Math.max(0,Number(msg.seq)||0);if(seq<=room.versus.frameSeq)return;const data=String(msg.data||"");if(data.length>56000)return;room.versus.frameSeq=seq;for(const p of realPlayers(room))if(p.id!==room.hostId)send(p.ws,{type:"versusFrame",seq,data});return;}
   if (msg.type === "versusInput") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="battling"||pid===room.hostId)return;const seq=Math.max(1,Number(msg.seq)||0),last=room.versus.inputSeq[pid]||0;if(seq<=last)return;room.versus.inputSeq[pid]=seq;const side=room.versus.sides.plant===pid?"plant":room.versus.sides.zombie===pid?"zombie":null;if(!side)return;const host=findPlayer(room,room.hostId);send(host?.ws,{type:"versusRemoteInput",playerId:pid,side,seq,action:msg.action||null});return;}

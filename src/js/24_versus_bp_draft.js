@@ -75,12 +75,12 @@
     return Object.freeze({ actor, action, targetSide });
   }
 
-  // Exact user-defined sequence:
-  // Z ban P, P ban Z, Z ban P, P ban Z,
+  // Exact user-defined sequence (B2 -> P3 -> B2 -> P2/3):
+  // (Z ban P, P ban Z) x2,
   // (Z pick Z, P pick P) x3,
-  // (Z ban P, P ban Z) x3,
-  // (Z pick Z, P pick P) x2,
-  // and if 7 slots, one additional Z pick / P pick pair.
+  // (Z ban P, P ban Z) x2,
+  // (Z pick Z, P pick P) x2 for 6 slots, x3 for 7 slots.
+  // Fixed economy cores are outside these combat-card picks.
   function buildPhases(extraSlot = false) {
     const out = [
       phase(SIDE_ZOMBIE, ACTION_BAN), phase(SIDE_PLANT, ACTION_BAN),
@@ -88,7 +88,6 @@
       phase(SIDE_ZOMBIE, ACTION_PICK), phase(SIDE_PLANT, ACTION_PICK),
       phase(SIDE_ZOMBIE, ACTION_PICK), phase(SIDE_PLANT, ACTION_PICK),
       phase(SIDE_ZOMBIE, ACTION_PICK), phase(SIDE_PLANT, ACTION_PICK),
-      phase(SIDE_ZOMBIE, ACTION_BAN), phase(SIDE_PLANT, ACTION_BAN),
       phase(SIDE_ZOMBIE, ACTION_BAN), phase(SIDE_PLANT, ACTION_BAN),
       phase(SIDE_ZOMBIE, ACTION_BAN), phase(SIDE_PLANT, ACTION_BAN),
       phase(SIDE_ZOMBIE, ACTION_PICK), phase(SIDE_PLANT, ACTION_PICK),
@@ -123,7 +122,7 @@
     const phases = buildPhases(extraSlot);
     const state = {
       version: 1,
-      sequenceVersion: versusProfile()?.draft?.sequenceVersion || "s7-versus-bp-v1",
+      sequenceVersion: versusProfile()?.draft?.sequenceVersion || "s7-versus-bp-b2p3b2p23-v2",
       extraSlot,
       totalSlots: extraSlot ? 7 : 6,
       reservedEconomySlots: 1,
@@ -142,10 +141,10 @@
   }
 
   function validatePoolCapacity(state) {
-    // Each side suffers five bans. Picks are 5 by default, 6 with extra slot.
+    // Each side suffers four bans. Picks are 5 by default, 6 with extra slot.
     // The two sets are disjoint because bans target the opponent and picks are
     // made by the owning side, but a side's available pool must cover both.
-    const need = 5 + state.draftedCombatSlots;
+    const need = 4 + state.draftedCombatSlots;
     if (state.plantPool.length < need) throw new Error(`Versus BP 植物池不足：至少需要 ${need} 张`);
     if (state.zombiePool.length < need) throw new Error(`Versus BP 僵尸池不足：至少需要 ${need} 张`);
   }

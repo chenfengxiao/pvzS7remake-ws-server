@@ -1,0 +1,17 @@
+const fs=require('fs');
+const practice=fs.readFileSync('src/js/100_versus_practice.js','utf8');
+const battle=fs.readFileSync('src/js/99_versus_battle_controller.js','utf8');
+const render=fs.readFileSync('src/js/70_rendering.js','utf8');
+const input=fs.readFileSync('src/js/80_ui_quad.js','utf8');
+const server=fs.readFileSync('server/server.js','utf8');
+const bp=fs.readFileSync('src/js/24_versus_bp_draft.js','utf8');
+if(!practice.includes('S7VersusBP.buildPhases')) throw new Error('practice must reuse shared BP phases');
+if(!battle.includes('state.battle=true')||!battle.includes('manualSpawn:true')) throw new Error('Versus must start in real battle + manual spawn mode');
+if(!battle.includes('game.style.display="block"')) throw new Error('Versus must explicitly reveal #game');
+if(!render.includes('const allowAutomaticSpawn = !state.versus?.manualSpawn')) throw new Error('render loop must suppress only automatic spawn');
+const bans=(bp.match(/phase\(SIDE_ZOMBIE, ACTION_BAN\)/g)||[]).length;
+if(bans!==4) throw new Error('BP must have 4 zombie-ban turns (=B2+B2), got '+bans);
+if(!practice.includes("py>=cardY")||!practice.includes("type:'select'")) throw new Error('practice HUD cards must be clickable');
+if(!input.includes('window._mpBattleActive || state.versus?.active')) throw new Error('legacy canvas input must be blocked during Versus');
+if(!server.includes('round("ban",2);round("pick",3);round("ban",2);round("pick",slots===7?3:2)')) throw new Error('server BP order must be B2-P3-B2-P2/3');
+console.log('VERSUS_PRACTICE_REAL_BATTLE_PASS');

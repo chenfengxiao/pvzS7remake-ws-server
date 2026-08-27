@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const m=src.match(/function versusDraftPhases\(slots,bp\)\{[\s\S]*?\n\}/);
+if(!m) throw new Error('versusDraftPhases helper missing');
+const ctx={};vm.createContext(ctx);vm.runInContext(m[0],ctx);
+const sig=a=>a.map(x=>`${x.actorSide[0]}${x.kind[0]}${x.targetSide[0]}`).join(' ');
+const six=ctx.versusDraftPhases(6,true),seven=ctx.versusDraftPhases(7,true),no6=ctx.versusDraftPhases(6,false);
+assert.strictEqual(six.length,18);assert.strictEqual(seven.length,20);assert.strictEqual(no6.length,10);
+assert.strictEqual(six.filter(x=>x.kind==='ban'&&x.actorSide==='zombie').length,4);
+assert.strictEqual(six.filter(x=>x.kind==='ban'&&x.actorSide==='plant').length,4);
+assert.strictEqual(six.filter(x=>x.kind==='pick'&&x.actorSide==='zombie').length,5);
+assert.strictEqual(six.filter(x=>x.kind==='pick'&&x.actorSide==='plant').length,5);
+assert.strictEqual(seven.filter(x=>x.kind==='pick'&&x.actorSide==='zombie').length,6);
+assert.strictEqual(seven.filter(x=>x.kind==='pick'&&x.actorSide==='plant').length,6);
+const expected='zbp pbz zbp pbz zpz ppp zpz ppp zpz ppp zbp pbz zbp pbz zpz ppp zpz ppp';
+assert.strictEqual(sig(six),expected);
+console.log('VERSUS_SERVER_BP_SEQUENCE_PASS');

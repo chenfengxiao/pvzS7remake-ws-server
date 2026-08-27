@@ -140,9 +140,10 @@
       }
       state.time += step;
       reportQuadProgress(false);
+      const allowAutomaticSpawn = !state.versus?.manualSpawn;
       for (const t of state.teams) {
         try {
-          if (t && t.alive) updateLaneTurn(t, step)
+          if (t && t.alive) updateLaneTurn(t, step, allowAutomaticSpawn)
         } catch (err) {
           console.error("lane update error", t?.row, err);
           state.s7 = state.s7 || {};

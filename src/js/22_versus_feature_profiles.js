@@ -106,7 +106,7 @@
     baseProfile: "s7@1.7.8",
     isolated: true,
     draft: {
-      sequenceVersion: "s7-versus-bp-v1",
+      sequenceVersion: "s7-versus-bp-b2p3b2p23-v2",
       defaultCardSlots: 6,
       extraCardSlots: 7,
       reservedEconomySlots: 1,

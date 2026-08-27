@@ -17,9 +17,10 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 const B={active:false,mode:null,humanSide:null,role:null,online:false,isHost:false,room:null,plantCards:[],zombieCards:[],selected:{plant:0,zombie:0},resources:{plant:75,zombie:75},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,lastTick:0,lastEconomy:0,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0};
 function ensureState(){
  if(typeof newState!=="function")throw new Error("S7 core newState unavailable");
- newState(false); state.plants=[]; state.zombies=[]; state.bullets=[]; state.effects=[]; state.pendingPlantEvents=[]; state.running=true; state.battle=false; state.preRun=true; state.paused=false; state.time=0; state.sun=0; state.endMode="allDead";
+ newState(false); state.plants=[]; state.zombies=[]; state.bullets=[]; state.effects=[]; state.pendingPlantEvents=[]; state.running=true; state.battle=true; state.preRun=false; state.paused=false; state.time=0; state.sun=0; state.endMode="allDead";
  for(const t of state.teams){t.alive=true;t.defeatAt=null;t.spawn=999999}
- state.versus={active:true,authoritative:true}; window._mpBattleActive=!!B.online;
+ state.versus={active:true,authoritative:true,manualSpawn:true}; window._mpBattleActive=!!B.online;
+ const game=document.getElementById("game");if(game){game.classList.remove("hidden");game.style.display="block";}
 }
 function staticZombie(type,row,x,hp,tag){const z=makeZombie(type,row,x,{variant:false}); z.x=x; z.hp=z.maxHp=hp; z.stun=1e9; z.speed=z.baseSpeed=z.speedNow=z.speedTarget=0; z.versusStatic=tag; z.threat=0; return z}
 function corePlant(row,col){const p=makePlant("sunflower",row,col); p.versusCore="twin"; p.name="双子向日葵"; p.cd=1e9; return p}

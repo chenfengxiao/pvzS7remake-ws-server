@@ -356,8 +356,10 @@
 
     function canvasClick(ev) {
       if (!state) return;
-      // 联机对战模式：禁止 canvas 上的游戏操作（种植/铲除/升级等），但不影响战斗浮条按钮
-      if (window._mpBattleActive) return;
+      // 联机/Versus 对战模式由各自专用输入路由接管。
+      // 必须在这里阻断旧单机 canvasClick，否则同一次点击会先被旧工具种下一株植物，
+      // 再让 Versus 输入因为格子已占用而失败。
+      if (window._mpBattleActive || state.versus?.active) return;
       const rect = canvas.getBoundingClientRect();
       const cell = boardToCell(ev.clientX - rect.left, ev.clientY - rect.top);
       if (!cell) return;
