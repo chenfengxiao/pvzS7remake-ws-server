@@ -39,12 +39,12 @@ function signature(phases){ return phases.map(p => `${p.actor[0]}${p.action[0]}$
 const expected6 = [
   "zbp","pbz","zbp","pbz",
   "zpz","ppp","zpz","ppp","zpz","ppp",
-  "zbp","pbz","zbp","pbz","zbp","pbz",
+  "zbp","pbz","zbp","pbz",
   "zpz","ppp","zpz","ppp"
 ].join(" ");
 assert.strictEqual(signature(BP.buildPhases(false)), expected6, "6-slot exact BP order mismatch");
-assert.strictEqual(BP.buildPhases(false).length, 20);
-assert.strictEqual(BP.buildPhases(true).length, 22);
+assert.strictEqual(BP.buildPhases(false).length, 18);
+assert.strictEqual(BP.buildPhases(true).length, 20);
 assert.strictEqual(signature(BP.buildPhases(true)).slice(0, expected6.length), expected6);
 assert.strictEqual(signature(BP.buildPhases(true)).split(" ").slice(-2).join(" "), "zpz ppp");
 
@@ -60,8 +60,8 @@ while(!d.complete){
 let r = BP.result(d);
 assert.strictEqual(r.plant.combatCards.length, 5);
 assert.strictEqual(r.zombie.combatCards.length, 5);
-assert.strictEqual(r.plant.bannedCards.length, 5);
-assert.strictEqual(r.zombie.bannedCards.length, 5);
+assert.strictEqual(r.plant.bannedCards.length, 4);
+assert.strictEqual(r.zombie.bannedCards.length, 4);
 assert.strictEqual(r.plant.economyCore, "twinSunflower");
 assert.strictEqual(r.zombie.economyCore, "zombieGravestone");
 
@@ -83,5 +83,5 @@ const restored = BP.restore(saved);
 assert.deepStrictEqual(JSON.parse(JSON.stringify(BP.result(restored))), JSON.parse(JSON.stringify(BP.result(d7))));
 
 console.log("Versus BP draft tests: PASS");
-console.log("6-slot phases: 20 | picks 5/side | bans 5/side + 1 reserved economy slot");
-console.log("7-slot phases: 22 | picks 6/side | bans 5/side + 1 reserved economy slot");
+console.log("6-slot phases: 18 | B2-P3-B2-P2 | picks 5/side | bans 4/side + 1 reserved economy slot");
+console.log("7-slot phases: 20 | B2-P3-B2-P3 | picks 6/side | bans 4/side + 1 reserved economy slot");

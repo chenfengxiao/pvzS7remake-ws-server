@@ -1751,6 +1751,10 @@
       };
       document.getElementById("textBtn").onclick = toggleEntityText;
       document.getElementById("animModeBtn").onclick = toggleS7AnimationRenderMode;
+      const battleTextBtn = document.getElementById("battleTextBtn");
+      if (battleTextBtn) battleTextBtn.onclick = toggleEntityText;
+      const battleAnimBtn = document.getElementById("battleAnimBtn");
+      if (battleAnimBtn) battleAnimBtn.onclick = toggleS7AnimationRenderMode;
       document.getElementById("endModeBtn").onclick = () => {
         state.endMode = state.endMode === "allDead" ? "lastLane" : "allDead";
         updateEndModeButton();

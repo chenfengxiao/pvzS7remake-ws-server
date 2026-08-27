@@ -570,11 +570,12 @@
     }
 
     function updateS7AnimationModeButton() {
+      const label = s7AnimationModeLabel();
+      const active = s7AnimationRenderMode === S7_ANIMATION_RENDER_MODES.TIMELINE;
       const btn = document.getElementById("animModeBtn");
-      if (btn) {
-        btn.textContent = s7AnimationModeLabel();
-        btn.classList.toggle("primary", s7AnimationRenderMode === S7_ANIMATION_RENDER_MODES.TIMELINE)
-      }
+      if (btn) { btn.textContent = label; btn.classList.toggle("primary", active) }
+      const battleBtn = document.getElementById("battleAnimBtn");
+      if (battleBtn) { battleBtn.textContent = label; battleBtn.classList.toggle("primary", active) }
     }
 
     function updateEndModeButton() {

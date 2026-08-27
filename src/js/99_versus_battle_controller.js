@@ -20,7 +20,9 @@ function ensureState(){
  newState(false); state.plants=[]; state.zombies=[]; state.bullets=[]; state.effects=[]; state.pendingPlantEvents=[]; state.running=true; state.battle=true; state.preRun=false; state.paused=false; state.time=0; state.sun=0; state.endMode="allDead";
  for(const t of state.teams){t.alive=true;t.defeatAt=null;t.spawn=999999}
  state.versus={active:true,authoritative:true,manualSpawn:true}; window._mpBattleActive=!!B.online;
+ document.body?.classList.add("versusBattleActive");
  const game=document.getElementById("game");if(game){game.classList.remove("hidden");game.style.display="block";}
+ try{resize()}catch(_){}
 }
 function staticZombie(type,row,x,hp,tag){const z=makeZombie(type,row,x,{variant:false}); z.x=x; z.hp=z.maxHp=hp; z.stun=1e9; z.speed=z.baseSpeed=z.speedNow=z.speedTarget=0; z.versusStatic=tag; z.threat=0; return z}
 function corePlant(row,col){const p=makePlant("sunflower",row,col); p.versusCore="twin"; p.name="双子向日葵"; p.cd=1e9; return p}
@@ -77,17 +79,67 @@ function performAction(action,source="human"){
 }
 function economyTick(){if(state.time-B.lastEconomy<10)return; const steps=Math.floor((state.time-B.lastEconomy)/10);B.lastEconomy+=steps*10;const twins=state.plants.filter(p=>!p.dead&&p.versusCore==="twin").length;const graves=state.zombies.filter(z=>!z.dead&&z.versusStatic==="grave").length;B.resources.plant+=25*twins*steps;B.resources.zombie+=25*graves*steps;if(state.time>=ECON_LOCK){const bonus=Math.floor((state.time-ECON_LOCK)/20)-Math.floor((B.lastSudden||0)/20);if(bonus>0){B.resources.plant+=50*bonus;B.resources.zombie+=50*bonus;}B.lastSudden=state.time-ECON_LOCK}}
 function checkEnd(){if(B.result)return; const targetAlive=B.targets.filter(z=>!z.dead).length;const captured=state.teams.filter(t=>!t.alive).length;if(targetAlive===0)return finish("plant","三座目标全部被摧毁");if(captured>=3)return finish("zombie","僵尸突破了三条路线");if(state.time>=DRAW_SECONDS)return finish("draw","40分钟未决，判定平局")}
-function finish(winner,reason){B.result={winner,reason,time:state.time};B.active=false;state.running=false;window._mpBattleActive=false;try{window.S7VersusUI?.showResult?.(B.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.result)}catch(_){}return B.result}
+function finish(winner,reason){B.result={winner,reason,time:state.time};B.active=false;state.running=false;window._mpBattleActive=false;document.body?.classList.remove("versusBattleActive");try{window.S7VersusUI?.showResult?.(B.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.result)}catch(_){}return B.result}
 function tick(){if(!B.active||!state)return;economyTick();checkEnd();if(B.mode==="practice")try{window.S7VersusPractice?.aiTick?.()}catch(_){} }
 setInterval(tick,200);
 function cardsFor(side){return [side==="plant"?FIXED.plant:FIXED.zombie].concat(side==="plant"?B.plantCards:B.zombieCards)}
 function hitTest(clientX,clientY,rect){const x=(clientX-rect.left)/rect.width,y=(clientY-rect.top)/rect.height;const row=Math.floor((y-(layout.y/innerHeight))/(layout.cell/innerHeight));const col=Math.floor((x-(layout.x/innerWidth))/(layout.cell/innerWidth));return {row:clamp(row,0,4),col:clamp(col,0,8)}}
 function actionFromPointer(side,clientX,clientY,rect){const h=hitTest(clientX,clientY,rect);const list=cardsFor(side),idx=B.selected[side]||0,id=list[idx]||list[0];if(side==="plant")return {type:"play",side,cardId:id,row:h.row,col:h.col};return {type:"play",side,cardId:id,row:h.row,x:8.8,guaranteed:B.guaranteedArmed}}
-function drawHud(){if(!state?.versus?.active)return; const W=innerWidth,H=innerHeight;ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle="rgba(2,6,23,.82)";ctx.fillRect(8,8,Math.min(W-16,620),50);ctx.font="bold 14px sans-serif";ctx.fillStyle="#fde68a";ctx.fillText("☀ "+Math.floor(B.resources.plant),20,30);ctx.fillStyle="#fca5a5";ctx.fillText("🧠 "+Math.floor(B.resources.zombie),105,30);ctx.fillStyle="#e2e8f0";ctx.fillText("⏱ "+Math.floor(state.time/60)+":"+String(Math.floor(state.time%60)).padStart(2,"0"),200,30);ctx.fillStyle="#a5f3fc";ctx.fillText(B.mode==="practice"?"人机对练":"真人Versus · 房主权威",300,30);
- const drawSide=(side,y)=>{const list=cardsFor(side),sel=B.selected[side]||0;const maxW=Math.min(W-20,900),n=list.length,cardW=Math.max(72,Math.min(120,(maxW-10)/Math.max(1,n)));for(let i=0;i<n;i++){const x=10+i*cardW;ctx.fillStyle=i===sel?(side==="plant"?"rgba(34,197,94,.82)":"rgba(239,68,68,.82)"):"rgba(15,23,42,.88)";ctx.fillRect(x,y,cardW-4,48);ctx.strokeStyle="rgba(226,232,240,.22)";ctx.strokeRect(x,y,cardW-4,48);ctx.fillStyle="#fff";ctx.font="11px sans-serif";ctx.fillText((i+1)+" "+cardName(side,list[i]).slice(0,6),x+5,y+16);const c=cfg(side,list[i]);ctx.fillStyle="#cbd5e1";ctx.fillText(String(c?.cost??(side==="plant"?100:50)),x+5,y+31);const rem=Math.max(0,(B.cooldowns[side][list[i]]||0)-state.time);if(rem>0){ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,cardW-4,48);ctx.fillStyle="#fff";ctx.fillText(rem.toFixed(1)+"s",x+5,y+43)}if(side==="zombie"&&c?.guaranteed){const k=clamp(Number(B.variantMeter[list[i]]||0),0,1);ctx.fillStyle="#67e8f9";ctx.fillRect(x+5,y+36,Math.max(1,(cardW-14)*k),4)}}};
- const mobile=W<760; if(mobile){drawSide("plant",H-112);drawSide("zombie",H-58)}else{drawSide("plant",H-112);drawSide("zombie",H-58)}
- if(B.humanSide==="plant"){ctx.fillStyle="rgba(15,23,42,.9)";ctx.fillRect(W-104,H-112,96,48);ctx.fillStyle="#fff";ctx.fillText("Q 铲除",W-90,H-84)}else if(B.humanSide==="zombie"){const list=cardsFor("zombie"),id=list[B.selected.zombie||0],c=cfg("zombie",id);if(c?.guaranteed){ctx.fillStyle=B.guaranteedArmed?"#b91c1c":"rgba(15,23,42,.9)";ctx.fillRect(W-160,H-112,152,48);ctx.fillStyle="#fff";ctx.fillText("V 100%变种 "+c.guaranteed,W-152,H-84)}}ctx.restore()}
-function keyAction(e){if(!B.active)return false;const side=B.humanSide||B.role;if(!side)return false;const list=cardsFor(side);if(/^[1-7]$/.test(e.key)){B.selected[side]=clamp(Number(e.key)-1,0,list.length-1);return true}if(side==="zombie"&&(e.key==="v"||e.key==="V")){B.guaranteedArmed=!B.guaranteedArmed;return true}return false}
+function rectHit(r,x,y){return !!r&&x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h}
+function packetIcon(side,id){if(id===FIXED.plant)return "🌻";if(id===FIXED.zombie)return "🪦";try{return (side==="plant"?PLANTS[id]?.emoji:ZOMBIES[id]?.emoji)|| (side==="plant"?"🌿":"🧟")}catch(_){return side==="plant"?"🌿":"🧟"}}
+function fixedCost(side,id){if(id===FIXED.plant)return 100;if(id===FIXED.zombie)return 50;return cfg(side,id)?.cost||0}
+function hudMetrics(W=innerWidth,H=innerHeight){
+ const margin=W<760?6:10,gap=4,barH=W<760?46:62;
+ function row(side,x,y,w,resourceAtStart){
+  const list=cardsFor(side),resourceW=Math.min(54,Math.max(40,barH*.86));
+  const cardAreaW=Math.max(1,w-resourceW-gap),cardW=cardAreaW/Math.max(1,list.length);
+  const cards=[];for(let i=0;i<list.length;i++){const cx=resourceAtStart?x+resourceW+gap+i*cardW:x+i*cardW;cards.push({x:cx,y,w:Math.max(1,cardW-gap),h:barH,id:list[i],index:i})}
+  const resource=resourceAtStart?{x,y,w:resourceW,h:barH}:{x:x+w-resourceW,y,w:resourceW,h:barH};
+  return {side,x,y,w,h:barH,list,cards,resource};
+ }
+ if(W<760){
+  const w=W-margin*2,plant=row('plant',margin,6,w,true),zombie=row('zombie',margin,56,w,false),cw=42,ch=24,cy=106;
+  return {plant,zombie,center:null,controls:{text:{x:W-margin-cw*2-gap,y:cy,w:cw,h:ch},anim:{x:W-margin-cw,y:cy,w:cw,h:ch},tool:{x:margin,y:cy,w:64,h:ch},variant:{x:margin+68,y:cy,w:82,h:ch}}};
+ }
+ const totalW=W-margin*2,centerW=Math.max(74,Math.min(96,totalW*.075)),half=(totalW-centerW-gap*2)/2;
+ const plant=row('plant',margin,8,half,true),centerX=margin+half+gap,zombie=row('zombie',centerX+centerW+gap,8,half,false);
+ const center={x:centerX,y:8,w:centerW,h:barH};
+ return {plant,zombie,center,controls:{text:{x:centerX+4,y:34,w:(centerW-12)/2,h:25},anim:{x:centerX+8+(centerW-12)/2,y:34,w:(centerW-12)/2,h:25},tool:{x:margin,y:74,w:64,h:25},variant:{x:W-margin-86,y:74,w:86,h:25}}};
+}
+function drawRounded(r,fill,stroke,radius=7){ctx.beginPath();const q=Math.min(radius,r.w/2,r.h/2),x=r.x,y=r.y,w=r.w,h=r.h;ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}}
+function drawPacket(side,packet,selected){
+ const id=packet.id,c=cfg(side,id),ready=cardReady(side,id),cost=fixedCost(side,id),can=B.resources[side]>=cost&&ready;
+ drawRounded(packet,side==='plant'?'#d8c28f':'#9aa6b2',selected?'#facc15':'rgba(30,41,59,.92)',4);
+ const inset={x:packet.x+3,y:packet.y+3,w:Math.max(1,packet.w-6),h:Math.max(1,packet.h-6)};drawRounded(inset,side==='plant'?'#ebe0b8':'#b9c2ca',null,3);
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#17202a';ctx.font=`${Math.max(14,Math.min(25,packet.h*.42))}px sans-serif`;ctx.fillText(packetIcon(side,id),packet.x+packet.w/2,packet.y+packet.h*.43);
+ ctx.font=`bold ${Math.max(8,Math.min(11,packet.w*.14))}px sans-serif`;ctx.fillStyle='#1f2937';ctx.fillText(String(cost),packet.x+packet.w/2,packet.y+packet.h-8);
+ ctx.textAlign='left';ctx.font=`bold ${Math.max(7,Math.min(10,packet.w*.13))}px sans-serif`;ctx.fillStyle='#111827';ctx.fillText(String(packet.index+1),packet.x+5,packet.y+9);
+ if(!can){const rem=Math.max(0,(B.cooldowns[side][id]||0)-state.time),ratio=rem>0?clamp(rem/Math.max(.001,c?.cd||1),0,1):1;ctx.fillStyle='rgba(10,15,20,.58)';ctx.fillRect(packet.x+1,packet.y+packet.h*(1-ratio),packet.w-2,packet.h*ratio);if(rem>0){ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`bold ${Math.max(8,Math.min(11,packet.w*.14))}px sans-serif`;ctx.fillText(rem.toFixed(1),packet.x+packet.w/2,packet.y+packet.h*.55)}}
+ if(side==='zombie'&&c?.guaranteed){const k=clamp(Number(B.variantMeter[id]||0),0,1);ctx.fillStyle='#22d3ee';ctx.fillRect(packet.x+3,packet.y+packet.h-3,Math.max(1,(packet.w-6)*k),2)}
+ if(selected){ctx.strokeStyle='#fde047';ctx.lineWidth=3;ctx.strokeRect(packet.x+1.5,packet.y+1.5,Math.max(1,packet.w-3),Math.max(1,packet.h-3))}
+}
+function textIsVisible(){try{return typeof entityTextVisible==='boolean'?entityTextVisible:true}catch(_){return true}}
+function animIsTimeline(){try{return typeof s7AnimationRenderMode!=='undefined'&&s7AnimationRenderMode==='timeline'}catch(_){return false}}
+function drawHud(){
+ if(!state?.versus?.active)return;const W=innerWidth,H=innerHeight,m=hudMetrics(W,H);ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);
+ const wood='#6b3f1f',wood2='#4b2a15';
+ for(const side of ['plant','zombie']){const row=m[side];drawRounded({x:row.x-3,y:row.y-3,w:row.w+6,h:row.h+6},wood,wood2,7);for(const p of row.cards)drawPacket(side,p,p.index===(B.selected[side]||0));const rr=row.resource;drawRounded(rr,side==='plant'?'#f3d273':'#be78a3','#4b2a15',6);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`${Math.max(16,rr.h*.38)}px sans-serif`;ctx.fillStyle='#17202a';ctx.fillText(side==='plant'?'☀':'🧠',rr.x+rr.w/2,rr.y+rr.h*.36);ctx.font=`bold ${Math.max(10,rr.h*.22)}px sans-serif`;ctx.fillText(String(Math.floor(B.resources[side])),rr.x+rr.w/2,rr.y+rr.h*.73)}
+ if(m.center){drawRounded(m.center,wood,'#3b2315',7);ctx.textAlign='center';ctx.fillStyle='#fff7d6';ctx.font='bold 12px sans-serif';ctx.fillText(`${Math.floor(state.time/60)}:${String(Math.floor(state.time%60)).padStart(2,'0')}`,m.center.x+m.center.w/2,m.center.y+15)}
+ const drawCtl=(r,label,on)=>{drawRounded(r,on?'#365314':'rgba(58,35,21,.95)',on?'#bef264':'#9a6b45',5);ctx.fillStyle='#fff7ed';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 10px sans-serif';ctx.fillText(label,r.x+r.w/2,r.y+r.h/2)};
+ drawCtl(m.controls.text,`B 文字${textIsVisible()?'开':'关'}`,textIsVisible());drawCtl(m.controls.anim,`V ${animIsTimeline()?'动画':'旧绘'}`,animIsTimeline());
+ const side=B.humanSide||B.role;if(side==='plant')drawCtl(m.controls.tool,'🪏 Q',!!B.shovelMode);else if(side==='zombie'){const list=cardsFor('zombie'),id=list[B.selected.zombie||0],c=cfg('zombie',id);if(c?.guaranteed)drawCtl(m.controls.variant,`F 100%`,B.guaranteedArmed)}
+ ctx.restore()
+}
+function handleHudPointer(side,px,py,W=innerWidth,H=innerHeight){
+ if(!B.active||!side)return false;const m=hudMetrics(W,H);
+ if(rectHit(m.controls.text,px,py)){try{toggleEntityText()}catch(_){}return true}
+ if(rectHit(m.controls.anim,px,py)){try{toggleS7AnimationRenderMode()}catch(_){}return true}
+ const row=m[side];for(const p of row.cards){if(rectHit(p,px,py)){performAction({type:'select',side,index:p.index});return true}}
+ if(side==='plant'&&rectHit(m.controls.tool,px,py)){B.shovelMode=!B.shovelMode;return true}
+ if(side==='zombie'&&rectHit(m.controls.variant,px,py)){const list=cardsFor('zombie'),id=list[B.selected.zombie||0],c=cfg('zombie',id);if(c?.guaranteed){performAction({type:'toggleGuaranteed',side:'zombie'});return true}}
+ return false
+}
+function keyAction(e){if(!B.active)return false;const side=B.humanSide||B.role;if(!side)return false;const list=cardsFor(side);if(/^[1-7]$/.test(e.key)){B.selected[side]=clamp(Number(e.key)-1,0,list.length-1);return true}if(side==="zombie"&&(e.key==="f"||e.key==="F")){const id=list[B.selected.zombie||0];if(cfg('zombie',id)?.guaranteed){B.guaranteedArmed=!B.guaranteedArmed;return true}}return false}
 window.addEventListener("keydown",e=>{if(keyAction(e)){e.preventDefault();return}if(B.active&&B.humanSide==="plant"&&(e.key==="q"||e.key==="Q")){B.shovelMode=true;e.preventDefault()}});
-window.S7VersusBattle={CARDS,FIXED,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,cardsFor,finish,keyAction,getSnapshot:()=>({active:B.active,result:B.result,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
+window.S7VersusBattle={CARDS,FIXED,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,finish,keyAction,getSnapshot:()=>({active:B.active,result:B.result,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
 })();

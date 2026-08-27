@@ -32,11 +32,7 @@ function canvasPointer(ev){
  const B=window.S7VersusBattle?.state;if(!B?.active||B.mode!=='practice')return;
  const rect=canvas.getBoundingClientRect(),side=P.side;if(!side)return;
  const px=(ev.clientX-rect.left)/Math.max(1,rect.width)*innerWidth,py=(ev.clientY-rect.top)/Math.max(1,rect.height)*innerHeight;
- const list=window.S7VersusBattle.cardsFor(side),maxW=Math.min(innerWidth-20,900),cardW=Math.max(72,Math.min(120,(maxW-10)/Math.max(1,list.length)));
- const cardY=side==='plant'?innerHeight-112:innerHeight-58;
- if(py>=cardY&&py<=cardY+48&&px>=10&&px<10+cardW*list.length){const idx=Math.max(0,Math.min(list.length-1,Math.floor((px-10)/cardW)));window.S7VersusBattle.performAction({type:'select',side,index:idx});return}
- if(side==='plant'&&py>=innerHeight-112&&py<=innerHeight-64&&px>=innerWidth-104){B.shovelMode=true;return}
- if(side==='zombie'&&py>=innerHeight-112&&py<=innerHeight-64&&px>=innerWidth-160){window.S7VersusBattle.performAction({type:'toggleGuaranteed',side:'zombie'});return}
+ if(window.S7VersusBattle.handleHudPointer?.(side,px,py,innerWidth,innerHeight))return;
  const insideBoard=px>=layout.x&&px<=layout.x+layout.w&&py>=layout.y&&py<=layout.y+layout.cell*5;if(!insideBoard)return;
  if(side==='plant'&&B.shovelMode){const row=Math.max(0,Math.min(4,Math.floor((py-layout.y)/layout.cell))),col=Math.max(0,Math.min(8,Math.floor((px-layout.x)/layout.cell)));window.S7VersusBattle.performAction({type:'shovel',side:'plant',row,col});B.shovelMode=false;return}
  const a=window.S7VersusBattle.actionFromPointer(side,ev.clientX,ev.clientY,rect);window.S7VersusBattle.performAction(a)

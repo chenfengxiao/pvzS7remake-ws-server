@@ -1777,3 +1777,15 @@
 .versusBpDone{grid-column:1/-1;padding:32px 16px;text-align:center;color:#cbd5e1;line-height:1.8}
 .versusBpActions{justify-content:center;margin-top:8px}
 @media(max-width:680px){.versusBpSummary{grid-template-columns:1fr}.versusBpCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Multiplayer battle quick toggles: keep B/V accessible while the normal side panel is locked. */
+.battleQuickControls{display:flex;gap:5px;align-items:center;justify-content:center;margin:0}
+.battleQuickControls button{padding:4px 8px;border-radius:6px;font-size:11px;line-height:1.15;white-space:nowrap}
+#battleScreen.mp-battle-overlay .battleQuickControls{display:flex}
+
+/* TV/console Versus battle: the lawn and the seed bank are the battle UI. */
+body.versusBattleActive #side,
+body.versusBattleActive .hint,
+body.versusBattleActive .iosTop,
+body.versusBattleActive #mobileCardPool{display:none!important}
+body.versusBattleActive #game{display:block!important}

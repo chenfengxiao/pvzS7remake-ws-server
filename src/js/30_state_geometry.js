@@ -153,6 +153,20 @@
       syncCanvasBackingStore(vw, vh, DPR);
       document.documentElement.style.setProperty("--app-width", vw + "px");
       document.documentElement.style.setProperty("--app-height", vh + "px");
+      if (!QUAD_CHILD_MODE && (document.body.classList.contains("versusBattleActive") || state?.versus?.active)) {
+        document.documentElement.style.removeProperty("--portrait-split");
+        const topReserve = vw < 760 ? 138 : 88;
+        const left = safe.left + 8;
+        const availW = Math.max(220, vw - safe.left - safe.right - 16);
+        const availH = Math.max(160, vh - safe.top - safe.bottom - topReserve - 8);
+        const cell = Math.floor(Math.min(availW / COLS, availH / ROWS));
+        layout.cell = Math.max(vw < 760 ? 24 : 38, cell);
+        layout.w = layout.cell * COLS;
+        layout.h = layout.cell * ROWS;
+        layout.x = Math.max(left, Math.floor((vw - layout.w + safe.left - safe.right) / 2));
+        layout.y = Math.max(safe.top + topReserve, Math.floor(safe.top + topReserve + (availH - layout.h) / 2));
+        return
+      }
       if (QUAD_CHILD_MODE) {
         const houseMargin = Math.max(10 + safe.left, Math.floor(vw * .055));
         const availW = Math.max(80, vw - houseMargin - safe.right - 4);

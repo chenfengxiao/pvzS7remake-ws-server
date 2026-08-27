@@ -658,8 +658,11 @@
     }
 
     function updateTextButtonLabel() {
+      const label = `文字：${entityTextVisible?"开":"关"} B`;
       const button = document.getElementById("textBtn");
-      if (button) button.textContent = `文字：${entityTextVisible?"开":"关"} B`
+      if (button) button.textContent = label;
+      const battleButton = document.getElementById("battleTextBtn");
+      if (battleButton) { battleButton.textContent = label; battleButton.classList.toggle("primary", entityTextVisible) }
     }
 
     function toggleEntityText() {
