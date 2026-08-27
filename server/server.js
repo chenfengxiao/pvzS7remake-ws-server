@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { startHomeMqttTunnel } from './home_mqtt_tunnel.js';
 
 const PORT = process.env.PORT || 3000;
+const SERVER_VERSION = "1.7.8";
 const MAX_ROOMS = 100;
 const MAX_PLAYERS = 5;
 const LANE_COUNT = 5;
@@ -20,7 +21,8 @@ const ALLOWED_PLANT_KEYS = new Set([
   "repeater", "puff", "scaredy", "squash", "threepeater", "seashroom", "splitpea", "cabbage", "cattail",
   "firelotus", "reverseRepeater", "ghost", "sniper", "sunflower", "sunshroom", "hypno", "iceshroom", "kelp",
   "torchwood", "plantern", "blover", "magnet", "kernel", "umbrella", "marigold", "goldmagnet", "timegrass",
-  "barley", "starfruit", "fume", "gloom", "potato", "melon", "gatling", "winter"
+  "barley", "starfruit", "fume", "gloom", "potato", "melon", "gatling", "winter",
+  "cherrybomb", "jalapeno", "doomshroom"
 ]);
 
 // 积分榜单（JSON文件持久化）
@@ -160,7 +162,14 @@ function roomInfo(r) {
       uploaded: !!p.formation,
       isSpectator: !!p.isSpectator, connected: !!(p.ws && p.ws.readyState === 1)
     })),
-    lanes: r.lanes
+    lanes: r.lanes,
+    kind: r.kind || "classic",
+    versus: r.kind === "versus" && r.versus ? {
+      slots: r.versus.slots, bp: !!r.versus.bp, sides: r.versus.sides,
+      draftStarted: !!r.versus.draftStarted, draftDone: !!r.versus.draftDone,
+      picks: r.versus.picks, bans: r.versus.bans, step: r.versus.step,
+      battleSeq: r.versus.frameSeq || 0, winner: r.versus.winner || null
+    } : null
   };
 }
 function sync(r) { bcast(r, { type: "roomUpdate", room: roomInfo(r) }); _sendSpectatorUpdate(r); }
@@ -338,6 +347,24 @@ function removePlayer(room, pid) {
     rooms.delete(room.id);
     return false;
   }
+  if (room.kind === "versus") {
+    if (room.state === "battling") {
+      const wasHost = room.hostId === pid;
+      room.state = "finished";
+      room.versus = room.versus || {};
+      room.versus.winner = wasHost ? "aborted" : (room.versus.sides?.plant === pid ? "zombie" : "plant");
+      room.versus.reason = wasHost ? "房主权威已丢失，对局终止" : "对手断线超时，判定弃权";
+      bcast(room, { type:"versusEnded", winner:room.versus.winner, reason:room.versus.reason });
+      scheduleRoomDeletion(room);
+      sync(room);
+      return true;
+    }
+    if (room.hostId === pid) {
+      for (const p of room.players) send(p.ws,{type:"roomClosed",message:"房主已离开，Versus 房间关闭"});
+      recycleId(room.id); rooms.delete(room.id); return false;
+    }
+    if (room.versus?.sides) { if (room.versus.sides.plant === pid) room.versus.sides.plant=null; if (room.versus.sides.zombie === pid) room.versus.sides.zombie=null; }
+  }
   if (room.hostId === pid || !active.some(p => p.id === room.hostId)) room.hostId = active[0].id;
   if (!removed.isSpectator && (room.state === "laneSelect" || room.state === "laying")) {
     room.state = "lobby";
@@ -395,6 +422,34 @@ function handle(ws, raw) {
   if (!msg.type) return;
   const info = conns.get(ws);
   const pid = info?.playerId;
+
+  // ── S7 Versus 1v1 authoritative rooms ──
+  if (msg.type === "createVersusRoom") {
+    if (rooms.size >= MAX_ROOMS) { send(ws,{type:"error",message:"房间满了"}); return; }
+    const nick=normalizeNick(msg.nick); if(!nick){send(ws,{type:"error",message:"需要昵称"});return;}
+    if(info?.roomId){const old=rooms.get(info.roomId);if(old)removePlayer(old,info.playerId)}
+    const rid=newId(),hostId="P"+(nextPid++),seed=(Math.random()*0xFFFFFFFF>>>0)||1;
+    const player={id:hostId,ws,nick,lane:-1,ready:false,alive:true,survivalTime:0,formation:null,isSpectator:false,sessionToken:newSessionToken(),disconnectedAt:0,disconnectTimer:null};
+    const room={id:rid,hostId,seed,password:normalizePassword(msg.password),state:"lobby",createdAt:Date.now(),kind:"versus",mode:"versus",maxPlayers:2,speed:1,endMode:"versus",allowSpectators:false,disableReroll:true,enableBan:false,bannedPlants:[],bpMode:null,bpPickAsBan:false,bpState:null,bpExpectedFormations:null,deleteTimer:null,lastRankings:null,ver:msg.ver||SERVER_VERSION,players:[player],lanes:Array(LANE_COUNT).fill(null),versus:{slots:6,bp:false,sides:{plant:null,zombie:null},picks:{plant:[],zombie:[]},bans:{plant:[],zombie:[]},step:0,draftStarted:false,draftDone:false,frameSeq:0,inputSeq:{},winner:null,reason:null}};
+    rooms.set(rid,room);const ci=conns.get(ws)||{};conns.set(ws,{...ci,playerId:hostId,roomId:rid,isSpectator:false,lastSeen:Date.now()});send(ws,{type:"versusRoomCreated",room:roomInfo(room),playerId:hostId,seed,sessionToken:player.sessionToken});sync(room);return;
+  }
+  if (msg.type === "joinVersusRoom") {
+    const rid=String(msg.roomId||"").trim().toUpperCase(),room=rooms.get(rid);if(!room||room.kind!=="versus"){send(ws,{type:"error",message:"双人对战房间不存在"});return;}if(room.state!=="lobby"){send(ws,{type:"error",message:"对局已经开始"});return;}if(realPlayers(room).length>=2){send(ws,{type:"error",message:"房间已满"});return;}if(room.password&&room.password!==normalizePassword(msg.password)){send(ws,{type:"error",message:"密码错"});return;}const nick=normalizeNick(msg.nick);if(!nick){send(ws,{type:"error",message:"需要昵称"});return;}if(info?.roomId){const old=rooms.get(info.roomId);if(old)removePlayer(old,info.playerId)}const id="P"+(nextPid++),pl={id,ws,nick,lane:-1,ready:false,alive:true,survivalTime:0,formation:null,isSpectator:false,sessionToken:newSessionToken(),disconnectedAt:0,disconnectTimer:null};room.players.push(pl);const ci=conns.get(ws)||{};conns.set(ws,{...ci,playerId:id,roomId:room.id,isSpectator:false,lastSeen:Date.now()});send(ws,{type:"versusRoomJoined",room:roomInfo(room),playerId:id,seed:room.seed,sessionToken:pl.sessionToken});sync(room);return;
+  }
+  if (msg.type === "versusClaim") {
+    const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="lobby")return;const side=msg.side==="plant"?"plant":msg.side==="zombie"?"zombie":null;if(!side)return;const v=room.versus;if(v.sides[side]&&v.sides[side]!==pid){send(ws,{type:"error",message:"该阵营已被抢占"});return;}for(const s of ["plant","zombie"])if(v.sides[s]===pid)v.sides[s]=null;v.sides[side]=pid;sync(room);return;
+  }
+  if (msg.type === "versusSwapSides") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;const v=room.versus,[a,b]=[v.sides.plant,v.sides.zombie];v.sides.plant=b;v.sides.zombie=a;sync(room);return;}
+  if (msg.type === "versusRules") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;room.versus.slots=msg.slots===7?7:6;room.versus.bp=!!msg.bp;sync(room);return;}
+  if (msg.type === "versusStartDraft") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="lobby")return;const v=room.versus;if(!v.sides.plant||!v.sides.zombie){send(ws,{type:"error",message:"双方必须先抢好阵营"});return;}v.picks={plant:[],zombie:[]};v.bans={plant:[],zombie:[]};v.step=0;v.draftStarted=true;v.draftDone=false;room.state="versusDraft";bcast(room,{type:"versusDraftState",room:roomInfo(room)});sync(room);return;}
+  if (msg.type === "versusDraftAction") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="versusDraft")return;const v=room.versus,picks=v.slots-1,banSteps=v.bp?10:0,total=banSteps+picks*2;if(v.step>=total)return;let actorSide,kind;if(v.step<banSteps){actorSide=v.step%2===0?"zombie":"plant";kind="ban";}else{actorSide=(v.step-banSteps)%2===0?"zombie":"plant";kind="pick";}if(v.sides[actorSide]!==pid){send(ws,{type:"error",message:"还没轮到你"});return;}const id=String(msg.cardId||"");const targetSide=kind==="ban"?(actorSide==="zombie"?"plant":"zombie"):actorSide;const valid=targetSide==="plant"?ALLOWED_PLANT_KEYS.has(id):/^[a-zA-Z0-9_]+$/.test(id);if(!valid){send(ws,{type:"error",message:"卡牌无效"});return;}const used=[...v.picks.plant,...v.picks.zombie,...v.bans.plant,...v.bans.zombie];if(used.includes(id)){send(ws,{type:"error",message:"该卡已被选择/Ban"});return;}if(kind==="ban")v.bans[targetSide].push(id);else v.picks[actorSide].push(id);v.step++;if(v.step>=total){v.draftDone=true;room.state="versusReady";}bcast(room,{type:"versusDraftState",room:roomInfo(room)});sync(room);return;}
+  if (msg.type === "versusStartBattle") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="versusReady")return;room.state="battling";room.versus.frameSeq=0;room.versus.inputSeq={};room.versus.winner=null;room.versus.reason=null;bcast(room,{type:"versusBattleStart",seed:room.seed,hostId:room.hostId,sides:room.versus.sides,slots:room.versus.slots,bp:room.versus.bp,picks:room.versus.picks});sync(room);return;}
+  if (msg.type === "versusFrame") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="battling"||room.hostId!==pid)return;const seq=Math.max(0,Number(msg.seq)||0);if(seq<=room.versus.frameSeq)return;const data=String(msg.data||"");if(data.length>56000)return;room.versus.frameSeq=seq;for(const p of realPlayers(room))if(p.id!==room.hostId)send(p.ws,{type:"versusFrame",seq,data});return;}
+  if (msg.type === "versusInput") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="battling"||pid===room.hostId)return;const seq=Math.max(1,Number(msg.seq)||0),last=room.versus.inputSeq[pid]||0;if(seq<=last)return;room.versus.inputSeq[pid]=seq;const side=room.versus.sides.plant===pid?"plant":room.versus.sides.zombie===pid?"zombie":null;if(!side)return;const host=findPlayer(room,room.hostId);send(host?.ws,{type:"versusRemoteInput",playerId:pid,side,seq,action:msg.action||null});return;}
+  if (msg.type === "versusProbe") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.state!=="battling")return;const host=findPlayer(room,room.hostId);if(pid===room.hostId)return;send(host?.ws,{type:"versusProbeToHost",from:pid,probeId:String(msg.probeId||""),sentAt:Number(msg.sentAt)||0});return;}
+  if (msg.type === "versusProbeAck") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid)return;const target=findPlayer(room,String(msg.to||""));send(target?.ws,{type:"versusProbeAck",probeId:String(msg.probeId||""),sentAt:Number(msg.sentAt)||0});return;}
+  if (msg.type === "versusEnd") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid||room.state!=="battling")return;room.state="finished";room.versus.winner=["plant","zombie","draw"].includes(msg.winner)?msg.winner:"draw";room.versus.reason=String(msg.reason||"").slice(0,160);bcast(room,{type:"versusEnded",winner:room.versus.winner,reason:room.versus.reason,time:Number(msg.time)||0});scheduleRoomDeletion(room);sync(room);return;}
+  if (msg.type === "versusRematch") {const room=findRoom(ws);if(!room||room.kind!=="versus"||room.hostId!==pid)return;clearRoomDeleteTimer(room);room.state="lobby";room.versus.picks={plant:[],zombie:[]};room.versus.bans={plant:[],zombie:[]};room.versus.step=0;room.versus.draftStarted=false;room.versus.draftDone=false;room.versus.winner=null;room.versus.reason=null;room.versus.frameSeq=0;room.versus.inputSeq={};bcast(room,{type:"versusRematchReady"});sync(room);return;}
 
   // ── createRoom ──
   if (msg.type === "createRoom") {
@@ -475,6 +530,7 @@ function handle(ws, raw) {
     player.disconnectedAt = 0;
     const ci = conns.get(ws) || {};
     conns.set(ws, { ...ci, playerId: player.id, roomId: room.id, isSpectator: !!player.isSpectator, lastSeen: Date.now() });
+    if (room.kind === "versus" && room.versus && player.id !== room.hostId) room.versus.inputSeq[player.id] = 0;
     send(ws, {
       type: "roomResumed", room: roomInfo(room), playerId: player.id, seed: room.seed,
       isSpectator: !!player.isSpectator, sessionToken: player.sessionToken, roomState: room.state
@@ -1227,6 +1283,7 @@ const httpServer = http.createServer((req, res) => {
     const body = JSON.stringify({
       ok: true,
       service: "pvz-s7-battle-server",
+      version: SERVER_VERSION,
       uptime: Math.round(process.uptime()),
       rooms: rooms.size,
       connections: conns.size,
@@ -1295,7 +1352,7 @@ wss.on("connection", (ws) => {
 // Railway 1服默认不启用，因此不会争抢家庭服 MQTT channel。
 homeTunnel = startHomeMqttTunnel({
   enabled: process.env.S7_HOME_TUNNEL === "1",
-  serverVersion: "1.7.8",
+  serverVersion: SERVER_VERSION,
   onOpen: (sock) => registerConnection(sock),
   onMessage: (sock, raw) => receiveConnectionMessage(sock, raw),
   onClose: (sock) => closeConnection(sock)

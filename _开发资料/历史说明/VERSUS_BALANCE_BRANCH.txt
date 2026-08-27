@@ -1,0 +1,40 @@
+S丐 1.7.6 Versus 平衡并行分支
+
+硬隔离原则
+- 普通 S7 仍是 base:s7@1.7.6；Versus 规则全部在 profile:versus。
+- 普通 S7 的 PLANT_RULES / PLANTS / ZOMBIES 不由 Versus 覆写。
+
+固定卡槽
+- 植物固定经济核心：双子向日葵。
+- 僵尸固定经济核心：产脑光 Zombie Gravestone。
+- 默认6槽 = 1经济核心 + 5战斗卡；额外卡槽开启后7槽 = 1经济核心 + 6战斗卡。
+- 向日葵、阳光菇属于普通战斗/辅助卡，可被 Pick/Ban；双子向日葵和墓碑不进入战斗 BP。
+
+BP
+- BP为可选赛制保险丝，不是卡牌真实强度测量环境。
+- 6槽 BP：双方各5 Ban + 5 Pick；7槽只在末尾额外增加1轮双方Pick。
+
+平衡真值赛制（唯一进入自动强度拟合的数据）
+- BP关闭。
+- 固定6槽。
+- 双方固定经济核心 + 5张战斗卡。
+- 公开交替Pick：僵尸方先Pick1僵尸，植物方再Pick1植物，共5轮。
+- formatId: versus-nobp-6slot-zfirst-v1
+- BP比赛数据只能进入 bp_resilience，永远不能进入 strength_truth。
+
+新增核心文件
+- src/js/22_versus_feature_profiles.js
+- src/js/23_versus_card_cooldowns.js
+- src/js/24_versus_bp_draft.js
+- src/js/25_versus_balance_format.js
+- src/js/26_versus_balance_telemetry.js
+- tools/versus_balance_analyzer.py
+- tools/test_versus_balance_analyzer.py
+- tools/test_versus_balance_format.js
+- tools/test_versus_balance_telemetry.js
+
+自动平衡原则
+- 价格控制总价值，CD控制单位时间投放价值。
+- No-BP六槽样本用正则化Logistic回归估计单卡调整后边际胜率。
+- BP只统计Ban率/Pick率/兜底效果；即使超模卡被100% Ban，也不得被判定为已平衡。
+- 任何候选价格/CD修改都只是candidate，必须通过配对Holdout后才能接受。

@@ -1,53 +1,79 @@
-S7 2服家庭服务器（v1.6.1）
+S7 2服家庭服务器（v1.7.8）
 ============================
 
-默认客户端地址：
-ws://[240e:b8f:5c28:d201:e6:c038:b0d3:c61e]:8080
+默认模式：
+家庭 iMac 权威服 + MQTT/WSS 反向隧道。
+浏览器与家庭 iMac 都主动连接公共 Broker：
+wss://broker.emqx.io:8084/mqtt
+因此家庭路由器不需要开放公网入站端口。
 
-服务器实现：
-直接复用 server/server.js，与 1服 Railway 使用同一套 WebSocket 房间协议。
-2服与1服、3服房间完全独立。
+旧公网 IPv6 WebSocket 仅保留为隐藏备用链路，不是默认模式。
+
+
+【重要：前端升级后也要升级2服后端】
+如果以前已经安装过2服自动守护，只下载/打开新版 HTML 或新版 ZIP 不会自动替换正在运行的旧 server.js。
+从本版起自动守护统一使用固定目录：
+~/Library/Application Support/PVZS7/HomeServer
+
+每次换到新的 S丐版本包后，建议双击一次：
+2服_重启.command
+它会调用“2服_安装自动守护.command”，把当前包的 server/ 同步到固定目录并重启。
+
+如果出现“普通联机2服正常，但双人 Versus 创建房间无响应”，优先双击：
+2服_状态.command
+若显示“版本漂移”，再双击 2服_重启.command 即可。
 
 【最简单启动】
 双击：2服_启动.command
-或者 Terminal：
-cd "项目目录/server"
-HOST="::" PORT=8080 node server.js
+该脚本会以：
+S7_HOME_TUNNEL=1 HOST="::" PORT=8080 node server.js
+启动，所以会同时开启本地 8080 健康检查/IPv6备用监听，以及 MQTT/WSS 反向隧道。
 
 【推荐：自动守护】
 首次双击：2服_安装自动守护.command
-安装后：
+安装后的 LaunchAgent 同样带 S7_HOME_TUNNEL=1：
 - macOS 登录后自动启动
 - Node 进程意外退出后自动重启
-- 不需要一直留着 Terminal 窗口
+- 不需要一直保留 Terminal 窗口
 
 【手动重启】
 双击：2服_重启.command
-或者（未安装自动守护时）：
-cd "项目目录/server"
-HOST="::" PORT=8080 node server.js
 
-【查看状态】
+【确认反向隧道是否真的连上】
 双击：2服_状态.command
-或 Terminal：
+它会分层显示：
+1. 2服 Node 进程是否运行；
+2. homeTunnel.enabled 是否为 true；
+3. 家庭 iMac 是否已经连接公共 MQTT Broker；
+4. 当前是否有浏览器客户端通过反向隧道到达家庭权威服（clients > 0）。
+
+也可直接执行：
 curl -6 'http://[::1]:8080/health'
-正常应返回 {"ok":true,...}
 
-【停止/卸载自动守护】
-双击：2服_卸载自动守护.command
+浏览器端在 v1.7.8 双人对战中会进一步区分：
+- MQTT Broker 已连接；
+- 家庭服 retained 状态在线；
+- 已收到家庭权威服加密 welcome。
+只有最后一种才显示“✅ MQTT反向隧道已打通”。
 
-【公网 IPv6 发生变化】
-游戏中 F12 -> Console：
+【2服默认/备用模式】
+查看当前模式：
+s7GetHomeServerTransportMode()
+
+切回默认 MQTT 反向隧道：
+s7SetHomeServerTransportMode("tunnel")
+
+仅在明确排障时切到旧 IPv6 直连备用：
+s7SetHomeServerTransportMode("direct")
+
+旧 IPv6 地址配置函数仍保留：
 s7ConfigureHomeServer("ws://[新的IPv6]:8080")
-
-恢复本包默认地址：
 s7ResetHomeServer()
-
-查看当前 2服地址：
 s7GetHomeServerURL()
 
 注意：
-1. 家庭电脑关机时 2服不可用。
-2. 外部设备能否连接还取决于家庭公网 IPv6 入站是否可达。
-3. 当前 2服是 ws://；如果未来把游戏部署到 HTTPS 网站，建议升级为 WSS/DDNS。
-4. 战斗过程仍然是客户端固定 Tick + Battle RNG 独立演算，不进行战斗实时状态同步。
+1. 家庭电脑关机或自动守护未运行时，2服不可用。
+2. 默认反向隧道只需要家庭电脑能够主动访问 MQTT/WSS Broker，不要求家庭公网 IPv6 入站可达。
+3. “普通联机能连上2服”只有在 s7GetHomeServerTransportMode() 返回 tunnel 时，才说明它走的是反向隧道；若返回 direct，则走的是旧 IPv6 备用链路。
+4. 2服的 room/BP/权限仍由家庭 iMac server.js 权威处理；没有把旧联机战斗改成持续状态同步。
+5. 双人 Versus 采用房主权威画面流，是该模式自身的实时交互机制，与旧联机斗蛐蛐的固定 Tick 规则分开。

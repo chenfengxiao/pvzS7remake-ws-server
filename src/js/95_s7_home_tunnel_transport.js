@@ -52,10 +52,13 @@ function HomeTunnelTransport(){
   this.broker=saved.broker||DEFAULT_BROKER;
   this.channel=saved.channel||DEFAULT_CHANNEL;
   this.secret=saved.key||DEFAULT_KEY;
-  this.gameVersion="1.7.2";
+  this.gameVersion="1.7.8";
   this.mqtt=null;
   this.brokerConnected=false;
   this.connected=false;
+  this.serverOnline=false;
+  this.serverVersion="";
+  this.serverStatusExpiresAt=0;
   this.clientId=null;
   this.key=null;
   this.seqUp=0;
@@ -110,7 +113,7 @@ HomeTunnelTransport.prototype.connect=function(){
   if(!MiniMqtt){this._emit("error",{message:"2服隧道依赖的 MQTT wire 未加载"});return;}
   this._wantConnection=true;
   this.clientId="h2_"+_b64u(_rand(16));
-  this.seqUp=0;this.seqDown=0;this.connected=false;this.brokerConnected=false;this.pageExitPacket=null;
+  this.seqUp=0;this.seqDown=0;this.connected=false;this.brokerConnected=false;this.serverOnline=false;this.serverVersion="";this.serverStatusExpiresAt=0;this.pageExitPacket=null;
   var self=this;
   _deriveKey(this.secret,this.channel,this.clientId).then(function(key){
     if(!self._wantConnection)return;
@@ -136,7 +139,16 @@ HomeTunnelTransport.prototype.connect=function(){
   }).catch(function(e){self._emit("error",{message:"2服隧道初始化失败："+(e&&e.message?e.message:"unknown")});});
 };
 HomeTunnelTransport.prototype._onMessage=async function(topic,payload){
-  if(topic===this._root()+"/status")return; // 仅用于 Broker retained 在线指示，真正连通以 welcome 为准。
+  if(topic===this._root()+"/status"){
+    try{
+      var st=JSON.parse(td.decode(payload));
+      this.serverStatusExpiresAt=Number(st&&st.expiresAt)||0;
+      this.serverOnline=!!(st&&st.online&&this.serverStatusExpiresAt>Date.now());
+      this.serverVersion=String(st&&st.serverVersion||"");
+      this._emit("serverstatus",{online:this.serverOnline,serverVersion:this.serverVersion,expiresAt:this.serverStatusExpiresAt,brokerConnected:this.brokerConnected});
+    }catch(_){}
+    return;
+  } // retained status only means the iMac bridge reported online; end-to-end success still requires welcome.
   if(topic!==this._root()+"/down/"+this.clientId||!this.key)return;
   var x=await _decrypt(this.key,"down",this.channel,this.clientId,payload);
   if(x.seq<=this.seqDown)return;
@@ -173,7 +185,7 @@ HomeTunnelTransport.prototype.disconnect=function(){
   this.mqtt=null;this.brokerConnected=false;this.connected=false;this.key=null;
   this._emit("disconnected");
 };
-HomeTunnelTransport.prototype.debug=function(){return{broker:this.broker,channel:this.channel,clientId:this.clientId,brokerConnected:this.brokerConnected,connected:this.connected};};
+HomeTunnelTransport.prototype.debug=function(){return{broker:this.broker,channel:this.channel,clientId:this.clientId,brokerConnected:this.brokerConnected,connected:this.connected,serverOnline:this.serverOnline&&this.serverStatusExpiresAt>Date.now(),serverVersion:this.serverVersion,serverStatusExpiresAt:this.serverStatusExpiresAt};};
 
 var transport=new HomeTunnelTransport();
 window.S7HomeTunnelTransport=transport;

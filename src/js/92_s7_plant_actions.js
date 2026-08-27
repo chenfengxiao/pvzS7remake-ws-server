@@ -618,6 +618,14 @@
       if (!s) return false;
       if (isSpikePunctureVehicle(z)) {
         s.hp = 0;
+        // 与地刺王本体保持同一穿刺规则：变种冰车/雪橇车不秒杀，100伤害+0.625格击退。
+        if ((z.type === "zomboni" || z.type === "bobsledSled") && z.s7?.variant) {
+          const owner = state.plants.find(p => p && !p.dead && p.id === s.ownerId) || null;
+          s7DirectHit(z, 100, owner, { ignore2: true, system: true });
+          if (!z.dead) s7ApplyZombieKnockback(z, .625, { maxX: COLS + .3, reason: "暗影地刺击退变种车辆" });
+          addEffect(s.row, s.x, "暗影地刺击退变种车辆·-100", "#f87171", .6);
+          return true
+        }
         killZombie(z, {
           noCritical: true,
           noTransform: true,

@@ -5,7 +5,7 @@ const battle = fs.readFileSync(path.join(root, 'src/js/96_battle_mode.js'), 'utf
 const guard = fs.readFileSync(path.join(root, 'src/js/95_s7_multiplayer_tab_guard.js'), 'utf8');
 function must(cond, msg) { if (!cond) throw new Error(msg); }
 
-must(/var GAME_VERSION = "1\.7\.1";/.test(battle), 'battle mode version is not 1.7.1');
+must(/var GAME_VERSION = "1\.7\.8";/.test(battle), 'battle mode version is not 1.7.8');
 must(/pvz_s7_multiplayer_tab_guard_v2/.test(guard), 'guard namespace was not migrated to v2');
 
 const selectStart = battle.indexOf('async function _selectServerAndEnter(id)');

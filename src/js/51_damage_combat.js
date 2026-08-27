@@ -1646,7 +1646,7 @@
     function trySpikerockPunctureVehicle(z) {
       const p = spikerockTouchingVehicle(z);
       if (!p) return false;
-      // 变种冰车/变种雪橇不被地刺王秒杀，改为100伤害+击退50px（0.625格=50px）。
+      // 变种冰车/雪橇车不被地刺王秒杀，统一改为100伤害+击退50px（0.625格=50px）。
       if ((z.type === "zomboni" || z.type === "bobsledSled") && z.s7?.variant) {
         s7DirectHit(z, 100, p, {
           ignore2: true,

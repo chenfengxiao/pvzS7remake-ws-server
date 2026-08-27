@@ -1,0 +1,48 @@
+S丐 1.7.6 Versus 卡牌冷却系统测试报告
+日期：2026-08-22
+基线：上传包实际 Git HEAD 982e8fb（1.7.6源码）
+分支性质：独立并行 Versus 平衡分支；不修改普通 S7 基础规则。
+
+本轮新增
+1. src/js/22_versus_feature_profiles.js
+   - profile:versus@0.1.0-balance-lab
+   - 47张植物卡的部署冷却、首发冷却、冷却类别
+   - 僵尸卡部署冷却、首发冷却、冷却类别；新僵尸有安全派生冷却
+   - 植物/僵尸各自独立的共享冷却组
+   - 5分钟后决战冷却平滑缩短曲线
+2. src/js/23_versus_card_cooldowns.js
+   - 植物/僵尸完全独立 cooldown domain
+   - 成功部署后才消耗冷却
+   - 普通/变种/指令形态统一映射到对应基础僵尸卡冷却域
+   - 共享组锁、防连发
+   - 状态查询、剩余时间、序列化/恢复
+3. UI
+   - Versus激活时卡牌灰化并显示剩余秒数
+   - 普通S7不激活，不产生任何行为变化
+4. tools/test_versus_card_cooldowns.js
+   - 47植物覆盖
+   - 植物/僵尸冷却互不污染
+   - 首发冷却
+   - 灰烬共享8秒锁
+   - 变种/指令映射
+   - 决战期植物最低0.85倍、僵尸最低0.70倍
+   - 序列化/恢复
+   - 退出Versus后普通S7旁路
+
+测试结果
+- npm run test:versus-cooldown：PASS
+- npm run verify：PASS（349 assets / 342 images / 7 audio / 26 verifier scripts / 0 errors / 0 warnings）
+- npm run test:experience：PASS（11/11）
+- npm run test:cold：PASS（22/22）
+- npm run test:invariants：PASS
+- npm run build:fast：PASS
+- npm run validate:fast：PASS（inlineScriptCount=28）
+
+基线已有失败（已用原始上传包对照确认，并非本轮引入）
+- npm run test:feature：12/13；“巨人击退后丢目标仍造成植物伤害”原包同样失败
+- npm run test:critical：11/12；“dolphin variant total 500 !== 570”原包同样失败
+
+当前重要边界
+- 本轮没有继续开发联机。
+- 冷却系统只有显式调用 S7VersusCooldowns.activate(state) 才启用。
+- PLANT_RULES / PLANTS / ZOMBIES 均未被 Versus profile 改写。

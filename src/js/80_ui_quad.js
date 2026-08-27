@@ -191,6 +191,53 @@
       else closeMobileCardPool()
     }
 
+    function s7VersusCardCooldownStatus(side, id) {
+      const api = window.S7VersusCooldowns;
+      if (!api || !api.isActive(state)) return null;
+      return api.status(state, side, id, finiteNumber(state?.time, 0))
+    }
+
+    function s7VersusCooldownText(status) {
+      if (!status || status.ready) return "";
+      const t = Math.max(0, finiteNumber(status.remainingSeconds, 0));
+      return t < 10 ? t.toFixed(1) + "s" : Math.ceil(t) + "s"
+    }
+
+    function s7VersusDecorateCooldownCards(cards) {
+      if (!cards) return;
+      const api = window.S7VersusCooldowns;
+      const active = !!api?.isActive(state);
+      cards.querySelectorAll(".card").forEach(card => {
+        card.classList.remove("vsCooldownLocked", "vsCooldownReady");
+        card.removeAttribute("data-vs-cd");
+        if (!active) return;
+        const side = card.dataset.mode;
+        const id = card.dataset.k;
+        if ((side !== "plant" && side !== "zombie") || !id) return;
+        const st = api.status(state, side, id, finiteNumber(state?.time, 0));
+        if (!st.known) return;
+        if (st.ready) card.classList.add("vsCooldownReady");
+        else {
+          card.classList.add("vsCooldownLocked");
+          card.dataset.vsCd = s7VersusCooldownText(st)
+        }
+      })
+    }
+
+    function s7VersusRejectCooldown(side, id, row, x) {
+      const st = s7VersusCardCooldownStatus(side, id);
+      if (!st || st.ready) return false;
+      addEffect(row, x, `卡牌冷却 ${s7VersusCooldownText(st)}`, "#fca5a5", .8);
+      return true
+    }
+
+    function s7VersusCommitCooldown(side, id) {
+      const api = window.S7VersusCooldowns;
+      if (!api?.isActive(state)) return;
+      api.commitUse(state, side, id, finiteNumber(state?.time, 0));
+      renderCards()
+    }
+
     function renderCards() {
       const cards = document.getElementById("cards");
       if (!cards) return;
@@ -219,7 +266,8 @@
           ).join("")
       }
       document.querySelectorAll(".card").forEach(x => x.classList.toggle("selected", cardMode === "plant" ? x.dataset
-        .k === selected : x.dataset.k === selectedZombie))
+        .k === selected : x.dataset.k === selectedZombie));
+      s7VersusDecorateCooldownCards(cards)
     }
 
     function initCards() {
@@ -320,8 +368,10 @@
         return
       }
       if (tool === "zombie") {
+        if (s7VersusRejectCooldown("zombie", selectedZombie, cell.row, cell.col + .5)) return;
         const z = makeZombieFromCard(selectedZombie, cell.row, cell.col + .5);
         safePushZombie(z, "manual-card");
+        s7VersusCommitCooldown("zombie", selectedZombie);
         return
       }
       if (tool === "shovel") {
@@ -370,7 +420,9 @@
           autoValid: randomAutoValid,
           basePlants: state.plants
         }) : selected;
+        if (s7VersusRejectCooldown("plant", plantKey, cell.row, cell.col + .5)) return;
         state.plants.push(makePlant(plantKey, cell.row, cell.col));
+        s7VersusCommitCooldown("plant", plantKey);
         if (state.s7) state.s7.validated = false;
         if (selected === RANDOM_PLANT_CARD_KEY) addEffect(cell.row, cell.col + .5, `随机→${PLANTS[plantKey].name}`, "#fde68a", .9)
       }

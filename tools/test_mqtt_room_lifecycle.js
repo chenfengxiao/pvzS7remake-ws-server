@@ -42,7 +42,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
   // Rejoin with a new browser client, then host pageExit must kill room immediately.
   const C=makeClient('C');C.t.connect();await waitEvent(C,'connected');await sleep(100);C.t.send({type:'listRooms'});let list=await waitEvent(C,'message','roomList');if(!list.rooms.some(r=>r.id===created.room.id))throw new Error('room unexpectedly absent before host exit');
-  const closeP=waitEvent(C,'message','roomList',()=>true,1500).catch(()=>null); // optional
+  // Do not start a second roomList waiter here: it races with the explicit post-exit listRooms check below.
   A.t.pageExit();await sleep(250);C.t.send({type:'listRooms'});list=await waitEvent(C,'message','roomList');if(list.rooms.some(r=>r.id===created.room.id))throw new Error('host pageExit left lobby room retained');
   if([...broker.retained.keys()].some(k=>k.endsWith('/lobby/room/'+created.room.id)))throw new Error('broker retained lobby not tombstoned');
 

@@ -75,6 +75,31 @@
       "lines": 1152
     },
     {
+      "file": "src/js/22_versus_feature_profiles.js",
+      "description": "Versus 独立特性配置域：价格、冷却、固定经济核心与模式隔离",
+      "lines": 193
+    },
+    {
+      "file": "src/js/23_versus_card_cooldowns.js",
+      "description": "Versus 植物/僵尸独立卡牌冷却运行时",
+      "lines": 241
+    },
+    {
+      "file": "src/js/24_versus_bp_draft.js",
+      "description": "Versus 可选 BP 与6/7槽 Draft 状态机",
+      "lines": 381
+    },
+    {
+      "file": "src/js/25_versus_balance_format.js",
+      "description": "Versus 无BP六槽真实强度基准赛制：僵尸先选、双方交替Pick",
+      "lines": 185
+    },
+    {
+      "file": "src/js/26_versus_balance_telemetry.js",
+      "description": "Versus 平衡遥测：No-BP真实强度与BP兜底指标严格分流",
+      "lines": 148
+    },
+    {
       "file": "src/js/30_state_geometry.js",
       "description": "场景状态、坐标、网格、基础实体查询",
       "sourceLines": [

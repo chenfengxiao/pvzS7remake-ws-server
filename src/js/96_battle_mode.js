@@ -31,6 +31,7 @@ var S7_MULTIPLAYER_SERVERS = {
 };
 var _selectedServerId = localStorage.getItem("pvz_s7_multiplayer_server") || "1";
 if (!S7_MULTIPLAYER_SERVERS[_selectedServerId]) _selectedServerId = "1";
+var _serverSelectPurpose = "classic"; // classic | versus; selection UI is shared by all network modes.
 var _tabGuardServerId = null; // 当前页面已确认占用的联机服务器；同服跨标签页互斥，不同服互不影响。
 var _pendingServerEnterId = null; // 仅用于 3服：MQTT 尚未确认连接前只处于“尝试进入”，不能提前占锁。
 var _pendingGuardFinalize = null;
@@ -50,6 +51,7 @@ window.s7GetMultiplayerServers = function() {
   });
 };
 window.s7GetSelectedMultiplayerServer = function() { return _selectedServerId; };
+window.s7GetGameVersion = function() { return GAME_VERSION; };
 window.s7MultiplayerLockDebug = function() {
   return window.S7MultiplayerTabGuard && window.S7MultiplayerTabGuard.debug
     ? window.S7MultiplayerTabGuard.debug()
@@ -78,6 +80,10 @@ window.s7SetHomeServerTransportMode = function(mode) {
   return mode;
 };
 window.s7GetHomeServerTransportMode = function() { return _homeTransportMode(); };
+window.s7GetHomeTunnelDiagnostics = function() {
+  var d = window.s7HomeTunnelDebug ? window.s7HomeTunnelDebug() : {};
+  return Object.assign({ mode: _homeTransportMode(), transport: _transportKind(S7_MULTIPLAYER_SERVERS["2"]) }, d || {});
+};
 
 var HEARTBEAT_MS = 30000;
 var RECONNECT_DELAY = 3000;
@@ -102,6 +108,7 @@ function _on(event, fn) {
   if (!_wsListeners[event]) _wsListeners[event] = [];
   _wsListeners[event].push(fn);
 }
+window.s7WSOn = function(event, fn) { _on(event, fn); return function(){ var a=_wsListeners[event]||[]; var i=a.indexOf(fn); if(i>=0)a.splice(i,1); }; };
 function _emit(event, data) {
   if (!_wsListeners[event]) return;
   for (var i = 0; i < _wsListeners[event].length; i++) {
@@ -111,7 +118,7 @@ function _emit(event, data) {
 
 function _acceptTransportMessage(msg) {
   if (!msg || !msg.type) return;
-  if (msg.type === "roomCreated" || msg.type === "roomJoined" || msg.type === "roomResumed") {
+  if (msg.type === "roomCreated" || msg.type === "roomJoined" || msg.type === "roomResumed" || msg.type === "versusRoomCreated" || msg.type === "versusRoomJoined") {
     if (msg.playerId) _wsPlayerId = msg.playerId;
     if (msg.room) _wsRoomId = msg.room.id;
     if (msg.sessionToken) _wsSessionToken = msg.sessionToken;
@@ -212,6 +219,11 @@ function _bindCustomTransportSink(cfg) {
       _wsConnected = false; _emit("reconnecting", data || {});
     } else if (kind === "error") {
       _emit("error", data || { message: cfg.id === "2" ? "2服隧道连接错误" : "3服连接错误" });
+    } else if (kind === "serverstatus") {
+      if (cfg.id === "2" && _$.server2StatusText) {
+        _$.server2StatusText.textContent = data && data.online ? "MQTT中转已连 · 家庭服在线" : "MQTT中转已连 · 家庭服未在线";
+      }
+      _emit("serverstatus", data || {});
     } else if (kind === "message") {
       _acceptTransportMessage(data);
     }
@@ -373,6 +385,8 @@ function _cacheDom() {
   _$.game = document.getElementById("game");
   _$.serverSelectScreen = document.getElementById("serverSelectScreen");
   _$.serverSelectBackBtn = document.getElementById("serverSelectBackBtn");
+  _$.serverSelectTitle = document.getElementById("serverSelectTitle");
+  _$.serverSelectLead = document.getElementById("serverSelectLead");
   _$.serverSelectHint = document.getElementById("serverSelectHint");
   _$.server2StatusText = document.getElementById("server2StatusText");
   _$.serverChoice1 = document.getElementById("serverChoice1");
@@ -493,7 +507,7 @@ function _initLobby() {
     localStorage.setItem("pvz_player_name", _nick);
   });
 
-  _$.battleBtn.onclick = function() { s7ShowServerSelect(); };
+  _$.battleBtn.onclick = function() { s7ShowServerSelect("classic"); };
   if (_$.serverChoice1) _$.serverChoice1.onclick = function() { _selectServerAndEnter("1"); };
   if (_$.serverChoice2) _$.serverChoice2.onclick = function() { _selectServerAndEnter("2"); };
   if (_$.serverChoice3) _$.serverChoice3.onclick = function() { _selectServerAndEnter("3"); };
@@ -696,6 +710,7 @@ function _handleWSMessage(msg) {
       _showRoom(msg.room, msg.playerId);
       break;
     case "roomResumed":
+      if (msg.room && msg.room.kind === "versus") break;
       _joiningRoom = false;
       _isSpectator = !!msg.isSpectator;
       if (msg.room) _roomState = msg.room;
@@ -704,10 +719,12 @@ function _handleWSMessage(msg) {
       if (_roomState) _renderRoom();
       break;
     case "resumeFailed":
+      if (window.S7VersusOnline && window.S7VersusOnline.isInRoom && window.S7VersusOnline.isInRoom()) break;
       _showToast(msg.message || "房间会话已失效，已返回大厅");
       _leaveRoom();
       break;
     case "roomClosed":
+      if (window.S7VersusOnline && window.S7VersusOnline.isInRoom && window.S7VersusOnline.isInRoom()) break;
       _showToast(msg.message || "房间已关闭");
       _leaveRoom();
       break;
@@ -719,6 +736,7 @@ function _handleWSMessage(msg) {
       _showLaneSelect();
       break;
     case "roomUpdate":
+      if (msg.room && msg.room.kind === "versus") break;
       if (msg.room) {
         // 丢弃旧房/其他房的延迟 roomUpdate，避免用旧 playerId 对新房做“被踢”误判。
         if (_wsRoomId && msg.room.id && msg.room.id !== _wsRoomId) break;
@@ -891,6 +909,7 @@ function _handleWSMessage(msg) {
       _resetToRoom();
       break;
     case "kicked":
+      if (window.S7VersusOnline && window.S7VersusOnline.isInRoom && window.S7VersusOnline.isInRoom()) break;
       _showToast("你已被移出房间");
       _leaveRoom();
       break;
@@ -1033,10 +1052,27 @@ function _submitDialog() {
 function _refreshServerSelectUI() {
   if (!_$.serverSelectScreen) return;
   var home = S7_MULTIPLAYER_SERVERS["2"];
-  if (_$.server2StatusText) _$.server2StatusText.textContent = home.available ? (_homeTransportMode() === "direct" ? "直连备用 · 家庭电脑需开机" : "反向隧道 · 无需开放公网端口") : "未配置";
+  var versus = _serverSelectPurpose === "versus";
+  if (_$.serverSelectTitle) _$.serverSelectTitle.textContent = versus ? "⚔️ 双人对战 · 选择服务器" : "🌐 选择联机服务器";
+  if (_$.serverSelectLead) _$.serverSelectLead.textContent = versus ? "先选择真人双人对战线路，再进入创建 / 加入房间界面。" : "请选择本次进入的联机线路。三个服务器的房间彼此独立。";
+  if (_$.server2StatusText) {
+    if (!home.available) _$.server2StatusText.textContent = "未配置";
+    else if (_homeTransportMode() === "direct") _$.server2StatusText.textContent = "⚠ 旧 IPv6 直连备用 · 非 MQTT 隧道";
+    else {
+      var hd = window.s7GetHomeTunnelDiagnostics ? window.s7GetHomeTunnelDiagnostics() : {};
+      if (hd.connected) _$.server2StatusText.textContent = "✅ MQTT反向隧道已打通";
+      else if (hd.brokerConnected && hd.serverOnline) _$.server2StatusText.textContent = "MQTT中转已连 · 家庭服在线";
+      else if (hd.brokerConnected) _$.server2StatusText.textContent = "MQTT中转已连 · 等待家庭服";
+      else _$.server2StatusText.textContent = "反向隧道 · 创建/加入房间时验证";
+    }
+  }
   if (_$.serverChoice2) {
     _$.serverChoice2.classList.toggle("serverReady", !!home.available);
     _$.serverChoice2.classList.toggle("serverPending", !home.available);
+  }
+  if (_$.serverChoice3) {
+    _$.serverChoice3.classList.toggle("serverUnavailable", versus);
+    _$.serverChoice3.setAttribute("aria-disabled", versus ? "true" : "false");
   }
 }
 
@@ -1044,6 +1080,14 @@ function _serverHint(text) { if (_$.serverSelectHint) _$.serverSelectHint.textCo
 
 async function _selectServerAndEnter(id) {
   var cfg = _serverConfig(id);
+
+  // Versus uses the same server picker, but realtime frame streaming is not implemented on 3服.
+  // Reject before acquiring any browser/server lock so the disabled route can never leave a ghost session.
+  if (_serverSelectPurpose === "versus" && cfg.id === "3") {
+    _serverHint("3服目前只作为旧联机灾备线路，不支持双人 Versus 实时画面同步；请选择 1服 或 2服。");
+    _showToast("双人对战请选择 1服 或 2服");
+    return false;
+  }
 
   // 先检查线路本身，尚未可用的线路不占浏览器联机锁。
   if (cfg.id === "2" && !cfg.available) {
@@ -1130,7 +1174,7 @@ async function _selectServerAndEnter(id) {
   }
 
   var entered = false;
-  try { entered = s7ShowLobby() !== false; }
+  try { entered = (_serverSelectPurpose === "versus" ? _showVersusServerEntry() : s7ShowLobby()) !== false; }
   catch (e) {
     entered = false;
     _showToast("进入" + cfg.label + "失败：" + (e && e.message ? e.message : "未知错误"));
@@ -1141,20 +1185,60 @@ async function _selectServerAndEnter(id) {
   }
 }
 
-window.s7ShowServerSelect = function() {
-  if (!_$.serverSelectScreen) { s7ShowLobby(); return; }
+function _showVersusServerEntry() {
+  var cfg = _activeServer();
+  if (cfg.id === "3") return false;
+  _$.startScreen.classList.add("hidden");
+  if (_$.serverSelectScreen) _$.serverSelectScreen.classList.add("hidden");
+  if (_$.lobbyScreen) _$.lobbyScreen.classList.add("hidden");
+  if (_$.game) _$.game.style.display = "none";
+  _lobbyVisible = false;
+  // 选服只负责导航。Versus 在“创建/加入房间”时才连接，避免 UI 初始化与网络握手竞态。
+  if (!window.S7VersusOnline || !window.S7VersusOnline.showEntryForSelectedServer) {
+    _showToast("双人对战入口模块未加载");
+    return false;
+  }
+  window.S7VersusOnline.showEntryForSelectedServer(cfg);
+  return true;
+}
+
+window.s7ShowServerSelect = function(purpose) {
+  _serverSelectPurpose = purpose === "versus" ? "versus" : "classic";
+  if (!_$.serverSelectScreen) {
+    if (_serverSelectPurpose === "versus") return _showVersusServerEntry();
+    return s7ShowLobby();
+  }
   _$.startScreen.classList.add("hidden");
   if (_$.game) _$.game.style.display = "none";
   _$.serverSelectScreen.classList.remove("hidden");
   _refreshServerSelectUI();
-  _serverHint("1服为外服，大概率需要 VPN；2服为家庭权威服务器，通过反向 MQTT/WSS 隧道接入，无需开放家庭公网端口；3服为 Secure MQTT 灾备服。");
+  _serverHint(_serverSelectPurpose === "versus"
+    ? "双人 Versus 使用与联机对战相同的服务器选择流程；1服/2服支持实时画面同步，3服暂不可用。"
+    : "1服为外服，大概率需要 VPN；2服为家庭权威服务器，通过反向 MQTT/WSS 隧道接入，无需开放家庭公网端口；3服为 Secure MQTT 灾备服。");
 };
 
 window.s7HideServerSelect = function() {
   if (_$.serverSelectScreen) _$.serverSelectScreen.classList.add("hidden");
+  _serverSelectPurpose = "classic";
   _$.startScreen.classList.remove("hidden");
 };
 
+window.s7ReturnVersusEntryToServerSelect = function() {
+  _pendingServerEnterId = null;
+  s7WSDisconnect();
+  if (_tabGuardServerId && window.S7MultiplayerTabGuard) {
+    window.S7MultiplayerTabGuard.release(_tabGuardServerId);
+    _tabGuardServerId = null;
+  }
+  _serverSelectPurpose = "versus";
+  if (_$.serverSelectScreen) {
+    _$.serverSelectScreen.classList.remove("hidden");
+    _refreshServerSelectUI();
+    _serverHint("请选择 1服 或 2服，然后进入双人对战房间创建 / 加入界面。");
+  }
+};
+
+window.s7GetServerSelectPurpose = function() { return _serverSelectPurpose; };
 window.s7SelectMultiplayerServer = function(id) { _selectServerAndEnter(String(id)); };
 
 // fallback 租约极端情况下若被另一标签页抢占，当前页面立即退出该服务器联机模式。

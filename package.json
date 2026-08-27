@@ -17,7 +17,15 @@
     "test:cold": "node tools/test_cold_action_clock.js",
     "test:feature": "python3 tools/test_sniper_garg_cold_firelotus.py",
     "test:invariants": "python3 tools/test_spawn_cap_invariants.py",
-    "test:critical": "python3 tools/test_critical_split.py"
+    "test:critical": "python3 tools/test_critical_split.py",
+    "test:versus-cooldown": "node tools/test_versus_card_cooldowns.js",
+    "test:versus-bp": "node tools/test_versus_bp_draft.js",
+    "test:versus-balance-format": "node tools/test_versus_balance_format.js",
+    "test:versus-balance-telemetry": "node tools/test_versus_balance_telemetry.js",
+    "test:versus-balance-analyzer": "python3 tools/test_versus_balance_analyzer.py",
+    "test:versus-entry": "node tools/test_versus_entry_flow.cjs",
+    "test:v178-sync": "node tools/test_v178_sync.cjs",
+    "test:versus-room": "node tools/test_versus_room_management.cjs"
   },
   "devDependencies": {
     "vite": "^7.2.4"

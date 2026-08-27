@@ -349,3 +349,58 @@
       return list
     }
 
+
+// -----------------------------------------------------------------------------
+// Unified home-mode entry router.
+// New home buttons must declare data-s7-entry instead of binding their own
+// DOMContentLoaded click handler or hard-coding a home screen id. This prevents
+// the recurring "button only flashes/ghosts" failure when a feature hides the
+// wrong container (the real home screen is #startScreen).
+// -----------------------------------------------------------------------------
+(function initS7HomeEntryRouter(root){
+  if (!root || !root.document || root.S7ScreenNav) return;
+  const doc = root.document;
+  const byId = id => doc.getElementById(id);
+  const setHidden = (id, hidden) => {
+    const node = typeof id === "string" ? byId(id) : id;
+    if (!node) return false;
+    node.classList.toggle("hidden", !!hidden);
+    return true;
+  };
+  const nav = {
+    homeId: "startScreen",
+    hideHome(){ return setHidden(this.homeId, true); },
+    showHome(){ return setHidden(this.homeId, false); },
+    show(id, options){
+      const opts = options || {};
+      if (opts.hideHome !== false) this.hideHome();
+      return setHidden(id, false);
+    },
+    hide(id){ return setHidden(id, true); },
+    swap(fromId, toId, options){
+      if (fromId) this.hide(fromId);
+      return this.show(toId, options);
+    }
+  };
+  root.S7ScreenNav = Object.freeze(nav);
+
+  const routes = Object.freeze({
+    "versus-online": () => root.S7VersusOnline?.open?.(),
+    "versus-practice": () => root.S7VersusPractice?.open?.()
+  });
+  doc.addEventListener("click", function(ev){
+    const btn = ev.target?.closest?.("[data-s7-entry]");
+    if (!btn) return;
+    const key = btn.getAttribute("data-s7-entry") || "";
+    const handler = routes[key];
+    if (!handler) return;
+    ev.preventDefault();
+    const apiReady = key === "versus-online" ? !!root.S7VersusOnline?.open : !!root.S7VersusPractice?.open;
+    if (!apiReady) {
+      console.error("[S7Entry] feature module not ready:", key);
+      root.alert?.("该模式模块未正确加载，请刷新页面后重试。若仍出现，请保留控制台报错用于定位。");
+      return;
+    }
+    handler();
+  });
+})(window);

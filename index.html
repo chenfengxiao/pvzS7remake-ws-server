@@ -11,7 +11,7 @@
 <meta content="#061013" name="theme-color"/>
 <title>S丐版 1.7.8</title>
 
-<link href="./src/styles/main.css" rel="stylesheet"/></head>
+<link href="./src/styles/main.css" rel="stylesheet"/><link href="./src/styles/versus_duel.css" rel="stylesheet"/></head>
 <body>
 <div id="rotateNotice">
 </div>
@@ -47,8 +47,10 @@
           </div>
 </div>
 </div>
-<div class="row" style="margin-top:14px">
-<button class="primary" id="startBtn">进入斗蛐蛐</button> <button id="randomBtn">随机布阵开赛</button> <button class="primary" id="battleBtn">联机对战</button>
+<div class="row homeMainActions" style="margin-top:14px">
+<button class="primary homeMainAction" id="startBtn">进入斗蛐蛐</button> <button class="homeMainAction" id="randomBtn">随机布阵开赛</button> <button class="primary homeMainAction" id="battleBtn">联机对战</button>
+<button class="primary homeMainAction" id="versusOnlineBtn" data-s7-entry="versus-online">双人对战</button>
+<button class="homeMainAction" id="versusPracticeBtn" data-s7-entry="versus-practice">人机对练</button>
 <div class="quadLauncher">
 <button id="quadTestBtn">进入 2×2 宫格（4平面 / 20路）</button> <label class="quadSizeControl quadDesktopOnly" for="quadSizeRange"><span>宫格数量</span> <input id="quadSizeRange" max="10" min="2" step="1" type="range" value="2"/><output for="quadSizeRange" id="quadSizeValue">2×2 · 4平面 · 20路</output></label> <span class="mobileQuadBadge quadMobileOnly">手机版固定使用已验证的 2×2 四宫格：4 个平面，共 20 路。</span>
 </div>
@@ -57,11 +59,99 @@
 </div>
 </div>
 
+<!-- Versus 专属本地 BP：独立于现有联机 BP -->
+<div class="hidden" id="versusBpOverlay">
+  <div class="dialog versusBpDialog">
+    <h1>⚔️ Versus BP</h1>
+    <div class="versusBpHeader">
+      <strong id="versusBpPhase"></strong>
+      <span id="versusBpSlots"></span>
+    </div>
+    <div class="versusBpSummary" id="versusBpSummary"></div>
+    <div class="versusBpCardGrid" id="versusBpCardGrid"></div>
+    <div class="row versusBpActions">
+      <button class="primary" disabled id="versusBpConfirmBtn">确认</button>
+      <button id="versusBpResetBtn">重新开始</button>
+      <button class="danger" id="versusBpCloseBtn">关闭</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Versus 本地人机对练：入口 -> 创建本地房间 -> 房间设置/选卡 -->
+<div class="hidden versusEntryScreen" id="versusPracticeEntryScreen">
+  <div class="dialog versusPracticeDialog">
+    <span class="versusRoomTag">本地单机 · 无需联网</span>
+    <h1>🤖 人机对练</h1>
+    <p class="versusPracticeLead">先创建一个本地人机房间，再在房间内选择阵营、BP 与 6/7 卡槽规则。</p>
+    <div class="row versusPracticeSetupActions" style="margin-top:14px">
+      <button class="primary" id="versusPracticeCreateRoomBtn">创建人机房间</button>
+      <button class="danger" id="versusPracticeEntryBackBtn">返回</button>
+    </div>
+  </div>
+</div>
+
+<div class="hidden versusEntryScreen" id="versusPracticeSetupScreen">
+  <div class="dialog versusPracticeDialog">
+    <span class="versusRoomTag">本地人机房间 · 房间设置</span>
+    <h1>🤖 人机对练房间</h1>
+    <p class="versusPracticeLead">选择你要玩的阵营，并设置本房间的卡槽与 BP。另一边由 AI 自动接管；之后进入公开选卡与正式 Versus 战斗。</p>
+    <div class="versusPracticeSideGrid">
+      <button type="button" class="versusPracticeSide zombie" data-side="zombie"><b>🧟 我玩僵尸</b><span>你负责进攻、墓碑经济与 Variant Meter</span></button>
+      <button type="button" class="versusPracticeSide plant" data-side="plant"><b>🌱 我玩植物</b><span>你负责防守、阳光经济与反制</span></button>
+    </div>
+    <div class="versusPracticeRules">
+      <div><span>卡槽</span><button type="button" data-slots="6" class="selected">6槽</button><button type="button" data-slots="7">7槽</button></div>
+      <div><span>BP</span><button type="button" data-bp="0" class="selected">No-BP</button><button type="button" data-bp="1">有BP</button></div>
+    </div>
+    <div class="versusPracticeSummary" id="versusPracticeSummary">选择阵营后开始：6槽 · No-BP · 75/75开局 · 40:00平局</div>
+    <div class="row versusPracticeSetupActions" style="margin-top:14px"><button class="primary" id="versusPracticeBeginBtn">开始选卡</button><button class="danger" id="versusPracticeBackBtn">关闭房间</button></div>
+  </div>
+</div>
+
+<div class="hidden" id="versusPracticeDraftScreen">
+  <div class="versusDraftShell practiceDraftShell">
+    <header class="versusDraftHeader"><div><span class="versusDraftEyebrow">人机对练 · 本地公开选卡</span><h1>🤖 你 VS AI</h1></div><div class="versusDraftProgress"><b id="versusPracticeDraftProgress">0 / 10</b><span id="versusPracticeDraftRuleBadge">6槽 · No-BP</span></div></header>
+    <div class="versusDraftSides">
+      <section class="versusDraftSide zombie"><div class="versusDraftSideHead"><span>🧟 僵尸方</span><small id="versusPracticeZombieOwner">—</small></div><div class="versusFixedCore">固定经济核心 <b>🪦 墓碑</b></div><div class="versusBanLine" id="versusPracticeZombieBans">被Ban：无</div><div class="versusPickSlots" id="versusPracticeZombiePicks"></div></section>
+      <section class="versusDraftTurn" id="versusPracticeTurn"><small>准备</small><strong>等待开始</strong><span>AI回合会自动完成</span></section>
+      <section class="versusDraftSide plant"><div class="versusDraftSideHead"><span>🌱 植物方</span><small id="versusPracticePlantOwner">—</small></div><div class="versusFixedCore">固定经济核心 <b>🌻 双子向日葵</b></div><div class="versusBanLine" id="versusPracticePlantBans">被Ban：无</div><div class="versusPickSlots" id="versusPracticePlantPicks"></div></section>
+    </div>
+    <div class="versusDraftInstruction" id="versusPracticeInstruction">请选择阵营</div>
+    <div class="versusOnlineCardGrid" id="versusPracticeCardGrid"></div>
+    <div class="versusDraftStartRow"><button type="button" class="primary hidden" id="versusPracticeStartBattleBtn">进入人机对练</button><button type="button" id="versusPracticeCancelDraftBtn">返回设置</button></div>
+    <footer class="versusDraftHelp"><span>① 你只操作自己阵营</span><span>② AI回合自动Pick/Ban</span><span>③ 战斗规则与真人Versus完全相同</span></footer>
+  </div>
+</div>
+
+<div class="hidden" id="versusResultOverlay">
+  <div class="dialog versusResultDialog"><span class="versusRoomTag">Versus 对局结束</span><h1 id="versusResultTitle">比赛结束</h1><p id="versusResultReason"></p><div class="versusResultStats" id="versusResultStats"></div><div class="row"><button class="primary" id="versusResultRematchBtn">再来一局</button><button class="danger" id="versusResultExitBtn">退出</button></div></div>
+</div>
+
+<!-- 双人 Versus：选服后的静态创建 / 加入入口。
+     必须静态存在，避免运行时 innerHTML + onclick 绑定产生空 DOM 竞态。 -->
+<div class="hidden versusEntryScreen" id="versusOnlineEntryScreen">
+  <div class="dialog versusPracticeDialog">
+    <span class="versusRoomTag" id="versusSelectedServerTag">真人 1v1</span>
+    <h1>⚔️ 双人对战</h1>
+    <p class="versusPracticeLead">已选择服务器。现在创建房间，或输入房间号加入；BP 与 6/7 卡槽只在房间创建后由房主设置。</p>
+    <label class="versusNickLabel">昵称 <input id="versusNick" maxlength="24" value="玩家"></label>
+    <div class="versusRoomEntryActions">
+      <button class="primary" id="versusCreateRoomBtn">创建房间</button>
+      <input id="versusJoinRoomId" placeholder="房间号" maxlength="8">
+      <button id="versusJoinRoomBtn">加入房间</button>
+    </div>
+    <p class="versusPracticeSummary" id="versusServerEntrySummary">房主承担全部战斗计算；房客接收房主画面并回传操作。</p>
+    <p class="versusTransportStatus" id="versusTransportStatus" aria-live="polite">尚未连接服务器；创建/加入房间时才建立网络连接。</p>
+    <button class="danger" id="versusEntryBackBtn">返回选择服务器</button>
+  </div>
+</div>
+
 <!-- 联机服务器选择 -->
 <div class="hidden" id="serverSelectScreen">
 <div class="dialog serverSelectDialog">
-<h1>🌐 选择联机服务器</h1>
-<p class="serverSelectLead">请选择本次进入的联机线路。三个服务器的房间彼此独立。</p>
+<h1 id="serverSelectTitle">🌐 选择联机服务器</h1>
+<p class="serverSelectLead" id="serverSelectLead">请选择本次进入的联机线路。三个服务器的房间彼此独立。</p>
 <div class="serverChoiceGrid">
 <button class="serverChoiceCard serverReady" data-server-id="1" id="serverChoice1">
   <span class="serverChoiceHead"><b>1服</b><em>主服</em></span>
@@ -154,6 +244,50 @@
 <h1>🌿 房间 <span id="roomIdDisplay"></span></h1>
 <div class="roomMeta"><span id="roomHostDisplay"></span> · <span id="roomModeDisplay"></span> · <span id="roomMaxPlayersDisplay"></span></div>
 
+<div class="hidden versusRoomPanel" id="versusRoomPanel">
+  <div class="versusRoomLead">
+    <span class="versusRoomTag">真人 1v1 · 房主权威</span>
+    <strong>先抢阵营，再按房间规则 Pick / Ban</strong>
+    <small>房主承担全部战斗计算；房客只接收房主画面并把操作传回房主。</small>
+  </div>
+  <div class="versusClaimHint" id="versusClaimHint">⚡ 两人到齐后，点击下方“抢僵尸 / 抢植物”。服务器按先到先得判定。</div>
+  <div class="versusSideGrid">
+    <button type="button" class="versusSideCard zombie" id="versusZombieSideCard">
+      <div class="versusSideIcon">🧟</div><div><small>僵尸方</small><strong id="versusZombiePlayer">未被抢占</strong><span>脑光 · 进攻 · Draft先手</span></div><em id="versusZombieClaimText">抢僵尸</em>
+    </button>
+    <div class="versusVsBadge">VS</div>
+    <button type="button" class="versusSideCard plant" id="versusPlantSideCard">
+      <div class="versusSideIcon">🌱</div><div><small>植物方</small><strong id="versusPlantPlayer">未被抢占</strong><span>阳光 · 防守 · Draft后手</span></div><em id="versusPlantClaimText">抢植物</em>
+    </button>
+  </div>
+  <div class="versusRuleConfigurator" id="versusRuleConfigurator">
+    <div><span>卡槽</span><button type="button" id="versusSlots6Btn">6槽</button><button type="button" id="versusSlots7Btn">7槽</button></div>
+    <div><span>BP</span><button type="button" id="versusNoBpBtn">No-BP</button><button type="button" id="versusBpBtn">有BP</button></div>
+  </div>
+  <div class="versusRoomRules" id="versusRoomRulesText"><b>本局规则：</b>6槽 · No-BP · 75 / 75 开局 · 40:00 未决平局。</div>
+
+  <div class="versusRoomManager" id="versusRoomManager">
+    <div class="versusRoomStatusGrid">
+      <div><small>服务器</small><strong id="versusRoomServerLabel">—</strong></div>
+      <div><small>房主</small><strong id="versusRoomHostLabel">—</strong></div>
+      <div><small>玩家</small><strong id="versusRoomCountLabel">1 / 2</strong></div>
+      <div><small>状态</small><strong id="versusRoomStateLabel">等待玩家</strong></div>
+    </div>
+    <section class="versusManagerSection">
+      <div class="versusManagerHeading"><h3>👥 玩家管理</h3><span id="versusKickHint">房主可在这里踢出其他玩家</span></div>
+      <div id="versusRoomPlayerList" class="versusRoomPlayerList"></div>
+    </section>
+    <section class="versusManagerSection">
+      <div class="versusManagerHeading"><h3>⚙️ 房间配置</h3><span id="versusConfigHint">仅房主可调整，房客实时看到结果</span></div>
+      <button id="versusSwapSidesBtn" class="versusSwapBtn">⇄ 房主兜底：交换双方阵营</button>
+    </section>
+    <div class="versusRoomActions">
+      <button type="button" class="primary" id="versusRoomStartDraftBtn" disabled>等待第2位玩家</button>
+      <button type="button" class="danger" id="versusRoomLeaveBtn">离开房间</button>
+    </div>
+  </div>
+</div>
+
 <div class="roomSection" id="roomHostControls" style="display:none">
 <h3>⚙️ 房主设置</h3>
 <div class="roomHostRow">
@@ -175,6 +309,47 @@
 <!-- 玩家列表+踢人固定在底部 -->
 <div id="roomScreenPlayerList" class="roomPlayerListCompact" style="margin-top:12px;padding-top:8px;border-top:1px solid #334;text-align:left"></div>
 </div>
+</div>
+
+
+<!-- 双人 Versus：服务器权威公开选卡 -->
+<div class="hidden" id="versusOnlineDraftScreen">
+  <div class="versusDraftShell">
+    <header class="versusDraftHeader">
+      <div><span class="versusDraftEyebrow">双人对战 · 公开选卡</span><h1>⚔️ 植物 VS 僵尸</h1></div>
+      <div class="versusDraftProgress"><b id="versusDraftProgress">0 / 10</b><span id="versusDraftRuleBadge">6槽 · No-BP · 僵尸先手</span></div>
+    </header>
+    <div class="versusDraftSides">
+      <section class="versusDraftSide zombie">
+        <div class="versusDraftSideHead"><span>🧟 僵尸方</span><small id="versusDraftZombieName">—</small></div>
+        <div class="versusFixedCore">固定经济核心 <b>🪦 墓碑</b></div><div class="versusBanLine" id="versusZombieBanLine">被Ban：无</div>
+        <div class="versusPickSlots" id="versusZombiePickSlots"></div>
+      </section>
+      <section class="versusDraftTurn" id="versusDraftTurnBanner"><small>等待选卡</small><strong>僵尸方先手</strong><span>当前玩家从下方卡池选择 1 张</span></section>
+      <section class="versusDraftSide plant">
+        <div class="versusDraftSideHead"><span>🌱 植物方</span><small id="versusDraftPlantName">—</small></div>
+        <div class="versusFixedCore">固定经济核心 <b>🌻 双子向日葵</b></div><div class="versusBanLine" id="versusPlantBanLine">被Ban：无</div>
+        <div class="versusPickSlots" id="versusPlantPickSlots"></div>
+      </section>
+    </div>
+    <div class="versusDraftInstruction" id="versusDraftInstruction">等待房主开始选卡…</div>
+    <div class="versusOnlineCardGrid" id="versusOnlineCardGrid"></div>
+    <div class="versusDraftStartRow"><button type="button" class="primary hidden" id="versusDraftStartBattleBtn">房主开始实时对战</button></div><footer class="versusDraftHelp"><span>① 顶部确认阵营和6/7槽</span><span>② BP时红色提示代表Ban对方卡</span><span>③ 选完后由房主启动唯一权威战斗</span></footer>
+  </div>
+</div>
+
+<!-- 双人 Versus：房主画面流 / 房客只看画面并回传输入 -->
+<div class="hidden" id="versusRealtimeScreen">
+  <div class="versusRealtimeTopbar">
+    <div><b id="versusRealtimeRole">双人对战</b><span id="versusRealtimeAuthority">房主权威计算</span></div>
+    <div class="versusLatencyMeter" id="versusLatencyMeter"><span class="dot"></span><b id="versusLatencyCs">-- cs</b><small>操控往返延迟</small></div>
+  </div>
+  <div class="versusStreamShell" id="versusStreamShell">
+    <canvas id="versusGuestStreamCanvas" width="960" height="540"></canvas>
+    <div class="versusStreamPlaceholder" id="versusStreamPlaceholder"><strong>等待房主画面…</strong><span>房客不会运行本地战斗模拟</span></div>
+    <div class="versusConnectionNotice hidden" id="versusConnectionNotice"><strong>对手连接中断</strong><span>房间保留 120 秒，重连后自动继续画面与输入通道。</span></div>
+  </div>
+  <div class="versusRealtimeHelp" id="versusRealtimeHelp">房客：直接在画面上点击/触摸，操作会发送给房主执行。</div>
 </div>
 
 <!-- 选路界面 -->
@@ -724,6 +899,11 @@
 <script src="./src/js/13_projectiles_effects.js"></script>
 <script src="./src/js/20_config_rules.js"></script>
 <script src="./src/js/21_entity_registry.js"></script>
+<script src="./src/js/22_versus_feature_profiles.js"></script>
+<script src="./src/js/23_versus_card_cooldowns.js"></script>
+<script src="./src/js/24_versus_bp_draft.js"></script>
+<script src="./src/js/25_versus_balance_format.js"></script>
+<script src="./src/js/26_versus_balance_telemetry.js"></script>
 <script src="./src/js/30_state_geometry.js"></script>
 <script src="./src/js/31_query_collision.js"></script>
 <script src="./src/js/40_projectiles_helpers.js"></script>
@@ -741,5 +921,9 @@
 <script src="./src/js/95_s7_mqtt_transport.js"></script>
 <script src="./src/js/95_s7_home_tunnel_transport.js"></script>
 <script src="./src/js/96_battle_mode.js"></script>
+<script src="./src/js/97_versus_online_duel.js"></script>
+<script src="./src/js/98_versus_realtime_sync.js"></script>
+<script src="./src/js/99_versus_battle_controller.js"></script>
+<script src="./src/js/100_versus_practice.js"></script>
 </body>
 </html>

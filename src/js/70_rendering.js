@@ -260,6 +260,7 @@
           ctx.fillText("淘汰", layout.x + layout.w / 2, layout.y + r * c + c * .56)
         }
       }
+      try { window.S7VersusBattle?.drawHud?.() } catch (e) { console.warn("Versus HUD draw failed", e) }
     }
 
     function drawGridEffects() {
@@ -1094,7 +1095,14 @@
       const tg = document.getElementById("toggleCardsBtn");
       s7SetTextIfChanged(tg, MOBILE_DEVICE ? "总卡槽 H" : cardMode === "plant" ? "僵尸卡槽 H" : "植物卡槽 H");
       const bs = document.getElementById("btnSpeed");
-      s7SetTextIfChanged(bs, (state.speed || 1) + "×")
+      s7SetTextIfChanged(bs, (state.speed || 1) + "×");
+      if (window.S7VersusCooldowns?.isActive(state) && typeof s7VersusDecorateCooldownCards === "function") {
+        const lastCdUi = finiteNumber(state.versus?.cooldownUiAt, -Infinity);
+        if (now - lastCdUi >= 100) {
+          state.versus.cooldownUiAt = now;
+          s7VersusDecorateCooldownCards(document.getElementById("cards"))
+        }
+      }
     }
 
     function finish() {

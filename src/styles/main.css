@@ -1741,3 +1741,39 @@
     flex: 0 0 auto;
     max-height: 80px;
   }
+
+/* Versus-only card cooldown visualization. Ordinary S7 never receives these classes. */
+.card.vsCooldownLocked { position: relative; filter: saturate(.55); }
+.card.vsCooldownLocked::after {
+  content: attr(data-vs-cd);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: rgba(15,23,42,.58);
+  color: #fff;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.card.vsCooldownReady { position: relative; }
+
+/* -------------------------------------------------------------------------
+ * Versus BP draft UI. Isolated namespace: versusBp*. Never affects S7 cards.
+ * ------------------------------------------------------------------------- */
+#versusBpOverlay{position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:18px}
+#versusBpOverlay.hidden{display:none}
+.versusBpDialog{width:min(980px,96vw);max-height:92vh;overflow:auto}
+.versusBpHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 12px;color:#cbd5e1}
+.versusBpHeader strong{color:#f8fafc;font-size:18px}
+.versusBpSummary{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#0b1720;color:#a9c1d1;font-size:13px;text-align:left}
+.versusBpCardGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:8px;margin:14px 0;min-height:170px}
+.versusBpCard{display:flex;align-items:center;gap:8px;min-height:50px;padding:8px 10px;text-align:left;border:1px solid #334155;border-radius:9px;background:#0d1b24;color:#dbeafe;cursor:pointer}
+.versusBpCard:hover{border-color:#64748b;background:#122735}
+.versusBpCard.selected{border-color:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.18) inset;background:#10281d}
+.versusBpEmoji{font-size:24px;line-height:1}
+.versusBpDone{grid-column:1/-1;padding:32px 16px;text-align:center;color:#cbd5e1;line-height:1.8}
+.versusBpActions{justify-content:center;margin-top:8px}
+@media(max-width:680px){.versusBpSummary{grid-template-columns:1fr}.versusBpCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
