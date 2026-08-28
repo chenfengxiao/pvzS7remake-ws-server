@@ -241,7 +241,10 @@
       // Dense legacy rendering uses one shared isolation scope. Ordinary battles
       // keep the original per-entity isolation path for exact visual compatibility.
       if (s7DenseZombieOverlayLevel > 0) ctx.save();
-      for (const z of finiteArray(state.zombies)) safeDrawOne("zombie", z, drawZombie);
+      for (const z of finiteArray(state.zombies)) {
+        if (z?.versusObjective || z?.versusStatic) continue; // versus entities rendered by drawVersusEntities
+        safeDrawOne("zombie", z, drawZombie);
+      }
       if (s7DenseZombieOverlayLevel > 0) ctx.restore();
       safeDrawOne("detachedParts", null, () => s7DrawDetachedParts());
       safeDrawOne("sniperLocks", null, () => drawSniperLocks());
@@ -304,7 +307,29 @@
           ctx.fillText(`${Math.max(0, Math.round(z.hp || 0))}`, sx, sy + c * .78);
         }
       }
-      // 2. Lawn mowers
+      // 2. Graves (墓碑)
+      for (const z of finiteArray(state.zombies)) {
+        if (!z || z.dead || z.versusStatic !== "grave") continue;
+        const gx = layout.x + z.x * c;
+        const gy = layout.y + z.row * c;
+        ctx.font = `${c * .55}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🪦", gx, gy + c * .55);
+        if (entityTextVisible) {
+          ctx.fillStyle = "#e0e7ff";
+          ctx.font = `bold ${c * .09}px sans-serif`;
+          ctx.fillText("碑", gx, gy + c * .82);
+        }
+        const hpR = Math.max(0, (z.hp || 0) / (z.maxHp || 400));
+        if (hpR < 1) {
+          ctx.fillStyle = "rgba(0,0,0,.4)";
+          ctx.fillRect(gx - c * .3, gy + c * .88, c * .6, 3);
+          ctx.fillStyle = hpR > .5 ? "#4ade80" : hpR > .25 ? "#eab308" : "#ef4444";
+          ctx.fillRect(gx - c * .3, gy + c * .88, c * .6 * hpR, 3);
+        }
+      }
+      // 3. Lawn mowers
       if (state.versus.mowers) {
         for (const m of state.versus.mowers) {
           if (!m || m.state === "used") continue;
@@ -325,7 +350,7 @@
           }
         }
       }
-      // 3. Resource tokens (☀️ / 🧠 flying)
+      // 4. Resource tokens (☀️ / 🧠 flying)
       if (state.versus.resourceTokens) {
         for (const t of finiteArray(state.versus.resourceTokens)) {
           if (t.dead) continue;
@@ -344,7 +369,7 @@
           ctx.globalAlpha = 1;
         }
       }
-      // 4. Twin sunflower production glow
+      // 5. Twin sunflower production glow
       for (const p of finiteArray(state.plants)) {
         if (!p || p.dead || p.versusCore !== "twin") continue;
         const glow = p.s7?.versusProduceGlow || 0;
