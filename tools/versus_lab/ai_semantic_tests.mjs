@@ -37,22 +37,24 @@ function run(){
     failed += check('植物开放目标路铺DPS', dpsInOpen >= 2, `openLanes=${openLanes} 有DPS的路=${dpsInOpen}`) ? 0 : 1;
   }
 
-  // 3) 灰烬在付费僵尸聚集时引爆（人工摆 4 个 bucket 聚集）
+  // 3) 灰烬在付费僵尸聚集时引爆（人工摆 3 个高付费僵尸聚集；付费价值远超引爆阈值）
   {
     const rt = createS7HeadlessRuntime();
     const b = rt.S7VersusBattle;
-    b.start({mode:'practice', humanSide:null, plantCards:['cherrybomb','wallnut','repeater'], zombieCards:['normal','bucket'], online:false, isHost:true});
+    b.start({mode:'practice', humanSide:null, plantCards:['cherrybomb','wallnut','repeater'], zombieCards:['normal','garg','football','tallz'], online:false, isHost:true});
     const st = rt.getState();
     b.state.resources.plant = 2000;
-    // 通过真实出牌购买 bucket 并聚集（有付费账本记录）；间隔推进以过 CD
+    // 通过真实出牌购买高付费僵尸并聚集（有付费账本记录）；3 张不同卡互不共享 CD，无需等满
     b.state.resources.zombie = 3000;
     const runFrames = n => { for (let i=0;i<n;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); } };
+    const heavyCluster = ['garg','football','tallz']; // 300 + 165 + 250 = 715 >> 樱桃阈值 202.5
     for (let r=1;r<=3;r++){
-      const rr = b.performAction({type:'play',side:'zombie',cardId:'bucket',row:r},'ai');
-      if (!rr.ok) return console.log('bucket deploy failed', rr);
+      const id = heavyCluster[r-1];
+      const rr = b.performAction({type:'play',side:'zombie',cardId:id,row:r},'ai');
+      if (!rr.ok) return console.log(id+' deploy failed', rr);
       const z = st.zombies.find(z=>z.id===rr.entityId);
       if (z){ z.x = 5; z.stun = 1e9; } // 测试夹具：钉住不移动，保持聚集
-      runFrames(360); // ~14.4s 过 bucket CD(14s)
+      runFrames(60); // 推进若干帧登记部署（不同卡无共享CD）
     }
     b.state.resources.plant = 2000;
     const ashBefore = b.state.ledger.deployments.filter(d=>d.cardId==='cherrybomb').length;

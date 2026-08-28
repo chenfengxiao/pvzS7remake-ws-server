@@ -837,7 +837,10 @@
     function s7OpenBlindBoxesInJackRow(z) {
       if (!z || !state) return 0;
       let opened = 0;
-      for (const b of [...state.zombies]) {
+      const zArr = state.zombies;
+      const zLen = zArr.length;
+      for (let zi = 0; zi < zLen; zi++) {
+        const b = zArr[zi];
         // 变种小丑的额外开盒能力固定为“自身所在整行”。
         // 不使用小丑对植物爆炸的3×3范围；不跨行；也不因距离远近漏开。
         if (!b || b.dead || !b.blind || b.row !== z.row) continue;
@@ -858,7 +861,10 @@
         }
       }
       let opened = 0;
-      for (const b of [...state.zombies]) {
+      const zArr = state.zombies;
+      const zLen = zArr.length;
+      for (let zi = 0; zi < zLen; zi++) {
+        const b = zArr[zi];
         if (!b || b.dead || !b.blind || b.row !== z.row || Math.abs(b.x - z.x) > rad) continue;
         const released = s7JackReleaseOneBlindBox(b);
         if (released) { opened++; addEffect(b.row, b.x, "小丑开盒→" + released.name, "#fde047", .75) }

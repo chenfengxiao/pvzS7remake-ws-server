@@ -15,35 +15,35 @@
   };
 
   const PLANT_COOLDOWNS = {
-    wallnut: [12, 3, "defense"], tallnut: [18, 5, "defense"], cactus: [8, 2, "normal"], explodenut: [32, 12, "burst"],
-    chomper: [18, 5, "control"], garlic: [18, 5, "control"], spikerock: [16, 4, "defense"], snowpea: [10, 3, "normal"],
-    repeater: [10, 3, "normal"], puff: [5, 0, "normal"], scaredy: [8, 2, "normal"], squash: [30, 10, "burst"],
-    threepeater: [14, 4, "normal"], seashroom: [8, 2, "normal"], splitpea: [10, 3, "normal"], cabbage: [9, 2, "normal"],
-    cattail: [24, 8, "global"], firelotus: [22, 7, "control"], reverseRepeater: [10, 3, "normal"], ghost: [18, 5, "control"],
-    sniper: [20, 7, "global"], sunflower: [12, 0, "economy"], sunshroom: [10, 0, "economy"], hypno: [26, 8, "control"],
-    iceshroom: [42, 20, "burst"], kelp: [26, 8, "control"], torchwood: [18, 5, "support"], plantern: [15, 4, "support"],
-    blover: [24, 7, "control"], magnet: [18, 5, "support"], kernel: [12, 3, "normal"], umbrella: [18, 5, "support"],
-    marigold: [15, 4, "support"], goldmagnet: [22, 6, "support"], timegrass: [32, 12, "control"], barley: [20, 6, "support"],
-    starfruit: [16, 5, "global"], fume: [10, 3, "normal"], gloom: [22, 7, "control"], potato: [30, 10, "burst"],
-    melon: [16, 5, "normal"], gatling: [24, 8, "carry"], winter: [28, 10, "carry"],
+    wallnut: [12, 3, "defense"], tallnut: [15, 5, "defense"], cactus: [9.5, 2, "normal"], explodenut: [25.5, 12, "burst"],
+    chomper: [15, 5, "control"], garlic: [14, 5, "control"], spikerock: [16.5, 4, "defense"], snowpea: [11, 3, "normal"],
+    repeater: [10.5, 3, "normal"], puff: [8.5, 0, "normal"], scaredy: [11.5, 2, "normal"], squash: [33, 10, "burst"],
+    threepeater: [18.5, 4, "normal"], seashroom: [9, 2, "normal"], splitpea: [10, 3, "normal"], cabbage: [10, 2, "normal"],
+    cattail: [28.5, 8, "global"], firelotus: [24, 7, "control"], reverseRepeater: [9, 3, "normal"], ghost: [16, 5, "control"],
+    sniper: [23.5, 7, "global"], sunflower: [13, 0, "economy"], sunshroom: [11, 0, "economy"], hypno: [22, 8, "control"],
+    iceshroom: [25.5, 20, "burst"], kelp: [22, 8, "control"], torchwood: [16.5, 5, "support"], plantern: [14, 4, "support"],
+    blover: [16, 7, "control"], magnet: [15.5, 5, "support"], kernel: [11, 3, "normal"], umbrella: [16, 5, "support"],
+    marigold: [14, 4, "support"], goldmagnet: [19.5, 6, "support"], timegrass: [27.5, 12, "control"], barley: [18.5, 6, "support"],
+    starfruit: [19.5, 5, "global"], fume: [9, 3, "normal"], gloom: [19, 7, "control"], potato: [33, 10, "burst"],
+    melon: [17.5, 5, "normal"], gatling: [29.5, 8, "carry"], winter: [23.5, 10, "carry"],
     twinSunflower: [24, 6, "economy"], cherrybomb: [50, 30, "ash"], jalapeno: [50, 35, "ash"], doomshroom: [50, 45, "ash"]
   };
 
 
   const PLANT_RESOURCE_COSTS = Object.freeze({
-    wallnut:150, tallnut:175, cactus:100, explodenut:225, chomper:175, garlic:125, spikerock:150, snowpea:175,
-    repeater:150, puff:50, scaredy:75, squash:175, threepeater:250, seashroom:100, splitpea:125, cabbage:150,
-    cattail:250, firelotus:250, reverseRepeater:150, ghost:225, sniper:225, sunflower:150, sunshroom:150, hypno:250,
-    iceshroom:350, kelp:250, torchwood:150, plantern:125, blover:125, magnet:175, kernel:225, umbrella:150,
-    marigold:125, goldmagnet:200, timegrass:225, barley:300, starfruit:225, fume:175, gloom:275, potato:250,
-    melon:300, gatling:300, winter:325, twinSunflower:250, cherrybomb:150, jalapeno:125, doomshroom:200
+    wallnut:25, tallnut:25, cactus:180, explodenut:150, chomper:100, garlic:90, spikerock:150, snowpea:255,
+    repeater:300, puff:195, scaredy:135, squash:285, threepeater:645, seashroom:165, splitpea:105, cabbage:210,
+    cattail:510, firelotus:345, reverseRepeater:125, ghost:200, sniper:360, sunflower:135, sunshroom:135, hypno:210,
+    iceshroom:200, kelp:180, torchwood:105, plantern:75, blover:45, magnet:120, kernel:250, umbrella:75,
+    marigold:75, goldmagnet:150, timegrass:175, barley:285, starfruit:400, fume:250, gloom:200, potato:405,
+    melon:450, gatling:540, winter:250, twinSunflower:250, cherrybomb:150, jalapeno:125, doomshroom:200
   });
 
   const ZOMBIE_RESOURCE_COSTS = Object.freeze({
-    blind:100, normal:25, flag:50, cone:50, peaz:75, snorkel:100, pole:100,
-    bucket:125, balloon:125, dolphin:125, squashz:125, yeti:125, newspaper:150, screen:150, digger:150, pogo:150,
-    jack:150, bungee:150, jalapenoz:150, wallz:150, football:175, ladder:175, gatlingz:175,
-    dancing:200, zomboni:200, catapult:200, immortal:200, bobsledSled:225, tallz:225, garg:300, giga:500
+    blind:135, normal:25, flag:45, cone:50, peaz:100, snorkel:50, pole:50,
+    bucket:50, balloon:50, dolphin:60, squashz:150, yeti:125, newspaper:165, screen:165, digger:50, pogo:30,
+    jack:165, bungee:150, jalapenoz:165, wallz:165, football:165, ladder:180, gatlingz:210,
+    dancing:200, zomboni:315, catapult:210, immortal:285, bobsledSled:360, tallz:250, garg:300, giga:550
   });
 
   const plantCards = {};
@@ -61,13 +61,13 @@
   // explicit overrides pin the exceptional cards. This keeps future zombie
   // additions safe without silently giving them zero cooldown.
   const zombieOverrides = {
-    blind: [10, 2, "normal"], normal: [5, 0, "normal"], flag: [8, 0, "support"], cone: [8, 1, "armor"],
-    bucket: [13, 3, "armor"], newspaper: [12, 2, "normal"], screen: [14, 3, "armor"], football: [18, 5, "rush"],
-    pole: [14, 3, "rush"], snorkel: [15, 4, "infiltration"], dolphin: [16, 4, "infiltration"], balloon: [18, 6, "infiltration"],
-    miner: [20, 7, "infiltration"], pogo: [18, 5, "infiltration"], ladder: [18, 5, "support"], bungee: [28, 10, "infiltration"],
-    dancing: [24, 8, "summon"], bobsledSled: [28, 10, "heavy"], zomboni: [28, 10, "heavy"], catapult: [28, 10, "heavy"],
-    peaz: [14, 3, "ranged"], gatlingz: [24, 8, "ranged"], squashz: [20, 6, "rush"], jalapenoz: [30, 12, "burst"],
-    immortal: [26, 9, "heavy"], garg: [40, 18, "heavy"], giga: [60, 30, "heavy"]
+    blind: [10.5, 2, "normal"], normal: [5, 0, "normal"], flag: [8.5, 0, "support"], cone: [8.5, 1, "armor"],
+    bucket: [14, 3, "armor"], newspaper: [12, 2, "normal"], screen: [15, 3, "armor"], football: [18, 5, "rush"],
+    pole: [15, 3, "rush"], snorkel: [15, 4, "infiltration"], dolphin: [15.5, 4, "infiltration"], balloon: [17, 6, "infiltration"],
+    miner: [20, 7, "infiltration"], pogo: [14.5, 5, "infiltration"], ladder: [18, 5, "support"], bungee: [26.5, 10, "infiltration"],
+    dancing: [24, 8, "summon"], bobsledSled: [32, 10, "heavy"], zomboni: [31.5, 10, "heavy"], catapult: [28, 10, "heavy"],
+    peaz: [16, 3, "ranged"], gatlingz: [24, 8, "ranged"], squashz: [20, 6, "rush"], jalapenoz: [30, 12, "burst"],
+    immortal: [29.5, 9, "heavy"], garg: [50, 18, "heavy"], giga: [50, 30, "heavy"]
   };
 
   function derivedZombieCooldown(type) {

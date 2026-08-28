@@ -536,6 +536,39 @@
       return arr.length
     }
 
+    // --- Zombie row bucketing cache ---
+    // Most plant targeting is same-row. Rebuild 5 row buckets once per logical
+    // frame instead of scanning all zombies for every s7Nearest/s7Targets call.
+    // Cache invalidates on state ref / frame / array length / mid-frame row change.
+    var _zombieRowVersion = 0; // incremented when a zombie changes row mid-frame
+    let _zRowBuckets = null;
+    let _zRowBucketsState = null;
+    let _zRowBucketsFrame = -1;
+    let _zRowBucketsLen = -1;
+    let _zRowBucketsVer = -1;
+    function zombieRowBucket(row) {
+      const zombies = finiteArray(state.zombies);
+      const frame = Math.floor(finiteNumber(state.frame, 0));
+      if (_zRowBucketsState !== state || _zRowBucketsFrame !== frame || _zRowBucketsLen !== zombies.length ||
+        _zRowBucketsVer !== _zombieRowVersion) {
+        _zRowBuckets = [null, null, null, null, null];
+        for (let i = 0; i < zombies.length; i++) {
+          const z = zombies[i];
+          if (!z) continue;
+          const r = z.row | 0;
+          if (r < 0 || r >= ROWS) continue;
+          const bucket = _zRowBuckets[r] || (_zRowBuckets[r] = []);
+          bucket.push(z)
+        }
+        _zRowBucketsState = state;
+        _zRowBucketsFrame = frame;
+        _zRowBucketsLen = zombies.length;
+        _zRowBucketsVer = _zombieRowVersion
+      }
+      const b = row >= 0 && row < 5 ? _zRowBuckets[row] : null;
+      return b || []
+    }
+
     function s7Nearest(row, col, opt = {}) {
       const targetRow = opt.anyRow ? null : row;
       const queryOpt = {
@@ -547,8 +580,10 @@
         source: opt.source || opt.plant || opt.sourceKey
       };
       const centerX = col + .5;
+      const candidates = targetRow == null ? state.zombies : zombieRowBucket(targetRow);
       let best = null;
-      for (const z of state.zombies) {
+      for (let i = 0; i < candidates.length; i++) {
+        const z = candidates[i];
         if (!canPlantTargetZombie(z, queryOpt)) continue;
         if (opt.range != null && Math.abs(z.x - centerX) > opt.range) continue;
         if (opt.front !== false && z.x < col - .2) continue;
@@ -563,20 +598,29 @@
     }
 
     function s7Targets(row, col, n = 1, opt = {}) {
-      let arr = state.zombies.filter(z => canPlantTargetZombie(z, {
+      const targetRow = opt.anyRow ? null : row;
+      const queryOpt = {
         ...opt,
-        row: opt.anyRow ? null : row,
+        row: targetRow,
         canHitAir: !!(opt.canAir || opt.canHitAir || opt.balloon),
         canHitUnderground: !!(opt.canUnderground || opt.canHitUnderground),
         canHitDiving: !!(opt.canDiving || opt.canHitDiving),
         source: opt.source || opt.plant || opt.sourceKey
-      }));
-      if (opt.range != null) arr = arr.filter(z => Math.abs(z.x - (col + .5)) <= opt.range);
-      if (opt.front !== false) arr = arr.filter(z => z.x >= col - .2);
-      if (opt.notBlind) arr = arr.filter(z => !z.blind);
-      if (!opt.canLandingInvuln) arr = arr.filter(z => !z.landingInvuln || z.landingInvuln <= 0);
-      arr.sort((a, b) => opt.threat ? b.threat - a.threat : a.x - b.x);
-      return arr.slice(0, n)
+      };
+      const centerX = col + .5;
+      const candidates = targetRow == null ? state.zombies : zombieRowBucket(targetRow);
+      const out = [];
+      for (let i = 0; i < candidates.length; i++) {
+        const z = candidates[i];
+        if (!canPlantTargetZombie(z, queryOpt)) continue;
+        if (opt.range != null && Math.abs(z.x - centerX) > opt.range) continue;
+        if (opt.front !== false && z.x < col - .2) continue;
+        if (opt.notBlind && z.blind) continue;
+        if (!opt.canLandingInvuln && z.landingInvuln > 0) continue;
+        out.push(z)
+      }
+      out.sort((a, b) => opt.threat ? b.threat - a.threat : a.x - b.x);
+      return out.slice(0, n)
     }
 
     const _zombieIdIndex = new Map();

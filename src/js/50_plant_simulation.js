@@ -463,7 +463,10 @@
           }
         }
       }
-      for (const z of [...state.zombies]) {
+      const zArr = state.zombies;
+      const zLen = zArr.length;
+      for (let zi = 0; zi < zLen; zi++) {
+        const z = zArr[zi];
         if (!canExplosionAffectZombie(z, opt)) continue;
         if (Math.abs(z.row - row) <= rad && Math.abs(z.x - x) <= rad) damageZombie(z, damage, opt)
       }

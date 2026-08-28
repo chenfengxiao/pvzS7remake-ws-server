@@ -592,7 +592,10 @@
       if (!state) return;
       const hasUmbrella = state.plants.some(p => !p.dead && p.key === "umbrella" && (rowFilter === null || p.row === rowFilter));
       if (!hasUmbrella) return;
-      for (const z of [...state.zombies]) {
+      const zArr = state.zombies;
+      const zLen = zArr.length;
+      for (let zi = 0; zi < zLen; zi++) {
+        const z = zArr[zi];
         if (!z || z.dead || z.friendly) continue;
         if (rowFilter !== null && z.row !== rowFilter) continue;
         if (z.type === "imp") {

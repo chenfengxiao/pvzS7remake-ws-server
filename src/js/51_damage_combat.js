@@ -696,7 +696,10 @@
       // 普通红眼砸僵尸900、巨大化红眼1800；白眼对僵尸侧固定900。
       const aoeDmg = attacker.type === "giga" ? (attacker.s7?.superGiga ? 1800 : 900) : 900;
       let n = 0;
-      for (const q of [...state.zombies]) {
+      const qArr = state.zombies;
+      const qLen = qArr.length;
+      for (let qi = 0; qi < qLen; qi++) {
+        const q = qArr[qi];
         if (!q || q.dead || q === attacker) continue;
         if (q.row !== row || Math.abs(q.x - x) > 1.5) continue;
         if (hitFriendly ? !q.friendly : q.friendly) continue;
@@ -1045,8 +1048,9 @@
 
     function projectileTouchesZombieSprite(b, z) {
       const r = ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0);
-      return Math.hypot(finiteNumber(b?.x, -999) - finiteNumber(z?.x, 999), finiteNumber(b?.y, -999) - (finiteNumber(z
-        ?.row, 999) + .5)) <= r + 1e-9
+      const dx = finiteNumber(b?.x, -999) - finiteNumber(z?.x, 999);
+      const dy = finiteNumber(b?.y, -999) - (finiteNumber(z?.row, 999) + .5);
+      return dx * dx + dy * dy <= (r + 1e-9) * (r + 1e-9)
     }
 
     function projectileSweepTouchesZombie(b, z, oldX, oldY, newX, newY) {
@@ -1059,7 +1063,10 @@
       const t = clamp(((zx - oldX) * vx + (zy - oldY) * vy) / len2, 0, 1);
       const px = oldX + vx * t;
       const py = oldY + vy * t;
-      return Math.hypot(zx - px, zy - py) <= ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0) + 1e-9
+      const r = ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0) + 1e-9;
+      const dx = zx - px;
+      const dy = zy - py;
+      return dx * dx + dy * dy <= r * r
     }
 
     function projectileCanTouchZombieForHit(b, z, oldX, oldY, newX, newY) {
@@ -1389,12 +1396,16 @@
       }
       if (b.giftBox) {
         const cell = Math.floor(z.x);
-        for (const q of [...state.zombies])
+        const qArr = state.zombies;
+        const qLen = qArr.length;
+        for (let qi = 0; qi < qLen; qi++) {
+          const q = qArr[qi];
           if (!q.dead && q.row === z.row && Math.floor(q.x) === cell) killZombie(q, {
             source: b.from,
             noCritical: true,
             noTransform: true
-          });
+          })
+        }
         addEffect(z.row, cell + .5, "空礼盒清格", "#f0abfc", .6);
         return
       }

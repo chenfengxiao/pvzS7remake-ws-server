@@ -864,6 +864,51 @@
 
     let s7DenseZombieOverlayLevel = 0;
 
+    // --- Emoji offscreen sprite cache (legacy glyph fallback) ---
+    // Rasterizes emoji glyph + optional freeze glow once, then drawImage.
+    // Budgeted per frame like the entity badge cache; falls back to fillText
+    // when the budget is exhausted or the canvas is unavailable.
+    const _emojiSpriteCache = new Map();
+    let _emojiSpriteBudgetFrame = -1;
+    let _emojiSpriteBudgetCount = 0;
+    function emojiSprite(emoji, fontSize, frozen) {
+      if (!emoji || !fontSize || fontSize <= 0) return null;
+      const dpr = typeof DPR === "number" ? Math.max(1, DPR | 0) : 1;
+      const key = emoji + "|" + fontSize.toFixed(1) + "|" + (frozen ? 1 : 0) + "|" + dpr;
+      const hit = _emojiSpriteCache.get(key);
+      if (hit) return hit;
+      const frame = finiteNumber(state?.frame, 0) | 0;
+      if (_emojiSpriteBudgetFrame !== frame) {
+        _emojiSpriteBudgetFrame = frame;
+        _emojiSpriteBudgetCount = 0;
+      }
+      if (_emojiSpriteBudgetCount >= (s7DenseZombieOverlayLevel > 0 ? 12 : 2)) return null;
+      _emojiSpriteBudgetCount++;
+      try {
+        const pad = Math.ceil(fontSize * .4);
+        const size = Math.ceil(fontSize * 2 + pad * 2);
+        const cv = document.createElement("canvas");
+        cv.width = size * dpr;
+        cv.height = size * dpr;
+        const c = cv.getContext("2d");
+        c.scale(dpr, dpr);
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.font = `${fontSize}px serif`;
+        if (frozen) {
+          c.shadowColor = "#93c5fd";
+          c.shadowBlur = Math.max(4, fontSize * .3);
+        }
+        c.fillText(emoji, size / 2, size / 2);
+        _emojiSpriteCache.set(key, cv);
+        if (_emojiSpriteCache.size > 512) {
+          const oldest = _emojiSpriteCache.keys().next().value;
+          if (oldest) _emojiSpriteCache.delete(oldest)
+        }
+        return cv
+      } catch (_) { return null }
+    }
+
     function drawZombie(z) {
       if (!z || !renderSafeX(z.x) || !renderSafeRow(z.row)) return;
       z.flags = z.flags || {};
@@ -897,6 +942,9 @@
         ctx.fillStyle = "#000000";
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 1;
+        // Dense path skips the isolated save/restore; apply the mirror flip
+        // here so the shared undo below stays balanced for dir>0 zombies.
+        if (z.dir > 0) { ctx.translate(x, y); ctx.scale(-1, 1); ctx.translate(-x, -y); }
       }
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -919,9 +967,22 @@
         s7DrawLayeredSprite(ctx, "zombie", z, x, y - layout.cell*.015, layout.cell);
         if (zombieFrameEffect) ctx.restore();
       } else {
-        ctx.fillText(z.emoji, x, y - 2);
+        const fontSize = layout.cell * zombieGlyphScale;
+        const spr = emojiSprite(z.emoji, fontSize, zombieFrozen);
+        if (spr) {
+          // Sprite already bakes the freeze glow; drop the live shadow so it
+          // is not applied twice.
+          ctx.shadowBlur = 0;
+          const dpr = typeof DPR === "number" ? Math.max(1, DPR | 0) : 1;
+          const size = spr.width / dpr;
+          ctx.drawImage(spr, x - size / 2, (y - 2) - size / 2, size, size)
+        } else {
+          ctx.fillText(z.emoji, x, y - 2)
+        }
       }
       ctx.globalAlpha = zombieSpriteBaseAlpha;
+      // Undo the mirrored transform for labels. Both isolated and dense
+      // branches apply the flip, so this restore is always balanced.
       if (z.dir > 0) { ctx.translate(x, y); ctx.scale(-1, 1); ctx.translate(-x, -y); }
       if (z.blind) {
         ctx.strokeStyle = "#facc15";
@@ -1290,16 +1351,21 @@
       }
       let steps = 0;
       try {
-        const raw = Math.min(.16, Math.max(0, (now - last) / 1e3));
+        const hidden = !QUAD_CHILD_MODE && document.hidden;
+        const raw = Math.min(hidden ? 1.5 : .16, Math.max(0, (now - last) / 1e3));
         last = now;
         frameAcc += raw;
-        const pace = FIXED_FRAME_DT / Math.max(.25, finiteNumber(state?.speed || 1, 1));
-        while (frameAcc >= pace && steps < PERF.MAX_STEPS_PER_FRAME) {
+        const speedEff = Math.max(.25, finiteNumber(state?.speed || 1, 1));
+        const pace = FIXED_FRAME_DT / speedEff;
+        // 后台：放宽单步预算但限 64 步/批，保留时间债务逐批追赶，避免一次长阻塞。
+        const stepCap = hidden ? Math.max(25, Math.min(64, Math.ceil(.5 * speedEff / FIXED_FRAME_DT))) : PERF
+          .MAX_STEPS_PER_FRAME;
+        while (frameAcc >= pace && steps < stepCap) {
           frameAcc -= pace;
           if (state) update(FIXED_FRAME_DT);
           steps++
         }
-        if (steps >= PERF.MAX_STEPS_PER_FRAME && frameAcc >= pace) frameAcc = 0
+        if (!hidden && steps >= PERF.MAX_STEPS_PER_FRAME && frameAcc >= pace) frameAcc = 0
       } catch (err) {
         console.error(err);
         frameAcc = 0;
@@ -1314,7 +1380,7 @@
       const requiredRenderInterval = QUAD_CHILD_MODE ? Math.max(QUAD_CHILD_RENDER_INTERVAL_MS, adaptiveRenderInterval) : adaptiveRenderInterval;
       const renderIntervalReady = now - lastQuadRenderAt >= requiredRenderInterval;
       const contentChanged = steps > 0 || now - lastQuadRenderAt >= PERF.MAX_UNCHANGED_RENDER_GAP_MS;
-      const shouldRender = renderIntervalReady && contentChanged;
+      const shouldRender = !document.hidden && renderIntervalReady && contentChanged;
       if (state && shouldRender) {
         lastQuadRenderAt = now;
         try {
@@ -1351,6 +1417,59 @@
       cancelAnimationFrame(animationFrameId);
       animationFrameId = 0
     }
+
+    // --- Unified background scheduler (hidden-tab continuation) ---
+    // Single driver for both single-player and BP/online battles: a Worker
+    // posts 40ms ticks (best-effort, not guaranteed) with a 250ms main-thread
+    // setInterval fallback. runGameFrame itself limits per-batch work and keeps
+    // the time debt, so multiple drivers sharing it only add wakeups, never
+    // double-speed the sim.
+    let _bgIntervalId = 0;
+    let _bgWorker = null;
+    let _bgWorkerUrl = "";
+    let _bgVisibilityBound = false;
+    const _BG_WORKER_SRC = '"use strict";\nlet bgLast = 0;\nsetInterval(function(){\n  const n = performance.now();\n  if (n - bgLast >= 40) { bgLast = n; self.postMessage("bgTick"); }\n}, 40);\n';
+    function _stopBgWorker() {
+      if (_bgWorker) { try { _bgWorker.terminate() } catch (_) {} _bgWorker = null }
+      if (_bgWorkerUrl) { try { URL.revokeObjectURL(_bgWorkerUrl) } catch (_) {} _bgWorkerUrl = "" }
+    }
+    function startBackgroundLoop() {
+      if (_bgIntervalId || QUAD_CHILD_MODE) return;
+      _bgIntervalId = setInterval(() => {
+        if (!document.hidden) return;
+        runGameFrame(performance.now())
+      }, 250);
+      try {
+        if (typeof Worker === "function" && typeof Blob === "function" && typeof URL?.createObjectURL === "function" &&
+          !IOS_DEVICE && location.protocol !== "file:") {
+          _bgWorkerUrl = URL.createObjectURL(new Blob([_BG_WORKER_SRC], { type: "text/javascript;charset=utf-8" }));
+          _bgWorker = new Worker(_bgWorkerUrl);
+          _bgWorker.onmessage = event => {
+            if (event?.data === "bgTick" && document.hidden) runGameFrame(performance.now())
+          };
+          _bgWorker.onerror = () => _stopBgWorker()
+        }
+      } catch (_) { _stopBgWorker() }
+    }
+    function stopBackgroundLoop() {
+      if (!_bgIntervalId) return;
+      clearInterval(_bgIntervalId);
+      _bgIntervalId = 0;
+      _stopBgWorker()
+    }
+    function syncBackgroundLoop() {
+      if (document.hidden) startBackgroundLoop();
+      else stopBackgroundLoop()
+    }
+    function bindBackgroundVisibility() {
+      if (_bgVisibilityBound || QUAD_CHILD_MODE || typeof document === "undefined") return;
+      _bgVisibilityBound = true;
+      document.addEventListener("visibilitychange", syncBackgroundLoop);
+      if (typeof addEventListener === "function") addEventListener("pageshow", syncBackgroundLoop, { passive: true });
+      if (document.hidden) syncBackgroundLoop()
+    }
+    bindBackgroundVisibility();
+    window.syncBackgroundLoop = syncBackgroundLoop;
 
     function attachQuadRefreshPort(port) {
       if (!QUAD_CHILD_MODE || !port) return false;

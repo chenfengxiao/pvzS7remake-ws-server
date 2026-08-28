@@ -374,8 +374,6 @@ var _battleResultSent = false;
 var _forceStopped = false;
 var _pendingPhaseFn = null;
 var _formationCheckTimer = null;
-var _mpBgInterval = null;
-var _mpBgVisHandler = null;
 var _banSelected = []; // ban 阶段我选的ban植物
 
 // ---------- DOM ----------
@@ -2164,29 +2162,11 @@ function _setupBattle(seed, formations, speed, endMode) {
   // 锁定游戏操作面板（CSS 用 display:none 隐藏 #side 和 iOS 按钮）
   document.body.classList.add("mp-locked");
 
-  // 后台运行：追踪墙上时间，直接追赶模拟
+  // 后台运行：追踪墙上时间，直接追赶模拟。
+  // 统一后台调度已由全局 syncBackgroundLoop 接管（Worker 40ms + interval 250ms），
+  // 这里不再自建 setInterval；_mpBattleActive 仅作为战斗标记。
   window._mpBattleActive = true;
-  // 用 Page Visibility API：前台 rAF 驱动，后台 setInterval 驱动，互斥不重复
-  if (typeof document !== "undefined") {
-    var _onVisChange = function() {
-      if (!window._mpBattleActive) return;
-      if (document.hidden) {
-        // 切到后台：启动 setInterval 兜底
-        if (!_mpBgInterval) {
-          _mpBgInterval = setInterval(function() {
-            if (typeof runGameFrame === "function") runGameFrame(performance.now());
-          }, 100);
-        }
-      } else {
-        // 切回前台：停止 setInterval，让 rAF 接管
-        if (_mpBgInterval) { clearInterval(_mpBgInterval); _mpBgInterval = null; }
-      }
-    };
-    document.addEventListener("visibilitychange", _onVisChange);
-    _mpBgVisHandler = _onVisChange;
-    // 初始检查（如果加载时就在后台）
-    if (document.hidden) _onVisChange();
-  }
+  if (typeof window.syncBackgroundLoop === "function") window.syncBackgroundLoop();
 
   _battleAborted = false;
   _laneDeathTimes = [null, null, null, null, null];
@@ -2247,8 +2227,8 @@ function _stopBattleMonitor() {
 
 function _stopBgLoop() {
   window._mpBattleActive = false;
-  if (_mpBgInterval) { clearInterval(_mpBgInterval); _mpBgInterval = null; }
-  if (_mpBgVisHandler && document) { document.removeEventListener("visibilitychange", _mpBgVisHandler); _mpBgVisHandler = null; }
+  // 统一后台调度由全局 visibilitychange 管理；战斗结束后不强制停后台，
+  // 单机模式切后台同样继续模拟。
 }
 
 function _cleanupBattle() {

@@ -20,7 +20,7 @@ def main():
     subprocess.run(['python3', 'tools/build_fast_entry.py'], cwd=ROOT, check=True)
     html = (ROOT / 'dist/S7_FAST_ENTRY.html').read_text(encoding='utf-8')
     with sync_playwright() as p:
-        browser = launch_chromium(p, headless=True, args=['--no-sandbox', '--disable-gpu'])
+        browser = launch_chromium(p, headless=True, args=['--no-sandbox', '--disable-gpu', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'])
         page = browser.new_page(viewport={'width': 1440, 'height': 900})
         open_standalone_page(page, html)
         page.wait_for_timeout(800)
@@ -44,9 +44,18 @@ def main():
         page.click('.versusPracticeSide[data-side="plant"]')
         page.wait_for_timeout(150)
         shot(page, '03_side_selected')
-        # 开始选卡（AI 自动补完）
+        # 开始选卡（AI 自动补完）；人工方需自行点选，循环补齐直到开战按钮出现
         page.click('#versusPracticeBeginBtn')
-        page.wait_for_timeout(3500)
+        page.wait_for_timeout(800)
+        for _ in range(60):
+            start_visible = page.evaluate("!document.getElementById('versusPracticeStartBattleBtn').classList.contains('hidden')")
+            if start_visible:
+                break
+            try:
+                page.click('.versusDraftCard:not(.disabled)', timeout=1500)
+            except Exception:
+                pass
+            page.wait_for_timeout(450)
         shot(page, '04_draft_done')
         # 开战
         page.click('#versusPracticeStartBattleBtn')
@@ -68,13 +77,39 @@ def main():
         shot(page, '07_result')
         result = page.evaluate("window.S7VersusBattle?.state?.versus?.result || null")
         print('RESULT', result)
-        # 重开回设置
+        # 重开回设置（native click，避免 Playwright 坐标点击被模态背景拦截）
         try:
-            page.click('#versusResultRematchBtn', timeout=3000)
-            page.wait_for_timeout(400)
+            page.evaluate("document.getElementById('versusResultRematchBtn')?.click()")
+            page.wait_for_timeout(600)
             shot(page, '08_rematch_setup')
         except Exception as e:
             print('rematch click failed:', e)
+        # 第二局：从设置重新选卡开战，验证状态重置（资源回到75/75、无旧战斗残留）
+        try:
+            page.click('#versusPracticeBeginBtn')
+            page.wait_for_timeout(800)
+            for _ in range(60):
+                if page.evaluate("!document.getElementById('versusPracticeStartBattleBtn').classList.contains('hidden')"):
+                    break
+                try:
+                    page.click('.versusDraftCard:not(.disabled)', timeout=1500)
+                except Exception:
+                    pass
+                page.wait_for_timeout(450)
+            page.click('#versusPracticeStartBattleBtn')
+            page.wait_for_timeout(1200)
+            g2 = page.evaluate("""() => ({
+              active: !!window.S7VersusBattle?.state?.active,
+              phase: window.S7VersusBattle?.state?.versus?.phase,
+              plantSun: window.S7VersusBattle?.state?.resources?.plant,
+              zombieBrain: window.S7VersusBattle?.state?.resources?.zombie,
+              time: window.S7VersusBattle?.state?.time,
+              targetsLeft: (window.S7VersusBattle?.state?.versus?.target?.total ?? 5) - (window.S7VersusBattle?.state?.versus?.target?.destroyed ?? 0)
+            })""")
+            print('GAME2_RESET', g2)
+            shot(page, '09_rematch_battle2')
+        except Exception as e:
+            print('game2 failed:', e)
         browser.close()
     print('UI_REVIEW_DONE')
 

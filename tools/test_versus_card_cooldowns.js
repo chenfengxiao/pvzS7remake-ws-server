@@ -37,7 +37,8 @@ assert.strictEqual(C.canUse(s, "plant", "sunflower", 1), false);
 assert.strictEqual(C.canUse(s, "zombie", "normal", 1), true, "plant cooldown cannot contaminate zombie domain");
 assert.strictEqual(C.commitUse(s, "zombie", "normal", 1).ok, true);
 assert.strictEqual(C.canUse(s, "zombie", "normal", 2), false);
-assert.strictEqual(C.canUse(s, "plant", "sunflower", 12), true);
+assert.strictEqual(C.canUse(s, "plant", "sunflower", P.cardCooldown.plants.sunflower.cooldownSeconds), true, "sunflower reusable after its profile cooldown");
+assert.strictEqual(C.canUse(s, "plant", "sunflower", P.cardCooldown.plants.sunflower.cooldownSeconds - 0.5), false, "sunflower still cooling just before its profile cooldown");
 
 // Shared ash lock: Cherry at t=30 blocks Jalapeno until t=38 even though its
 // opening cooldown would have completed at t=35.

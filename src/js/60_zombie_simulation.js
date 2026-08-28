@@ -311,7 +311,8 @@
               let nr = Math.floor(s7BattleRandom() * ROWS);
               if (nr !== z.row) {
                 addEffect(z.row, z.x, "换行", "#fde68a");
-                z.row = nr
+                z.row = nr;
+                if (typeof _zombieRowVersion === "number") _zombieRowVersion++
               }
             }
             if (!z.friendly && z.x < -.35 && !z.dying) { if(state.versus?.active){window.S7VersusBattle?.handleHomeApproach?.(z)} else defeatLane(z.row); }
@@ -355,7 +356,8 @@
                 let nr = Math.floor(s7BattleRandom() * ROWS);
                 if (nr !== z.row) {
                   addEffect(z.row, z.x, "换行", "#fde68a");
-                  z.row = nr
+                  z.row = nr;
+                  if (typeof _zombieRowVersion === "number") _zombieRowVersion++
                 }
               }
             }

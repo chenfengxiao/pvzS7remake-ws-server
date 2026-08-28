@@ -220,7 +220,10 @@
     // -----------------------------------------------------------------------------
 
     function s7UpdateElements(dt, rowFilter = null) {
-      for (const z of [...state.zombies]) {
+      const zArr = state.zombies;
+      const zLen = zArr.length;
+      for (let zi = 0; zi < zLen; zi++) {
+        const z = zArr[zi];
         if (z.dead || rowFilter !== null && z.row !== rowFilter) continue;
         if (z.type === "blackolive") continue;
         if (z.type === "bobsledSled" && z.flags?.riders) continue;
