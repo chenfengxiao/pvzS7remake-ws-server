@@ -3,9 +3,10 @@
 // battle seed. Both sides use S7VersusAI.decide (same API as real practice).
 import {createS7HeadlessRuntime} from './headless_runtime.mjs';
 
-export function runMatch({seed=1, plantCards=null, zombieCards=null, maxSeconds=2500, decideInterval=1.0, tickStep=0.2, onFrame=null, plantAI=null, zombieAI=null, policyPatch=null}={}){
+export function runMatch({seed=1, plantCards=null, zombieCards=null, maxSeconds=2500, decideInterval=1.0, tickStep=0.2, onFrame=null, plantAI=null, zombieAI=null, policyPatch=null, overrides=null}={}){
   const rt = createS7HeadlessRuntime();
   const battle = rt.S7VersusBattle;
+  if (overrides) battle.overrideCards(overrides);
   if (policyPatch){ for (const side of ['plant','zombie']) if (policyPatch[side]) Object.assign(rt.S7VersusAI.POLICY[side], policyPatch[side]); }
   if (typeof rt.s7SetBattleSeed === 'function') rt.s7SetBattleSeed(seed >>> 0 || 1);
   const pools = {plant: Object.keys(battle.CARDS.plant), zombie: Object.keys(battle.CARDS.zombie)};

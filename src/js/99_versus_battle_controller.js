@@ -2,6 +2,8 @@
 (function(){
 "use strict";
 const R=S7_VERSUS_RULES;
+// 经济核 CD（平衡旋钮，可被 overrideCards 覆盖；其余 VERSUS_RULES 冻结）
+const ECON_CD={twin:R.twinCooldownSeconds??8,grave:R.gravestoneCooldownSeconds??12};
 const CARDS={"plant":{"wallnut":{"cost":75,"cd":12.0,"guaranteed":null,"command":false},"tallnut":{"cost":75,"cd":15.0,"guaranteed":null,"command":false},"cactus":{"cost":180,"cd":9.5,"guaranteed":null,"command":false},"explodenut":{"cost":150,"cd":25.5,"guaranteed":null,"command":false},"chomper":{"cost":100,"cd":15.0,"guaranteed":null,"command":false},"garlic":{"cost":90,"cd":14.0,"guaranteed":null,"command":false},"spikerock":{"cost":125,"cd":16.5,"guaranteed":null,"command":false},"snowpea":{"cost":255,"cd":11.0,"guaranteed":null,"command":false},"repeater":{"cost":175,"cd":10.5,"guaranteed":null,"command":false},"puff":{"cost":195,"cd":8.5,"guaranteed":null,"command":false},"scaredy":{"cost":135,"cd":11.5,"guaranteed":null,"command":false},"squash":{"cost":285,"cd":33.0,"guaranteed":null,"command":false},"threepeater":{"cost":645,"cd":18.5,"guaranteed":null,"command":false},"seashroom":{"cost":165,"cd":9.0,"guaranteed":null,"command":false},"splitpea":{"cost":105,"cd":10.0,"guaranteed":null,"command":false},"cabbage":{"cost":210,"cd":10.0,"guaranteed":null,"command":false},"cattail":{"cost":510,"cd":28.5,"guaranteed":null,"command":false},"firelotus":{"cost":345,"cd":24.0,"guaranteed":null,"command":false},"reverseRepeater":{"cost":125,"cd":9.0,"guaranteed":null,"command":false},"ghost":{"cost":200,"cd":16.0,"guaranteed":null,"command":false},"sniper":{"cost":360,"cd":23.5,"guaranteed":null,"command":false},"sunflower":{"cost":135,"cd":13.0,"guaranteed":null,"command":false},"sunshroom":{"cost":135,"cd":11.0,"guaranteed":null,"command":false},"hypno":{"cost":210,"cd":22.0,"guaranteed":null,"command":false},"iceshroom":{"cost":200,"cd":25.5,"guaranteed":null,"command":false},"kelp":{"cost":180,"cd":22.0,"guaranteed":null,"command":false},"torchwood":{"cost":105,"cd":16.5,"guaranteed":null,"command":false},"plantern":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"blover":{"cost":45,"cd":16.0,"guaranteed":null,"command":false},"magnet":{"cost":120,"cd":15.5,"guaranteed":null,"command":false},"kernel":{"cost":165,"cd":11.0,"guaranteed":null,"command":false},"umbrella":{"cost":75,"cd":16.0,"guaranteed":null,"command":false},"marigold":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"goldmagnet":{"cost":150,"cd":19.5,"guaranteed":null,"command":false},"timegrass":{"cost":175,"cd":27.5,"guaranteed":null,"command":false},"barley":{"cost":285,"cd":18.5,"guaranteed":null,"command":false},"starfruit":{"cost":400,"cd":19.5,"guaranteed":null,"command":false},"fume":{"cost":150,"cd":9.0,"guaranteed":null,"command":false},"gloom":{"cost":200,"cd":19.0,"guaranteed":null,"command":false},"potato":{"cost":405,"cd":33.0,"guaranteed":null,"command":false},"melon":{"cost":450,"cd":17.5,"guaranteed":null,"command":false},"gatling":{"cost":540,"cd":29.5,"guaranteed":null,"command":false},"winter":{"cost":225,"cd":23.5,"guaranteed":null,"command":false},"cherrybomb":{"cost":150,"cd":50.0,"guaranteed":null,"command":false},"jalapeno":{"cost":125,"cd":50.0,"guaranteed":null,"command":false},"doomshroom":{"cost":200,"cd":50.0,"guaranteed":null,"command":false}},"zombie":{"blind":{"cost":135,"cd":10.5,"guaranteed":null,"command":false},"normal":{"cost":30,"cd":5.0,"guaranteed":null,"command":false},"flag":{"cost":45,"cd":8.5,"guaranteed":null,"command":false},"snorkel":{"cost":50,"cd":15.0,"guaranteed":60.0,"command":false},"bobsledSled":{"cost":360,"cd":32.0,"guaranteed":540.0,"command":false},"peaz":{"cost":100,"cd":16.0,"guaranteed":200.0,"command":false},"gatlingz":{"cost":210,"cd":24.0,"guaranteed":300.0,"command":false},"squashz":{"cost":150,"cd":20.0,"guaranteed":195.0,"command":false},"jalapenoz":{"cost":165,"cd":30.0,"guaranteed":210.0,"command":false},"cone":{"cost":50,"cd":8.5,"guaranteed":null,"command":false},"bucket":{"cost":135,"cd":14.0,"guaranteed":195.0,"command":false},"newspaper":{"cost":165,"cd":12.0,"guaranteed":250.0,"command":false},"screen":{"cost":165,"cd":15.0,"guaranteed":225.0,"command":false},"football":{"cost":165,"cd":18.0,"guaranteed":250.0,"command":false},"digger":{"cost":105,"cd":18.0,"guaranteed":125.0,"command":false},"pogo":{"cost":90,"cd":14.5,"guaranteed":105.0,"command":false},"pole":{"cost":105,"cd":15.0,"guaranteed":150.0,"command":false},"jack":{"cost":165,"cd":11.0,"guaranteed":250.0,"command":false},"ladder":{"cost":180,"cd":18.0,"guaranteed":210.0,"command":false},"dolphin":{"cost":60,"cd":15.5,"guaranteed":75.0,"command":false},"dancer":{"cost":360,"cd":28.5,"guaranteed":450.0,"command":false},"balloon":{"cost":100,"cd":17.0,"guaranteed":150.0,"command":false},"wallz":{"cost":165,"cd":12.5,"guaranteed":250.0,"command":false},"tallz":{"cost":250,"cd":13.0,"guaranteed":375.0,"command":false},"zomboni":{"cost":315,"cd":31.5,"guaranteed":375.0,"command":false},"yeti":{"cost":125,"cd":12.0,"guaranteed":150.0,"command":false},"catapult":{"cost":210,"cd":28.0,"guaranteed":255.0,"command":false},"bungee":{"cost":150,"cd":26.5,"guaranteed":225.0,"command":false},"garg":{"cost":300,"cd":50.0,"guaranteed":500.0,"command":false},"giga":{"cost":550,"cd":50.0,"guaranteed":850.0,"command":false},"immortal":{"cost":285,"cd":29.5,"guaranteed":345.0,"command":false},"bombdoor":{"cost":525,"cd":35.0,"guaranteed":null,"command":true},"blackolive":{"cost":375,"cd":32.0,"guaranteed":null,"command":true},"polecmd":{"cost":390,"cd":32.0,"guaranteed":null,"command":true},"warflag":{"cost":405,"cd":36.0,"guaranteed":null,"command":true},"tacticflag":{"cost":255,"cd":38.0,"guaranteed":null,"command":true}}};
 const PLANT_ASH=new Set(["cherrybomb","jalapeno","doomshroom"]);
 const FIXED={plant:"twinSunflower",zombie:"zombieGravestone"};
@@ -123,7 +125,10 @@ function setupBoard(){
 function resetRuntime(opt={}){B.ledger={seq:0,deployments:[],byId:{},byEntity:{},mowerClearedPaidValue:0,housePressurePaidValue:0,charmInflictedPaidValue:0};Object.assign(B,{active:true,mode:opt.mode||"practice",humanSide:opt.humanSide||null,role:opt.role||null,online:!!opt.online,isHost:!!opt.isHost,room:opt.room||null,plantCards:(opt.plantCards||[]).slice(),zombieCards:(opt.zombieCards||[]).slice(),selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0});ensureState();B.versus=state.versus;setupBoard()}
 function cardReady(side,id){return (B.cooldowns[side][id]||0)<=state.time+1e-6}
 function canBuy(side,id,cost){return B.active&&cardReady(side,id)&&B.resources[side]>=cost}
-function setCd(side,id){const c=cfg(side,id);B.cooldowns[side][id]=state.time+(c?.cd||1)}
+function setCd(side,id){
+ if(side==="plant"&&id===FIXED.plant){B.cooldowns[side][id]=state.time+ECON_CD.twin;return}
+ if(side==="zombie"&&id===FIXED.zombie){B.cooldowns[side][id]=state.time+ECON_CD.grave;return}
+ B.cooldowns[side][id]=state.time+(cfg(side,id)?.cd||1)}
 function placePlant(id,row,col){
  if(row<0||row>=5||col<0||col>=9)return {ok:false,reason:"格子无效"};
  if(state.plants.some(p=>!p.dead&&p.row===row&&p.col===col))return {ok:false,reason:"该格已有植物"};
@@ -132,8 +137,8 @@ function placePlant(id,row,col){
  if(!PLANTS[id])return {ok:false,reason:"植物不存在"};const p=makePlant(id,row,col);state.plants.push(p);return {ok:true,entityId:p.id}
 }
 function explodeAsh(id,row,col){
- const damage=1800;let hits=0;const dep=B.ledger?.deployments[B.ledger.deployments.length-1];
- for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z))continue;let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id)ledgerCredit(dep,z,Math.max(0,before-ledgerEffectiveHp(z)),"ash")}}}
+ const damage=1800;let hits=0;const dep=ledgerRegisterDeployment("plant",id,cfg("plant",id)?.cost||0,null);
+ for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z)||z.versusStatic)continue;/* 灰烬只解僵尸进攻：Target/墓碑均不受灰烬伤害 */let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id)ledgerCredit(dep,z,Math.max(0,before-ledgerEffectiveHp(z)),"ash")}}}
  try{addEffect(row,col+.5,id==="jalapeno"?"辣椒":"灰烬","#fb7185",.8)}catch(_){}return {ok:true,hits}
 }
 function variantRate(t){const u=Math.max(0,t/60-2);return u<=0?0:clamp(.72*(1-Math.exp(-Math.pow(u/4.2,1.45))),0,.72)}
@@ -158,7 +163,6 @@ function performAction(action,source="human"){
  if(side==="plant"&&id===FIXED.plant)cost=R.twinCost;if(side==="zombie"&&id===FIXED.zombie)cost=R.gravestoneCost;
  if(!canBuy(side,id,cost))return {ok:false,reason:B.resources[side]<cost?"资源不足":"冷却中"};
  const isAshPlay=side==="plant"&&PLANT_ASH.has(id);
- if(isAshPlay)ledgerRegisterDeployment(side,id,cost,null);
  let out;
  if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.min(8.5,Number(action.x)||8.5),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
  if(!out?.ok)return out;
@@ -297,5 +301,23 @@ if(__versusBaseDamagePlant)damagePlant=function(p,dmg,src){
  }
  return r
 };
-window.S7VersusBattle={CARDS,FIXED,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,tick,getLedger:()=>B.ledger,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
+function overrideCards(overrides){
+ // 平衡求解器/训练用：运行时改写卡表（价格/CD/变种价）。正式值最终直接写入 CARDS 源表。
+ if(!overrides)return;
+ for(const side of ["plant","zombie"]){
+  const m=overrides[side];if(!m)continue;
+  for(const [id,delta] of Object.entries(m)){
+   const c=CARDS[side][id];if(!c)continue;
+   if(delta.cost!=null)c.cost=Math.max(15,Math.round(delta.cost));
+   if(delta.cd!=null)c.cd=Math.max(1,Number(delta.cd));
+   if(delta.guaranteed!=null&&c.guaranteed!=null)c.guaranteed=Math.max(c.cost,Math.round(delta.guaranteed));
+  }
+ }
+ if(overrides.__rules){
+  if(overrides.__rules.twinCd!=null)ECON_CD.twin=Math.max(1,Number(overrides.__rules.twinCd));
+  if(overrides.__rules.graveCd!=null)ECON_CD.grave=Math.max(1,Number(overrides.__rules.graveCd));
+ }
+ return CARDS;
+}
+window.S7VersusBattle={CARDS,FIXED,overrideCards,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,tick,getLedger:()=>B.ledger,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
 })();

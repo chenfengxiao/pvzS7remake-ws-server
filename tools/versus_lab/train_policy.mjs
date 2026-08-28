@@ -69,13 +69,14 @@ function evalVsLegacy(patch, seeds){
 }
 // Simpler: evaluate(patch, seeds, [{zombieAI:legacyInstance},{plantAI:legacyInstance}]) — legacy holds state, need fresh per match.
 // Wrap: opponent spec {makeZombieAI: ()=>makeLegacyDecide()}
+const CANDIDATE_OVERRIDES = process.argv[4] ? JSON.parse(fs.readFileSync(process.argv[4], 'utf8')) : null;
 function evaluate2(patch, seeds){
   let wins = 0, total = 0, ratioSum = 0, ashWaste = 0, ashUses = 0, timeSum = 0;
   for (const seed of seeds){
-    const mA = runMatch({seed, policyPatch: patch, zombieAI: makeLegacyDecide()});
-    const mB = runMatch({seed: seed + 3, policyPatch: patch, plantAI: makeLegacyDecide()});
+    const mA = runMatch({seed, policyPatch: patch, zombieAI: makeLegacyDecide(), overrides: CANDIDATE_OVERRIDES});
+    const mB = runMatch({seed: seed + 3, policyPatch: patch, plantAI: makeLegacyDecide(), overrides: CANDIDATE_OVERRIDES});
     // also self-play current-best mirror
-    const mC = runMatch({seed: seed + 7, policyPatch: patch});
+    const mC = runMatch({seed: seed + 7, policyPatch: patch, overrides: CANDIDATE_OVERRIDES});
     for (const [m, side] of [[mA, 'plant'], [mB, 'zombie'], [mC, 'plant'], [mC, 'zombie']]){
       total++;
       if (m.result?.winner === side) wins++;
@@ -108,5 +109,5 @@ for (let round = 1; round <= ROUNDS; round++){
 }
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 fs.mkdirSync(path.resolve(HERE, '../../dist/versus_lab'), {recursive: true});
-fs.writeFileSync(path.resolve(HERE, '../../dist/versus_lab/trained_policy.json'), JSON.stringify({policy: best, score: bestScore, log}, null, 2));
+fs.writeFileSync(path.resolve(HERE, '../../dist/versus_lab/trained_policy.json'), JSON.stringify({policy: best, score: bestScore, log, overridesUsed: !!CANDIDATE_OVERRIDES}, null, 2));
 console.log('TRAINED_POLICY_SAVED', JSON.stringify(bestScore));

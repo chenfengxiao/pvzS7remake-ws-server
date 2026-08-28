@@ -39,10 +39,8 @@ export const SCENARIOS = [
    expect:{ zombieHurt:true } },
 
  { name:'fume-protector-caps-20', seed:14, plantCards:['fume'], zombieCards:['normal'],
-   setup:[{code:`${B}.state.resources.plant=2000;${B}.state.resources.zombie=2000`}],
+   setup:[{code:`${B}.state.resources.plant=2000;const gs=state.zombies.filter(z=>z.versusStatic==="grave");if(gs[0]){gs[0].row=2;gs[0].x=7.5}if(gs[1]){gs[1].row=2;gs[1].x=8.5}`}],
    actions:[
-     {at:0.2, act:{type:'play',side:'zombie',cardId:'zombieGravestone',row:2,x:7.5}},
-     {at:1.4, act:{type:'play',side:'zombie',cardId:'zombieGravestone',row:2,x:8.5}},
      {at:2.0, act:{type:'play',side:'plant',cardId:'fume',row:2,col:0}}
    ],
    stopWhen:`(${grave(2,7.5)})&&(${grave(2,7.5)}).hp<400`,
@@ -55,11 +53,8 @@ export const SCENARIOS = [
    expect:{ otherGraveHp:400, targetHp:200 }, expectMax:{ protectorDamage:20 }, expectMin:{ protectorDamage:1 } },
 
  { name:'fume-no-same-pulse-cascade', seed:15, plantCards:['fume'], zombieCards:['normal'],
-   setup:[{code:`${B}.state.resources.plant=2000;${B}.state.resources.zombie=2000`}],
+   setup:[{code:`${B}.state.resources.plant=2000;const gs=state.zombies.filter(z=>z.versusStatic==="grave");if(gs[0]){gs[0].row=2;gs[0].x=7.5;gs[0].hp=10;window.__protector=gs[0]}if(gs[1]){gs[1].row=2;gs[1].x=8.5}`}],
    actions:[
-     {at:0.2, act:{type:'play',side:'zombie',cardId:'zombieGravestone',row:2,x:7.5}},
-     {at:1.4, act:{type:'play',side:'zombie',cardId:'zombieGravestone',row:2,x:8.5}},
-     {at:1.7, eval:`(()=>{const g=${grave(2,7.5)};if(g){g.hp=10;window.__protector=g}})()`},
      {at:2.0, act:{type:'play',side:'plant',cardId:'fume',row:2,col:0}}
    ],
    stopWhen:`!!(window.__protector&&(window.__protector.dead||window.__protector.hp<=0))`,
@@ -107,18 +102,20 @@ export const SCENARIOS = [
      jalapeno:'{"cost":125,"cd":50,"guaranteed":null,"command":false}',
      doom:'{"cost":200,"cd":50,"guaranteed":null,"command":false}' } },
 
- { name:'ash-spares-target-kills-grave', seed:19, plantCards:['cherrybomb'], zombieCards:['normal'],
-   setup:[{code:`${B}.state.resources.plant=2000;${B}.state.resources.zombie=2000`}],
+ { name:'ash-hits-only-fighters', seed:19, plantCards:['cherrybomb'], zombieCards:['normal'],
+   setup:[{code:`${B}.state.resources.plant=2000;${B}.state.resources.zombie=2000;const g=state.zombies.find(z=>z.versusStatic==="grave"&&z.row===1);if(g){g.row=2;g.x=8.0}`}],
    actions:[
-     {at:0.4, act:{type:'play',side:'zombie',cardId:'zombieGravestone',row:2,x:8.5}},
-     {at:1.0, act:{type:'play',side:'plant',cardId:'cherrybomb',row:2,col:8}}
+     {at:0.6, act:{type:'play',side:'zombie',cardId:'normal',row:2}},
+     {at:0.8, eval:`(()=>{const z=state.zombies.find(z=>z.type==="normal"&&!z.versusStatic&&!z.versusObjective);if(z){z.x=7.6;window.__fighter=z}})()`},
+     {at:1.2, act:{type:'play',side:'plant',cardId:'cherrybomb',row:2,col:7}}
    ],
-   maxSeconds:4,
+   maxSeconds:5,
    probes:{
      targetHp:`(${target(2)})?.hp`,
-     graveGone:`(()=>{const g=${grave(2,8.5)};return !g||g.dead||g.hp<400})()`
+     graveHp:`(${grave(2,8.0)})?.hp`,
+     fighterHurt:`(()=>{const z=window.__fighter;return z?(z.hp<z.maxHp||z.dead):"no-fighter"})()`
    },
-   expect:{ targetHp:200, graveGone:true } },
+   expect:{ targetHp:200, graveHp:400, fighterHurt:true } },
 
  { name:'mower-lifecycle-then-house-breach', seed:20, plantCards:['repeater'], zombieCards:['normal'],
    setup:[{code:`${B}.state.resources.zombie=2000`}],

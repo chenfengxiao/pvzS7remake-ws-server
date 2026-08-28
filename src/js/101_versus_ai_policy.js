@@ -14,7 +14,7 @@ const POLICY={
   wallTriggerThreat:120,   // 行威胁 EHP 超过则补防御
   ashMinValueRatio:1.35,   // 灰烬引爆阈值：可解决付费价值 >= 卡价×ratio
   ashEmergencyRatio:0.6,   // 紧急（守家）时降低阈值
-  ashGraveWallBonus:120,   // 灰烬拆除挡目标路墓碑墙的附加估价
+  ashAreaCooldown:25,       // 同区域灰烬重发冷却（防滥发）
   targetFocusHpDrop:60,    // Target 掉血超过则视为可集火
   dpsFillMaxPerLane:3,     // 每路 DPS 植物上限
   swarmCount:3,            // 行内僵尸数≥此值视为蜂群
@@ -71,28 +71,33 @@ function decidePlant(B,api){
    for(const id of["wallnut","tallnut","spikerock"]){if(canAfford(id)){const r=tryPlay(id,L.row,Math.max(0,col-1));if(r&&r.ok)return r}}
   }
  }
- // 2) 灰烬：付费交换价值 + 墓碑墙拆除价值（打通目标路）
+ // 2) 灰烬：付费交换价值优先（免费墓碑只算战术微调，不计付费价值）；同区域冷却防滥发
+ B.aiMemo=B.aiMemo||{};
+ const memoAsh=B.aiMemo.ashAt=B.aiMemo.ashAt||{};
  for(const id of ASH_IDS){
   if(!canAfford(id))continue;
   const c=api.cfg("plant",id);
   let best=null;
   for(let row=0;row<5;row++)for(let col=0;col<=5;col++){
-   let v=0;
+   const key=id+":"+row+":"+Math.floor(col/2);
+   if(state.time-(memoAsh[key]||-999)<P.ashAreaCooldown)continue;
+   let v=0,paidFighters=0;
    for(const z of state.zombies){
-    if(z.dead||z.friendly||z.versusObjective)continue;
+    if(z.dead||z.friendly||z.versusObjective||z.versusStatic)continue; // 灰烬无法伤害 Target/墓碑
     let hit=false;
     if(id==="jalapeno")hit=z.row===row;
     else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;
     else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;
     if(!hit)continue;
-    v+=Math.max(paidValueOf(z),25);
-    if(z.versusStatic==="grave"){const tgt=targets.find(t=>t.row===row);if(tgt&&z.x<tgt.x)v+=P.ashGraveWallBonus}
+    const paid=paidValueOf(z);
+    v+=paid; // 只计真实付费价值，免费/召唤不计（与账本口径一致）
+    if(paid>0)paidFighters++;
    }
-   if(!best||v>best.value)best={row,col,value:v}
+   if(!best||v>best.value)best={row,col,value:v,key,paidFighters}
   }
   const emergency=state.zombies.some(z=>isFighter(z)&&z.x<P.emergencyX&&(mowers[z.row]?.state==="used"));
   const ratio=emergency?P.ashEmergencyRatio:P.ashMinValueRatio;
-  if(best&&best.value>=c.cost*ratio){const r=tryPlay(id,best.row,best.col);if(r&&r.ok)return r}
+  if(best&&best.value>=c.cost*ratio){const r=tryPlay(id,best.row,best.col);if(r&&r.ok){memoAsh[best.key]=state.time;return r}}
  }
  // 3) 经济：补双子（100成本，10s产25 → 40s回本）
  const twins=state.plants.filter(p=>!p.dead&&p.versusCore==="twin").length;
@@ -125,7 +130,7 @@ function decidePlant(B,api){
  const order=[...openTargetLanes.map(L=>L.row),...[0,1,2,3,4].filter(r=>!openTargetLanes.some(L=>L.row===r))];
  for(const row of order){
   const L=lanes[row];
-  if(L.graves.length&&targets.some(t=>t.row===row))continue; // 墓碑墙挡枪，等灰烬
+  if(L.graves.length&&targets.some(t=>t.row===row))continue; // 墓碑墙挡枪，该路由子弹磨墓碑
   const dpsCount=L.plants.filter(p=>!p.versusCore&&(singleCards.includes(p.key)||pierceCards.includes(p.key))).length;
   if(dpsCount>=P.dpsFillMaxPerLane)continue;
   const swarm=L.fighters.length>=P.swarmCount||L.threatEhp>P.swarmThreatEhp;
