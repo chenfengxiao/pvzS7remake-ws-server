@@ -261,7 +261,102 @@
           ctx.fillText("淘汰", layout.x + layout.w / 2, layout.y + r * c + c * .56)
         }
       }
+      // Versus-specific rendering pass (shared visual entities, not affected by V toggle)
+      safeDrawOne("versusEntities", null, () => drawVersusEntities());
       try { window.S7VersusBattle?.drawHud?.() } catch (e) { console.warn("Versus HUD draw failed", e) }
+    }
+
+    // --- Versus shared visual entities: targets, mowers, resource tokens, twin glow ---
+    function drawVersusEntities() {
+      if (!state?.versus?.active) return;
+      const c = layout.cell;
+      // 1. Target shield overlay (damage stage)
+      for (const z of finiteArray(state.zombies)) {
+        if (!z?.versusObjective || z.dead) continue;
+        const dmg = (z.maxHp || 200) - (z.hp || 0);
+        const th = [60, 100, 160];
+        const stage = dmg >= th[2] ? 3 : dmg >= th[1] ? 2 : dmg >= th[0] ? 1 : 0;
+        const sx = layout.x + z.x * c;
+        const sy = layout.y + z.row * c;
+        // Draw target base (🎯 emoji as fallback, shield image if loaded)
+        ctx.font = `${c * .6}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🎯", sx, sy + c * .5);
+        // Shield stage indicator
+        if (stage > 0) {
+          ctx.fillStyle = stage === 3 ? "#ef4444" : stage === 2 ? "#f97316" : "#eab308";
+          ctx.beginPath();
+          ctx.arc(sx, sy + c * .5, c * .35, 0, Math.PI * 2);
+          ctx.globalAlpha = .25 + stage * .15;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+        // HP bar
+        const hpRatio = Math.max(0, (z.hp || 0) / (z.maxHp || 200));
+        ctx.fillStyle = "rgba(0,0,0,.4)";
+        ctx.fillRect(sx - c * .35, sy + c * .85, c * .7, 4);
+        ctx.fillStyle = hpRatio > .5 ? "#4ade80" : hpRatio > .25 ? "#eab308" : "#ef4444";
+        ctx.fillRect(sx - c * .35, sy + c * .85, c * .7 * hpRatio, 4);
+        if (entityTextVisible) {
+          ctx.fillStyle = "#fff";
+          ctx.font = `bold ${c * .09}px sans-serif`;
+          ctx.fillText(`${Math.max(0, Math.round(z.hp || 0))}`, sx, sy + c * .78);
+        }
+      }
+      // 2. Lawn mowers
+      if (state.versus.mowers) {
+        for (const m of state.versus.mowers) {
+          if (!m || m.state === "used") continue;
+          const mx = layout.x + m.x * c;
+          const my = layout.y + m.row * c;
+          ctx.font = `${c * .45}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🚜", mx, my + c * .55);
+          if (m.state === "triggered" || m.state === "running") {
+            ctx.fillStyle = "#4ade80";
+            ctx.globalAlpha = .3;
+            ctx.beginPath();
+            ctx.arc(mx, my + c * .55, c * .4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+      // 3. Resource tokens (☀️ / 🧠 flying)
+      if (state.versus.resourceTokens) {
+        for (const t of finiteArray(state.versus.resourceTokens)) {
+          if (t.dead) continue;
+          const progress = clamp(t.age / Math.max(.01, t.flightSeconds), 0, 1);
+          const tx = layout.x + t.x * c;
+          const ty = layout.y + (t.row + .5) * c - progress * c * .8;
+          const alpha = clamp(1 - Math.max(0, progress - .82) / .18, 0, 1);
+          ctx.globalAlpha = alpha;
+          ctx.font = `${c * .28}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.shadowColor = t.side === "plant" ? "#facc15" : "#c084fc";
+          ctx.shadowBlur = c * .15;
+          ctx.fillText(t.side === "plant" ? "☀️" : "🧠", tx, ty);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        }
+      }
+      // 4. Twin sunflower production glow
+      for (const p of finiteArray(state.plants)) {
+        if (!p || p.dead || p.versusCore !== "twin") continue;
+        const glow = p.s7?.versusProduceGlow || 0;
+        if (glow <= 0) continue;
+        const px = layout.x + (p.col + .5) * c;
+        const py = layout.y + (p.row + .5) * c;
+        ctx.fillStyle = "#facc15";
+        ctx.globalAlpha = glow * .35;
+        ctx.beginPath();
+        ctx.arc(px, py, c * .45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     }
 
     function drawGridEffects() {

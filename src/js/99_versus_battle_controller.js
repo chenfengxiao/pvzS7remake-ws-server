@@ -19,7 +19,7 @@ function isResourceProducer(id){return id===FIXED.plant||id===FIXED.zombie}
 // --- Mower ---
 function makeVersusMower(row){return{row,x:R.mowerHomeX,state:"ready",speed:0,triggeredAt:null}}
 function mowerTrigger(row){const m=B.versus.mowers[row];if(!m||m.state!=="ready")return false;m.state="triggered";m.triggeredAt=state.time;m.speed=0;return true}
-function mowerTick(dt){if(!B.versus?.mowers)return;for(const m of B.versus.mowers){if(m.state==="triggered"){m.state="running";m.speed=12}if(m.state==="running"){m.x+=m.speed*dt;for(const z of state.zombies){if(z&&!z.dead&&!z.friendly&&!z.versusObjective&&!z.versusStatic&&z.row===m.row&&Math.abs(z.x-m.x)<.6){killZombie(z,{mower:true})}}if(m.x>COLS+.5)m.state="used"}}}
+function mowerTick(dt){if(!B.versus?.mowers)return;for(const m of B.versus.mowers){if(m.state==="triggered"){m.state="running";m.speed=12}if(m.state==="running"){m.x+=m.speed*dt;for(const z of state.zombies){if(z&&!z.dead&&!z.friendly&&!z.versusObjective&&!z.versusStatic&&z.row===m.row&&z.x<=m.x+.3){killZombie(z,{mower:true})}}if(m.x>COLS+.5)m.state="used"}}}
 
 // --- Terminal candidates ---
 function pushTerminalCandidate(winner,detail){B.versus.terminalCandidates.push({tick:state.time,seq:B.versus.seqCounter++,winner,detail})}
