@@ -2,7 +2,7 @@
 (function(){
 "use strict";
 const R=S7_VERSUS_RULES;
-const CARDS={"plant":{"wallnut":{"cost":75,"cd":12.0,"guaranteed":null,"command":false},"tallnut":{"cost":75,"cd":15.0,"guaranteed":null,"command":false},"cactus":{"cost":180,"cd":9.5,"guaranteed":null,"command":false},"explodenut":{"cost":150,"cd":25.5,"guaranteed":null,"command":false},"chomper":{"cost":100,"cd":15.0,"guaranteed":null,"command":false},"garlic":{"cost":90,"cd":14.0,"guaranteed":null,"command":false},"spikerock":{"cost":125,"cd":16.5,"guaranteed":null,"command":false},"snowpea":{"cost":255,"cd":11.0,"guaranteed":null,"command":false},"repeater":{"cost":175,"cd":10.5,"guaranteed":null,"command":false},"puff":{"cost":195,"cd":8.5,"guaranteed":null,"command":false},"scaredy":{"cost":135,"cd":11.5,"guaranteed":null,"command":false},"squash":{"cost":285,"cd":33.0,"guaranteed":null,"command":false},"threepeater":{"cost":645,"cd":18.5,"guaranteed":null,"command":false},"seashroom":{"cost":165,"cd":9.0,"guaranteed":null,"command":false},"splitpea":{"cost":105,"cd":10.0,"guaranteed":null,"command":false},"cabbage":{"cost":210,"cd":10.0,"guaranteed":null,"command":false},"cattail":{"cost":510,"cd":28.5,"guaranteed":null,"command":false},"firelotus":{"cost":345,"cd":24.0,"guaranteed":null,"command":false},"reverseRepeater":{"cost":125,"cd":9.0,"guaranteed":null,"command":false},"ghost":{"cost":200,"cd":16.0,"guaranteed":null,"command":false},"sniper":{"cost":360,"cd":23.5,"guaranteed":null,"command":false},"sunflower":{"cost":135,"cd":13.0,"guaranteed":null,"command":false},"sunshroom":{"cost":135,"cd":11.0,"guaranteed":null,"command":false},"hypno":{"cost":210,"cd":22.0,"guaranteed":null,"command":false},"iceshroom":{"cost":200,"cd":25.5,"guaranteed":null,"command":false},"kelp":{"cost":180,"cd":22.0,"guaranteed":null,"command":false},"torchwood":{"cost":105,"cd":16.5,"guaranteed":null,"command":false},"plantern":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"blover":{"cost":45,"cd":16.0,"guaranteed":null,"command":false},"magnet":{"cost":120,"cd":15.5,"guaranteed":null,"command":false},"kernel":{"cost":165,"cd":11.0,"guaranteed":null,"command":false},"umbrella":{"cost":75,"cd":16.0,"guaranteed":null,"command":false},"marigold":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"goldmagnet":{"cost":150,"cd":19.5,"guaranteed":null,"command":false},"timegrass":{"cost":175,"cd":27.5,"guaranteed":null,"command":false},"barley":{"cost":285,"cd":18.5,"guaranteed":null,"command":false},"starfruit":{"cost":400,"cd":19.5,"guaranteed":null,"command":false},"fume":{"cost":150,"cd":9.0,"guaranteed":null,"command":false},"gloom":{"cost":200,"cd":19.0,"guaranteed":null,"command":false},"potato":{"cost":405,"cd":33.0,"guaranteed":null,"command":false},"melon":{"cost":450,"cd":17.5,"guaranteed":null,"command":false},"gatling":{"cost":540,"cd":29.5,"guaranteed":null,"command":false},"winter":{"cost":225,"cd":23.5,"guaranteed":null,"command":false},"cherrybomb":{"cost":345,"cd":45.0,"guaranteed":null,"command":false},"jalapeno":{"cost":375,"cd":55.0,"guaranteed":null,"command":false},"doomshroom":{"cost":625,"cd":82.5,"guaranteed":null,"command":false}},"zombie":{"blind":{"cost":135,"cd":10.5,"guaranteed":null,"command":false},"normal":{"cost":30,"cd":5.0,"guaranteed":null,"command":false},"flag":{"cost":45,"cd":8.5,"guaranteed":null,"command":false},"snorkel":{"cost":50,"cd":15.0,"guaranteed":60.0,"command":false},"bobsledSled":{"cost":360,"cd":32.0,"guaranteed":540.0,"command":false},"peaz":{"cost":100,"cd":16.0,"guaranteed":200.0,"command":false},"gatlingz":{"cost":210,"cd":24.0,"guaranteed":300.0,"command":false},"squashz":{"cost":150,"cd":20.0,"guaranteed":195.0,"command":false},"jalapenoz":{"cost":165,"cd":30.0,"guaranteed":210.0,"command":false},"cone":{"cost":50,"cd":8.5,"guaranteed":null,"command":false},"bucket":{"cost":135,"cd":14.0,"guaranteed":195.0,"command":false},"newspaper":{"cost":165,"cd":12.0,"guaranteed":250.0,"command":false},"screen":{"cost":165,"cd":15.0,"guaranteed":225.0,"command":false},"football":{"cost":165,"cd":18.0,"guaranteed":250.0,"command":false},"digger":{"cost":105,"cd":18.0,"guaranteed":125.0,"command":false},"pogo":{"cost":90,"cd":14.5,"guaranteed":105.0,"command":false},"pole":{"cost":105,"cd":15.0,"guaranteed":150.0,"command":false},"jack":{"cost":165,"cd":11.0,"guaranteed":250.0,"command":false},"ladder":{"cost":180,"cd":18.0,"guaranteed":210.0,"command":false},"dolphin":{"cost":60,"cd":15.5,"guaranteed":75.0,"command":false},"dancer":{"cost":360,"cd":28.5,"guaranteed":450.0,"command":false},"balloon":{"cost":100,"cd":17.0,"guaranteed":150.0,"command":false},"wallz":{"cost":165,"cd":12.5,"guaranteed":250.0,"command":false},"tallz":{"cost":250,"cd":13.0,"guaranteed":375.0,"command":false},"zomboni":{"cost":315,"cd":31.5,"guaranteed":375.0,"command":false},"yeti":{"cost":125,"cd":12.0,"guaranteed":150.0,"command":false},"catapult":{"cost":210,"cd":28.0,"guaranteed":255.0,"command":false},"bungee":{"cost":150,"cd":26.5,"guaranteed":225.0,"command":false},"garg":{"cost":300,"cd":50.0,"guaranteed":500.0,"command":false},"giga":{"cost":550,"cd":50.0,"guaranteed":850.0,"command":false},"immortal":{"cost":285,"cd":29.5,"guaranteed":345.0,"command":false},"bombdoor":{"cost":525,"cd":35.0,"guaranteed":null,"command":true},"blackolive":{"cost":375,"cd":32.0,"guaranteed":null,"command":true},"polecmd":{"cost":390,"cd":32.0,"guaranteed":null,"command":true},"warflag":{"cost":405,"cd":36.0,"guaranteed":null,"command":true},"tacticflag":{"cost":255,"cd":38.0,"guaranteed":null,"command":true}}};
+const CARDS={"plant":{"wallnut":{"cost":75,"cd":12.0,"guaranteed":null,"command":false},"tallnut":{"cost":75,"cd":15.0,"guaranteed":null,"command":false},"cactus":{"cost":180,"cd":9.5,"guaranteed":null,"command":false},"explodenut":{"cost":150,"cd":25.5,"guaranteed":null,"command":false},"chomper":{"cost":100,"cd":15.0,"guaranteed":null,"command":false},"garlic":{"cost":90,"cd":14.0,"guaranteed":null,"command":false},"spikerock":{"cost":125,"cd":16.5,"guaranteed":null,"command":false},"snowpea":{"cost":255,"cd":11.0,"guaranteed":null,"command":false},"repeater":{"cost":175,"cd":10.5,"guaranteed":null,"command":false},"puff":{"cost":195,"cd":8.5,"guaranteed":null,"command":false},"scaredy":{"cost":135,"cd":11.5,"guaranteed":null,"command":false},"squash":{"cost":285,"cd":33.0,"guaranteed":null,"command":false},"threepeater":{"cost":645,"cd":18.5,"guaranteed":null,"command":false},"seashroom":{"cost":165,"cd":9.0,"guaranteed":null,"command":false},"splitpea":{"cost":105,"cd":10.0,"guaranteed":null,"command":false},"cabbage":{"cost":210,"cd":10.0,"guaranteed":null,"command":false},"cattail":{"cost":510,"cd":28.5,"guaranteed":null,"command":false},"firelotus":{"cost":345,"cd":24.0,"guaranteed":null,"command":false},"reverseRepeater":{"cost":125,"cd":9.0,"guaranteed":null,"command":false},"ghost":{"cost":200,"cd":16.0,"guaranteed":null,"command":false},"sniper":{"cost":360,"cd":23.5,"guaranteed":null,"command":false},"sunflower":{"cost":135,"cd":13.0,"guaranteed":null,"command":false},"sunshroom":{"cost":135,"cd":11.0,"guaranteed":null,"command":false},"hypno":{"cost":210,"cd":22.0,"guaranteed":null,"command":false},"iceshroom":{"cost":200,"cd":25.5,"guaranteed":null,"command":false},"kelp":{"cost":180,"cd":22.0,"guaranteed":null,"command":false},"torchwood":{"cost":105,"cd":16.5,"guaranteed":null,"command":false},"plantern":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"blover":{"cost":45,"cd":16.0,"guaranteed":null,"command":false},"magnet":{"cost":120,"cd":15.5,"guaranteed":null,"command":false},"kernel":{"cost":165,"cd":11.0,"guaranteed":null,"command":false},"umbrella":{"cost":75,"cd":16.0,"guaranteed":null,"command":false},"marigold":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"goldmagnet":{"cost":150,"cd":19.5,"guaranteed":null,"command":false},"timegrass":{"cost":175,"cd":27.5,"guaranteed":null,"command":false},"barley":{"cost":285,"cd":18.5,"guaranteed":null,"command":false},"starfruit":{"cost":400,"cd":19.5,"guaranteed":null,"command":false},"fume":{"cost":150,"cd":9.0,"guaranteed":null,"command":false},"gloom":{"cost":200,"cd":19.0,"guaranteed":null,"command":false},"potato":{"cost":405,"cd":33.0,"guaranteed":null,"command":false},"melon":{"cost":450,"cd":17.5,"guaranteed":null,"command":false},"gatling":{"cost":540,"cd":29.5,"guaranteed":null,"command":false},"winter":{"cost":225,"cd":23.5,"guaranteed":null,"command":false},"cherrybomb":{"cost":150,"cd":50.0,"guaranteed":null,"command":false},"jalapeno":{"cost":125,"cd":50.0,"guaranteed":null,"command":false},"doomshroom":{"cost":200,"cd":50.0,"guaranteed":null,"command":false}},"zombie":{"blind":{"cost":135,"cd":10.5,"guaranteed":null,"command":false},"normal":{"cost":30,"cd":5.0,"guaranteed":null,"command":false},"flag":{"cost":45,"cd":8.5,"guaranteed":null,"command":false},"snorkel":{"cost":50,"cd":15.0,"guaranteed":60.0,"command":false},"bobsledSled":{"cost":360,"cd":32.0,"guaranteed":540.0,"command":false},"peaz":{"cost":100,"cd":16.0,"guaranteed":200.0,"command":false},"gatlingz":{"cost":210,"cd":24.0,"guaranteed":300.0,"command":false},"squashz":{"cost":150,"cd":20.0,"guaranteed":195.0,"command":false},"jalapenoz":{"cost":165,"cd":30.0,"guaranteed":210.0,"command":false},"cone":{"cost":50,"cd":8.5,"guaranteed":null,"command":false},"bucket":{"cost":135,"cd":14.0,"guaranteed":195.0,"command":false},"newspaper":{"cost":165,"cd":12.0,"guaranteed":250.0,"command":false},"screen":{"cost":165,"cd":15.0,"guaranteed":225.0,"command":false},"football":{"cost":165,"cd":18.0,"guaranteed":250.0,"command":false},"digger":{"cost":105,"cd":18.0,"guaranteed":125.0,"command":false},"pogo":{"cost":90,"cd":14.5,"guaranteed":105.0,"command":false},"pole":{"cost":105,"cd":15.0,"guaranteed":150.0,"command":false},"jack":{"cost":165,"cd":11.0,"guaranteed":250.0,"command":false},"ladder":{"cost":180,"cd":18.0,"guaranteed":210.0,"command":false},"dolphin":{"cost":60,"cd":15.5,"guaranteed":75.0,"command":false},"dancer":{"cost":360,"cd":28.5,"guaranteed":450.0,"command":false},"balloon":{"cost":100,"cd":17.0,"guaranteed":150.0,"command":false},"wallz":{"cost":165,"cd":12.5,"guaranteed":250.0,"command":false},"tallz":{"cost":250,"cd":13.0,"guaranteed":375.0,"command":false},"zomboni":{"cost":315,"cd":31.5,"guaranteed":375.0,"command":false},"yeti":{"cost":125,"cd":12.0,"guaranteed":150.0,"command":false},"catapult":{"cost":210,"cd":28.0,"guaranteed":255.0,"command":false},"bungee":{"cost":150,"cd":26.5,"guaranteed":225.0,"command":false},"garg":{"cost":300,"cd":50.0,"guaranteed":500.0,"command":false},"giga":{"cost":550,"cd":50.0,"guaranteed":850.0,"command":false},"immortal":{"cost":285,"cd":29.5,"guaranteed":345.0,"command":false},"bombdoor":{"cost":525,"cd":35.0,"guaranteed":null,"command":true},"blackolive":{"cost":375,"cd":32.0,"guaranteed":null,"command":true},"polecmd":{"cost":390,"cd":32.0,"guaranteed":null,"command":true},"warflag":{"cost":405,"cd":36.0,"guaranteed":null,"command":true},"tacticflag":{"cost":255,"cd":38.0,"guaranteed":null,"command":true}}};
 const PLANT_ASH=new Set(["cherrybomb","jalapeno","doomshroom"]);
 const FIXED={plant:"twinSunflower",zombie:"zombieGravestone"};
 const NAMES={twinSunflower:"双子向日葵",zombieGravestone:"墓碑",cherrybomb:"樱桃炸弹",jalapeno:"火爆辣椒",doomshroom:"毁灭菇",garg:"白眼巨人",giga:"红眼巨人",blackolive:"黑橄榄",bombdoor:"防爆门指令",polecmd:"撑杆指令",warflag:"战争旗帜",tacticflag:"战术旗帜"};
@@ -29,7 +29,42 @@ function isResourceProducer(id){return id===FIXED.plant||id===FIXED.zombie}
 // --- Mower ---
 function makeVersusMower(row){return{row,x:R.mowerHomeX,state:"ready",speed:0,triggeredAt:null}}
 function mowerTrigger(row){const m=B.versus.mowers[row];if(!m||m.state!=="ready")return false;m.state="triggered";m.triggeredAt=state.time;m.speed=0;try{S7_AUDIO.play("lawnmower")}catch(_){}return true}
-function mowerTick(dt){if(!B.versus?.mowers)return;for(const m of B.versus.mowers){if(m.state==="triggered"){m.state="running";m.speed=12}if(m.state==="running"){m.x+=m.speed*dt;for(const z of state.zombies){if(z&&!z.dead&&!z.friendly&&!z.versusObjective&&!z.versusStatic&&z.row===m.row&&z.x<=m.x+.3){killZombie(z,{mower:true})}}if(m.x>COLS+.5)m.state="used"}}}
+function mowerTick(dt){if(!B.versus?.mowers)return;for(const m of B.versus.mowers){if(m.state==="triggered"){m.state="running";m.speed=12}if(m.state==="running"){m.x+=m.speed*dt;for(const z of state.zombies){if(z&&!z.dead&&!z.friendly&&!z.versusObjective&&!z.versusStatic&&z.row===m.row&&z.x<=m.x+.3){const v=ledgerVictimBudget(z);if(v.budget>0){B.ledger.mowerClearedPaidValue+=v.budget;if(v.dep)ledgerEndDeployment(v.dep,'mowed')}killZombie(z,{mower:true})}}if(m.x>COLS+.5)m.state="used"}}}
+
+// --- Exchange Ledger（deployment 级交换价值账本；不重复计价） ---
+function ledgerEffectiveHp(z){return Math.max(0,finiteNumber(z.hp,0))+finiteArray(z.armors).reduce((s,a)=>s+Math.max(0,finiteNumber(a?.hp,0)),0)}
+function ledgerVictimBudget(z){
+ if(!z)return{budget:0,kind:"none",dep:null};
+ if(z.versusObjective)return{budget:0,kind:"objective",dep:null};
+ const depId=z.versusDeploymentId!=null?z.versusDeploymentId:(B.ledger?.byEntity?.[z.id]);
+ const dep=depId!=null?B.ledger.byId[depId]:null;
+ if(z.versusStatic==="grave")return{budget:dep?dep.paidCost:0,kind:dep?"paidGrave":"freeGrave",dep};
+ if(dep)return{budget:dep.paidCost,kind:"paidZombie",dep};
+ return{budget:0,kind:"summon",dep:null}
+}
+function ledgerCredit(attackerDep,z,eff,contextTag){
+ if(!(eff>0))return;
+ const v=ledgerVictimBudget(z);
+ if(v.kind==="objective"){if(attackerDep){attackerDep.objectiveTargetDamage+=eff;if(z.dead||z._targetCounted){attackerDep.objectiveTargetKills++}}return}
+ const initEhp=Math.max(1,v.dep?.initialEhp||z.maxHp||1);
+ if(v.budget>0&&v.dep){
+  v.dep.creditedDamage=Math.min(initEhp,(v.dep.creditedDamage||0)+eff);
+  const share=v.budget*(eff/initEhp);
+  if(attackerDep){attackerDep.resolvedPaidValueDamageEquivalent+=share;if(z.dead||z.dying){attackerDep.resolvedPaidValueDirect+=Math.max(0,v.budget-(v.dep.paidValueClaimed||0));v.dep.paidValueClaimed=v.budget}}
+  if(attackerDep&&(v.kind==="paidGrave"||v.dep.cardId===FIXED.plant||v.dep.cardId===FIXED.zombie))attackerDep.economyCoreDamage+=share;
+ }else if(v.kind==="freeGrave"||(!v.dep&&(z.versusCore||z.versusStatic))){
+  if(attackerDep)attackerDep.freeCoreStrategicValue=(attackerDep.freeCoreStrategicValue||0)+(v.kind==="freeGrave"?R.gravestoneCost:R.twinCost)*(eff/initEhp)
+ }
+ if(attackerDep&&contextTag&&!attackerDep.contextTags.includes(contextTag))attackerDep.contextTags.push(contextTag)
+}
+function ledgerRegisterDeployment(side,id,cost,out){
+ const dep={id:++B.ledger.seq,side,cardId:id,paidCost:cost,startTime:state.time,endTime:null,resolvedPaidValueDirect:0,resolvedPaidValueDamageEquivalent:0,objectiveTargetDamage:0,objectiveTargetKills:0,economyCoreDamage:0,economyDenial:0,freeCoreStrategicValue:0,mowerValue:0,housePressure:0,controlUtility:0,exchangeRatio:0,outcome:"active",contextTags:[]};
+ B.ledger.deployments.push(dep);B.ledger.byId[dep.id]=dep;
+ if(out&&out.entityId!=null){B.ledger.byEntity[out.entityId]=dep.id;const ent=(side==="plant"?state.plants:state.zombies).find(e=>e&&e.id===out.entityId);if(ent){ent.versusDeploymentId=dep.id;dep.initialEhp=side==="zombie"?ledgerEffectiveHp(ent):(Math.max(0,finiteNumber(ent.hp,0))||1)}}
+ return dep
+}
+function ledgerEndDeployment(dep,outcome){if(!dep||dep.outcome!=="active")return;dep.outcome=outcome;dep.endTime=state.time}
+function ledgerFinalize(){if(!B.ledger)return;for(const d of B.ledger.deployments){if(d.outcome==="active"){d.outcome="survived";d.endTime=state.time}d.exchangeRatio=d.paidCost>0?d.resolvedPaidValueDirect/d.paidCost:0}}
 
 // --- Terminal candidates ---
 function pushTerminalCandidate(winner,detail){B.versus.terminalCandidates.push({tick:state.time,seq:B.versus.seqCounter++,winner,detail})}
@@ -63,9 +98,9 @@ function productionTick(dt){
 function beginVersusEnd(winner,detail={}){if(B.versus.result||B.versus.phase!=="battle")return false;B.versus.phase="ending";B.versus.result={winner,reason:detail.reason||"",at:state.time};B.versus.endSequence={age:0,winner,committed:false};return true}
 function resolveTerminalCandidates(){const list=B.versus.terminalCandidates;if(!list.length||B.versus.phase!=="battle")return;list.sort((a,b)=>a.tick-b.tick||a.seq-b.seq);const first=list[0];const tied=list.filter(e=>e.tick===first.tick&&e.seq===first.seq);if(new Set(tied.map(x=>x.winner)).size>1)beginVersusEnd("draw",{reason:"同帧同时达成双方胜利条件"});else beginVersusEnd(first.winner,first);list.length=0}
 function endSequenceTick(dt){const seq=B.versus.endSequence;if(!seq||seq.committed)return;seq.age+=dt;if(seq.age>=2.6){seq.committed=true;commitVersusResult()}}
-function commitVersusResult(){if(B.versus.resultCommitted)return;B.versus.resultCommitted=true;B.active=false;state.running=false;window._mpBattleActive=false;document.body?.classList.remove("versusBattleActive");try{window.S7VersusUI?.showResult?.(B.versus.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.versus.result)}catch(_){}}
+function commitVersusResult(){if(B.versus.resultCommitted)return;B.versus.resultCommitted=true;try{ledgerFinalize()}catch(_){}B.active=false;state.running=false;window._mpBattleActive=false;document.body?.classList.remove("versusBattleActive");try{window.S7VersusUI?.showResult?.(B.versus.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.versus.result)}catch(_){}}
 
-const B={active:false,mode:null,humanSide:null,role:null,online:false,isHost:false,room:null,plantCards:[],zombieCards:[],selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0,versus:null,_lastTickTime:0};
+const B={active:false,mode:null,humanSide:null,role:null,online:false,isHost:false,room:null,plantCards:[],zombieCards:[],selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0,versus:null,_lastTickTime:0,ledger:null};
 function ensureState(){
  if(typeof newState!=="function")throw new Error("S7 core newState unavailable");
  newState(false);state.plants=[];state.zombies=[];state.bullets=[];state.effects=[];state.pendingPlantEvents=[];state.running=true;state.battle=true;state.preRun=false;state.paused=false;state.time=0;state.sun=0;state.endMode="allDead";
@@ -85,7 +120,7 @@ function setupBoard(){
  B.targets=Array.from({length:R.targetCount},(_,row)=>makeVersusTarget(row));
  state.zombies.push(...B.graves,...B.targets);
 }
-function resetRuntime(opt={}){Object.assign(B,{active:true,mode:opt.mode||"practice",humanSide:opt.humanSide||null,role:opt.role||null,online:!!opt.online,isHost:!!opt.isHost,room:opt.room||null,plantCards:(opt.plantCards||[]).slice(),zombieCards:(opt.zombieCards||[]).slice(),selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0});ensureState();setupBoard()}
+function resetRuntime(opt={}){B.ledger={seq:0,deployments:[],byId:{},byEntity:{},mowerClearedPaidValue:0,housePressurePaidValue:0,charmInflictedPaidValue:0};Object.assign(B,{active:true,mode:opt.mode||"practice",humanSide:opt.humanSide||null,role:opt.role||null,online:!!opt.online,isHost:!!opt.isHost,room:opt.room||null,plantCards:(opt.plantCards||[]).slice(),zombieCards:(opt.zombieCards||[]).slice(),selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0});ensureState();B.versus=state.versus;setupBoard()}
 function cardReady(side,id){return (B.cooldowns[side][id]||0)<=state.time+1e-6}
 function canBuy(side,id,cost){return B.active&&cardReady(side,id)&&B.resources[side]>=cost}
 function setCd(side,id){const c=cfg(side,id);B.cooldowns[side][id]=state.time+(c?.cd||1)}
@@ -97,8 +132,8 @@ function placePlant(id,row,col){
  if(!PLANTS[id])return {ok:false,reason:"植物不存在"};const p=makePlant(id,row,col);state.plants.push(p);return {ok:true,entityId:p.id}
 }
 function explodeAsh(id,row,col){
- const damage=1800;let hits=0;
- for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z))continue;let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){damageZombie(z,damage,{ash:true,noTransform:true});hits++}}}
+ const damage=1800;let hits=0;const dep=B.ledger?.deployments[B.ledger.deployments.length-1];
+ for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z))continue;let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id)ledgerCredit(dep,z,Math.max(0,before-ledgerEffectiveHp(z)),"ash")}}}
  try{addEffect(row,col+.5,id==="jalapeno"?"辣椒":"灰烬","#fb7185",.8)}catch(_){}return {ok:true,hits}
 }
 function variantRate(t){const u=Math.max(0,t/60-2);return u<=0?0:clamp(.72*(1-Math.exp(-Math.pow(u/4.2,1.45))),0,.72)}
@@ -121,9 +156,12 @@ function performAction(action,source="human"){
  if(side==="zombie"&&action.guaranteed&&c?.guaranteed){cost=c.guaranteed;guaranteed=true}
  if(side==="plant"&&id===FIXED.plant)cost=R.twinCost;if(side==="zombie"&&id===FIXED.zombie)cost=R.gravestoneCost;
  if(!canBuy(side,id,cost))return {ok:false,reason:B.resources[side]<cost?"资源不足":"冷却中"};
+ const isAshPlay=side==="plant"&&PLANT_ASH.has(id);
+ if(isAshPlay)ledgerRegisterDeployment(side,id,cost,null);
  let out;
  if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.min(8.5,Number(action.x)||8.5),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed);
  if(!out?.ok)return out;
+ if(!isAshPlay)ledgerRegisterDeployment(side,id,cost,out);
  B.resources[side]-=cost;setCd(side,id);
  if(side==="zombie"&&id!==FIXED.zombie){if(!guaranteed)B.variantCount[id]=(B.variantCount[id]||0)+1;if(guaranteed)B.guaranteedArmed=false}
  if(source==="ai")B.aiActionCount++;else B.humanActionCount++;
@@ -142,16 +180,16 @@ function handleHomeApproach(z){
  const m=B.versus.mowers[z.row];if(!m)return"none";
  if(m.state==="ready"){mowerTrigger(z.row);return"mower"}
  if(m.state==="triggered"||m.state==="running")return"mower-running";
- if(m.state==="used"&&z.x<=R.houseEntryX){pushTerminalCandidate("zombie",{reason:"僵尸突破房屋",row:z.row,zombieId:z.id});return"house-breached"}
+ if(m.state==="used"&&z.x<=R.houseEntryX){const v=ledgerVictimBudget(z);if(v.budget>0){B.ledger.housePressurePaidValue+=v.budget;if(v.dep)ledgerEndDeployment(v.dep,'breached')}pushTerminalCandidate("zombie",{reason:"僵尸突破房屋",row:z.row,zombieId:z.id});return"house-breached"}
  return"none"
 }
-function tick(){
+function tick(dtOverride){
  if(!B.active||!state)return;
- const dt=Math.min(.2,now()-(B._lastTickTime||now()));B._lastTickTime=now();
+ const dt=(typeof dtOverride==="number"&&isFinite(dtOverride))?Math.max(0,dtOverride):Math.min(.2,now()-(B._lastTickTime||now()));B._lastTickTime=now();
  productionTick(dt);updateResourceTokens(dt);mowerTick(dt);
  if(B.versus.phase==="battle")checkEnd();
  else if(B.versus.phase==="ending")endSequenceTick(dt);
- if(B.mode==="practice")try{window.S7VersusPractice?.aiTick?.()}catch(_){}
+ if(B.mode==="practice"&&B.humanSide)try{window.S7VersusPractice?.aiTick?.()}catch(_){}
 }
 setInterval(tick,200);
 function cardsFor(side){return [side==="plant"?FIXED.plant:FIXED.zombie].concat(side==="plant"?B.plantCards:B.zombieCards)}
@@ -218,5 +256,45 @@ function handleHudPointer(side,px,py,W=innerWidth,H=innerHeight){
 }
 function keyAction(e){if(!B.active)return false;const side=B.humanSide||B.role;if(!side)return false;const list=cardsFor(side);if(/^[1-7]$/.test(e.key)){B.selected[side]=clamp(Number(e.key)-1,0,list.length-1);return true}if(side==="zombie"&&(e.key==="f"||e.key==="F")){const id=list[B.selected.zombie||0];if(cfg('zombie',id)?.guaranteed){B.guaranteedArmed=!B.guaranteedArmed;return true}}return false}
 window.addEventListener("keydown",e=>{if(keyAction(e)){e.preventDefault();return}if(B.active&&B.humanSide==="plant"&&(e.key==="q"||e.key==="Q")){B.shovelMode=true;e.preventDefault()}});
-window.S7VersusBattle={CARDS,FIXED,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
+const __versusBaseDamageZombie=typeof damageZombie==="function"?damageZombie:null;
+if(__versusBaseDamageZombie)damageZombie=function(z,amount,opt={}){
+ const versusOn=!!(B.active&&B.versus);
+ if(!versusOn)return __versusBaseDamageZombie(z,amount,opt);
+ const before=ledgerEffectiveHp(z);
+ const wasAlive=!z.dead;
+ const r=__versusBaseDamageZombie(z,amount,opt);
+ const eff=Math.max(0,before-ledgerEffectiveHp(z));
+ if(eff>0){
+  const src=opt.source||opt.zombieAttacker||null;
+  let attackerDep=null,tag=null;
+  if(src&&src.versusDeploymentId!=null)attackerDep=B.ledger.byId[B.ledger.byEntity[src.id]??src.versusDeploymentId]||null;
+  if(!attackerDep&&opt.zombieAttacker&&opt.zombieAttacker.friendly){tag="charm"}
+  if(opt.ash)tag=tag||"ash";
+  if(attackerDep)ledgerCredit(attackerDep,z,eff,tag);
+  else if(tag==="charm"){const v=ledgerVictimBudget(z);if(v.budget>0)B.ledger.charmInflictedPaidValue+=v.budget*(eff/Math.max(1,v.dep?.initialEhp||z.maxHp||1))}
+ }
+ const v=ledgerVictimBudget(z);
+ if(wasAlive&&(z.dead||z.dying)&&v.dep)ledgerEndDeployment(v.dep,"killed");
+ return r
+};
+const __versusBaseDamagePlant=typeof damagePlant==="function"?damagePlant:null;
+if(__versusBaseDamagePlant)damagePlant=function(p,dmg,src){
+ const versusOn=!!(B.active&&B.versus);
+ if(!versusOn)return __versusBaseDamagePlant(p,dmg,src);
+ const before=Math.max(0,finiteNumber(p.hp,0));const wasAlive=!p.dead;
+ const r=__versusBaseDamagePlant(p,dmg,src);
+ const eff=Math.max(0,before-Math.max(0,finiteNumber(p.hp,0)));
+ if(eff>0){
+  const attackerDep=src&&src.versusDeploymentId!=null?(B.ledger.byId[B.ledger.byEntity[src.id]??src.versusDeploymentId]||null):null;
+  const depId=p.versusDeploymentId!=null?p.versusDeploymentId:B.ledger.byEntity[p.id];
+  const victimDep=depId!=null?B.ledger.byId[depId]:null;
+  if(attackerDep){
+   if(p.versusCore){attackerDep.freeCoreStrategicValue=(attackerDep.freeCoreStrategicValue||0)+R.twinCost*(eff/Math.max(1,victimDep?.initialEhp||p.maxHp||1))}
+   else if(victimDep&&victimDep.paidCost>0){const initEhp=Math.max(1,victimDep.initialEhp||1);victimDep.creditedDamage=Math.min(initEhp,(victimDep.creditedDamage||0)+eff);const share=victimDep.paidCost*(eff/initEhp);attackerDep.resolvedPaidValueDamageEquivalent+=share;if(p.dead){attackerDep.resolvedPaidValueDirect+=Math.max(0,victimDep.paidCost-(victimDep.paidValueClaimed||0));victimDep.paidValueClaimed=victimDep.paidCost}}
+  }
+  if(wasAlive&&p.dead&&victimDep)ledgerEndDeployment(victimDep,"killed")
+ }
+ return r
+};
+window.S7VersusBattle={CARDS,FIXED,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,tick,getLedger:()=>B.ledger,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
 })();

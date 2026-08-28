@@ -26,7 +26,7 @@
     marigold: [15, 4, "support"], goldmagnet: [22, 6, "support"], timegrass: [32, 12, "control"], barley: [20, 6, "support"],
     starfruit: [16, 5, "global"], fume: [10, 3, "normal"], gloom: [22, 7, "control"], potato: [30, 10, "burst"],
     melon: [16, 5, "normal"], gatling: [24, 8, "carry"], winter: [28, 10, "carry"],
-    twinSunflower: [24, 6, "economy"], cherrybomb: [45, 30, "ash"], jalapeno: [55, 35, "ash"], doomshroom: [75, 45, "ash"]
+    twinSunflower: [24, 6, "economy"], cherrybomb: [50, 30, "ash"], jalapeno: [50, 35, "ash"], doomshroom: [50, 45, "ash"]
   };
 
 
@@ -36,7 +36,7 @@
     cattail:250, firelotus:250, reverseRepeater:150, ghost:225, sniper:225, sunflower:150, sunshroom:150, hypno:250,
     iceshroom:350, kelp:250, torchwood:150, plantern:125, blover:125, magnet:175, kernel:225, umbrella:150,
     marigold:125, goldmagnet:200, timegrass:225, barley:300, starfruit:225, fume:175, gloom:275, potato:250,
-    melon:300, gatling:300, winter:325, twinSunflower:250, cherrybomb:275, jalapeno:300, doomshroom:375
+    melon:300, gatling:300, winter:325, twinSunflower:250, cherrybomb:150, jalapeno:125, doomshroom:200
   });
 
   const ZOMBIE_RESOURCE_COSTS = Object.freeze({

@@ -1718,8 +1718,28 @@
             p.s7.souls = 0;
             s7FireFumeSouls(p, targets[0], storedSouls, lv)
           }
+          // Versus 冻结规则：该行存在活墓碑时，最靠左（最小 x）墓碑为本 pulse 的
+          // 「墓碑+Target」保护组唯一承伤者，且本 pulse 对该组最多结算 20 伤害；
+          // 其它墓碑/Target 本 pulse 为 0；protector 死亡不在同 pulse 级联；
+          // 普通僵尸保持原穿透伤害；无墓碑时 Target 按既有规则处理。
+          let versusProtector = null;
+          for (const q of state.zombies) {
+            if (!q || q.dead || q.dying || q.row !== row || q.versusStatic !== "grave") continue;
+            if (!versusProtector || q.x < versusProtector.x) versusProtector = q
+          }
+          let versusProtectorSettled = false;
           let hit = 0;
           for (const q of targets) {
+            const protectedGroup = !!(q.versusStatic === "grave" || q.versusObjective);
+            if (protectedGroup && versusProtector) {
+              if (q !== versusProtector || versusProtectorSettled) continue;
+              versusProtectorSettled = true;
+              const dmg = Math.min(20, s7FumeDirectDamage(p, q, lv));
+              if (s7DirectHit(q, dmg, p, {
+                  ignore2: true
+                }) && isDamageableZombie(q)) hit++;
+              continue
+            }
             const dmg = s7FumeDirectDamage(p, q, lv);
             // 只有可伤线内的僵尸造成的实质伤害才计为灵魂孢子命中
             if (s7DirectHit(q, dmg, p, {

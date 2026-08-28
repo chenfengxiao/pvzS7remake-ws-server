@@ -801,6 +801,8 @@
 
     function s7PotatoCanAffectZombie(z, row, source, allowBlind = true) {
       if (!z || z.dead || z.dying || z.friendly || z.row !== row) return false;
+      // Versus 冻结规则：土豆雷对墓碑与 Target Zombie 造成 0 伤害（普通敌方僵尸照常）。
+      if (z.versusObjective || z.versusStatic) return false;
       if (!allowBlind && z.blind) return false;
       if (z.flags?.bungee || z.landingInvuln > 0) return false;
       if (isBalloonAir(z) || isUnderground(z) || isDiving(z) || isVaulting(z) && z.type !== "dolphin") return false;

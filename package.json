@@ -25,7 +25,9 @@
     "test:versus-balance-analyzer": "python3 tools/test_versus_balance_analyzer.py",
     "test:versus-entry": "node tools/test_versus_entry_flow.cjs",
     "test:v178-sync": "node tools/test_v178_sync.cjs",
-    "test:versus-room": "node tools/test_versus_room_management.cjs"
+    "test:versus-room": "node tools/test_versus_room_management.cjs",
+    "test:versus-rules": "node tools/versus_lab/run_scenarios.mjs",
+    "test:versus-parity": "python3 tools/test_versus_rule_parity.py"
   },
   "devDependencies": {
     "vite": "^7.2.4"
