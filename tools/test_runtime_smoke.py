@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 from playwright.sync_api import sync_playwright
+from playwright_browser import launch_chromium, open_standalone_page
 
 ROOT = Path(__file__).resolve().parents[1]
 html = (ROOT / "dist/S7_FAST_ENTRY.html").read_text()
@@ -12,11 +13,11 @@ html = html.replace(
 script = '''<script>(()=>{const names=['selfTest','hitFeedbackSmokeTest','plantingSmokeTest','sunflowerTimegrassSmokeTest','balloonGroundMotionSmokeTest','cactusBalloonModeSmokeTest','cattailPrioritySmokeTest','cattailTurretSpeedSmokeTest'];const r={};for(const n of names){try{r[n]=n==='selfTest'?S7Final.selfTest():S7Final[n]();}catch(e){r[n]={ok:false,error:String(e&&e.stack||e)}}}window.__R=r})()</script>'''
 html = html.replace('</body>', script + '</body>')
 with sync_playwright() as pw:
-    browser = pw.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-gpu'])
+    browser = launch_chromium(pw, headless=True, args=['--no-sandbox','--disable-gpu'])
     page = browser.new_page(viewport={'width':1440,'height':1000})
     errors = []
     page.on('pageerror', lambda e: errors.append(str(e)))
-    page.set_content(html, wait_until='load', timeout=120000)
+    open_standalone_page(page, html, wait_until='load')
     page.wait_for_function('window.__R', timeout=120000)
     result = page.evaluate('window.__R')
     browser.close()

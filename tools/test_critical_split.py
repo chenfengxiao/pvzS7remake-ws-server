@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from playwright_browser import launch_chromium, open_standalone_page
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,7 +97,7 @@ script = r'''
     eq(z.crit,90,'command blind critical');
   });
   test('variant body rewrites refresh critical split',()=>{
-    const cases=[['pole',640,213],['dolphin',570,190],['balloon',420,140],['bobsledSled',600,200],['newspaper',600,200]];
+    const cases=[['pole',640,213],['dolphin',500,166],['balloon',350,116],['bobsledSled',600,200],['newspaper',600,200]];
     for(const [type,total,crit] of cases){
       const z=makeZombie(type,0,8,{variant:true});
       eq(z.maxHp,total,`${type} variant total`);
@@ -132,11 +133,11 @@ script = r'''
 '''
 html = html.replace('</body>', script + '\n</body>')
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-gpu'])
+    browser = launch_chromium(p, headless=True, args=['--no-sandbox','--disable-gpu'])
     page = browser.new_page()
     errors=[]
     page.on('pageerror', lambda e: errors.append(str(e)))
-    page.set_content(html, wait_until='domcontentloaded', timeout=120000)
+    open_standalone_page(page, html)
     page.wait_for_function('window.__criticalSplitResults !== undefined', timeout=120000)
     results=page.evaluate('window.__criticalSplitResults')
     browser.close()

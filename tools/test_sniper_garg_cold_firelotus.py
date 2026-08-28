@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from playwright_browser import launch_chromium, open_standalone_page
 from pathlib import Path
 import json
 root=Path(__file__).resolve().parents[1]
@@ -267,11 +268,11 @@ test_js=r'''
 '''
 html=html.replace('</body>',test_js+'\n</body>')
 with sync_playwright() as pw:
-    browser=pw.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-gpu'])
+    browser=launch_chromium(pw, headless=True, args=['--no-sandbox','--disable-gpu'])
     page=browser.new_page(viewport={'width':1440,'height':1000})
     page_errors=[]
     page.on('pageerror',lambda e:page_errors.append(str(e)))
-    page.set_content(html,wait_until='load',timeout=120000)
+    open_standalone_page(page, html, wait_until='load')
     page.wait_for_function('window.__S7_FEATURE_RESULTS && window.__S7_FEATURE_RESULTS.done',timeout=120000)
     result=page.evaluate('window.__S7_FEATURE_RESULTS')
     result['pageErrors']=page_errors
