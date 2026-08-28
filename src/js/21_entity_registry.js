@@ -542,11 +542,14 @@
     // -----------------------------------------------------------------------------
 
     function plantShortName(p) {
+      if (p?.versusCore === "twin") return "向";
       return PLANT_SHORT_NAMES[p?.key] || PLANTS[p?.key]?.name?.slice(0, 1) || "植"
     }
 
     function zombieShortName(z) {
       if (!z) return "僵";
+      if (z.versusStatic === "grave") return "碑";
+      if (z.versusObjective) return "靶";
       if (z.s7?.command || S7_COMMAND_ZOMBIES.includes(z.type)) return COMMAND_ZOMBIE_TEXT_NAMES[z.type] || z.name ||
         "指令";
       const base = ZOMBIE_SHORT_NAMES[z.type] || ZOMBIES[z.type]?.name?.slice(0, 1) || "僵";

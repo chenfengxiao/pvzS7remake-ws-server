@@ -202,6 +202,7 @@
     }
 
     function s7ResolveZombieAnimation(z) {
+      if (z?.versusObjective || z?.versusStatic) return { state:"versus_static", clipId:null };
       const forced = z?.s7?.animState;
       if (forced) return { state:String(forced), clipId:z.s7.animClip || `zombie.${forced}` };
       // Unified attacking check: front plant OR (friendly zombie with hostile zombie in bite range)
