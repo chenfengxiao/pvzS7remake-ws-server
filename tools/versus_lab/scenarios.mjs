@@ -169,6 +169,15 @@ export const SCENARIOS = [
    probes:{ winner:`${B}.state.versus.result?.winner||"none"`, destroyed:`${B}.state.versus.target.destroyed` },
    expect:{ winner:'plant', destroyed:3 } },
 
+ { name:'single-target-death-no-win', seed:25, plantCards:['repeater'], zombieCards:['normal'],
+   setup:[{code:`window.S7VersusBattle.state.resources.plant=2000`}],
+   actions:[
+     {at:0.5, eval:`const t=state.zombies.find(z=>z.versusObjective&&z.row===0);damageZombie(t,200,{noSource:true})`}
+   ],
+   maxSeconds:6,
+   probes:{ winner:`${B}.state.versus.result?.winner||"none"`, destroyed:`${B}.state.versus.target.destroyed` },
+   expect:{ winner:'none', destroyed:1 } },
+
  { name:'twin-economy-production', seed:24, plantCards:['repeater'], zombieCards:['normal'],
    maxSeconds:14,
    probes:{ plant:`${B}.state.resources.plant` },

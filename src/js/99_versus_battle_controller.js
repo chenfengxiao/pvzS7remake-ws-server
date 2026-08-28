@@ -141,9 +141,10 @@ function consumeNaturalVariant(id){const c=cfg("zombie",id);if(!c?.guaranteed)re
 function variantState(id,guaranteed){if(guaranteed)return true;return consumeNaturalVariant(id)}
 function applyVersusVariant(z,id,isVariant,ordinal){if(!isVariant)return;z.s7=z.s7||{};z.s7.variant=true;const armed=((ordinal*7+3)%10)<7;if((id==="garg"||id==="giga")&&armed){const armor=id==="giga"?4400:2200;z.armors=z.armors||[];z.armors.push({name:"Versus武装",hp:armor,max:armor,prio:1})}else if(id==="garg"||id==="giga"){z.speed*=1.2;z.baseSpeed*=1.2;z.speedNow=(z.speedNow||z.speed)*1.2;z.speedTarget=(z.speedTarget||z.speed)*1.2}}
 function timeHpMult(t){if(t<=120)return 1;return Math.min(2.10,1+(t-120)/1080*1.10)}
-function deployZombie(id,row,guaranteed=false){
+function deployZombie(id,row,guaranteed=false,deployX){
  if(row<0||row>=5)return {ok:false,reason:"路线无效"};if(!ZOMBIES[id])return {ok:false,reason:"僵尸不存在"};
- const ord=(B.variantCount[id]||0);const isVariant=variantState(id,guaranteed);const z=makeZombie(id,row,null,{variant:isVariant});const mult=timeHpMult(state.time);z.hp*=mult;z.maxHp*=mult;for(const a of(z.armors||[])){a.hp*=mult;a.max=(a.max||a.hp)*mult}applyVersusVariant(z,id,isVariant,ord);state.zombies.push(z);return {ok:true,entityId:z.id,variant:isVariant}
+ const ord=(B.variantCount[id]||0);const isVariant=variantState(id,guaranteed);const z=makeZombie(id,row,null,{variant:isVariant});
+ z.x=Math.max(6,Math.min(8.8,finiteNumber(deployX,8.8)));const mult=timeHpMult(state.time);z.hp*=mult;z.maxHp*=mult;for(const a of(z.armors||[])){a.hp*=mult;a.max=(a.max||a.hp)*mult}applyVersusVariant(z,id,isVariant,ord);if(z.baseX!=null)z.baseX=z.x;state.zombies.push(z);return {ok:true,entityId:z.id,variant:isVariant}
 }
 function performAction(action,source="human"){
  if(!B.active||B.versus.result)return {ok:false,reason:"对局未进行"};if(!action||!action.side)return {ok:false,reason:"动作无效"};
@@ -159,7 +160,7 @@ function performAction(action,source="human"){
  const isAshPlay=side==="plant"&&PLANT_ASH.has(id);
  if(isAshPlay)ledgerRegisterDeployment(side,id,cost,null);
  let out;
- if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.min(8.5,Number(action.x)||8.5),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed);
+ if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.min(8.5,Number(action.x)||8.5),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
  if(!out?.ok)return out;
  if(!isAshPlay)ledgerRegisterDeployment(side,id,cost,out);
  B.resources[side]-=cost;setCd(side,id);
@@ -173,7 +174,7 @@ function checkEnd(){
  if(state.time>=R.drawAtSeconds)pushTerminalCandidate("draw",{reason:"40分钟未决，判定平局"});
  resolveTerminalCandidates();
 }
-function handleTargetDeath(z){if(!isVersusTarget(z))return;if(z._targetCounted)return;z._targetCounted=true;B.versus.target.destroyed++;pushTerminalCandidate("plant",{reason:"摧毁第"+B.versus.target.destroyed+"个目标"})}
+function handleTargetDeath(z){if(!isVersusTarget(z))return;if(z._targetCounted)return;z._targetCounted=true;B.versus.target.destroyed++}
 function handleHomeApproach(z){
  if(z.friendly||z.versusObjective||z.versusStatic)return"none";
  if(z.type==="bungee"&&!z.grounded)return"none";

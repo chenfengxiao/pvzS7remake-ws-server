@@ -3,9 +3,10 @@
 // battle seed. Both sides use S7VersusAI.decide (same API as real practice).
 import {createS7HeadlessRuntime} from './headless_runtime.mjs';
 
-export function runMatch({seed=1, plantCards=null, zombieCards=null, maxSeconds=2500, decideInterval=1.0, tickStep=0.2, onFrame=null}={}){
+export function runMatch({seed=1, plantCards=null, zombieCards=null, maxSeconds=2500, decideInterval=1.0, tickStep=0.2, onFrame=null, plantAI=null, zombieAI=null, policyPatch=null}={}){
   const rt = createS7HeadlessRuntime();
   const battle = rt.S7VersusBattle;
+  if (policyPatch){ for (const side of ['plant','zombie']) if (policyPatch[side]) Object.assign(rt.S7VersusAI.POLICY[side], policyPatch[side]); }
   if (typeof rt.s7SetBattleSeed === 'function') rt.s7SetBattleSeed(seed >>> 0 || 1);
   const pools = {plant: Object.keys(battle.CARDS.plant), zombie: Object.keys(battle.CARDS.zombie)};
   if (!plantCards) plantCards = rt.S7VersusAI.draftDeck('plant', pools.plant, 5);
@@ -23,7 +24,11 @@ export function runMatch({seed=1, plantCards=null, zombieCards=null, maxSeconds=
     if (acc >= tickStep - 1e-9){ battle.tick(acc); acc = 0; }
     const t = st.time;
     for (const side of ['plant','zombie']){
-      if (t - lastDecide[side] >= decideInterval){ lastDecide[side] = t; rt.S7VersusAI.decide(side, battle); }
+      if (t - lastDecide[side] >= decideInterval){
+        lastDecide[side] = t;
+        const impl = side === 'plant' ? plantAI : zombieAI;
+        if (impl) impl(side, battle, st); else rt.S7VersusAI.decide(side, battle);
+      }
     }
     if (onFrame) onFrame(rt, battle, frames);
   }
