@@ -142,6 +142,7 @@
     function s7ResolvePlantAnimation(p) {
       const forced = p?.s7?.animState;
       if (forced) return { state:String(forced), clipId:p.s7.animClip || `plant.${forced}` };
+      if (p?.versusCore === "twin") return { state:"versus_twin_idle", clipId:"plant.versus.twin.idle" };
       if (p?.key === "kernel") return { state:"kernel_idle", clipId:"plant.kernel.idle" };
       if (p?.key === "firelotus") return { state:"custom_firelotus", clipId:"plant.custom.firelotus" };
       if (p?.key === "sunflower") return {state:"b03c_idle",clipId:S7_B03C_DEFAULT_CLIPS.sunflower};

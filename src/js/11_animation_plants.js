@@ -422,6 +422,17 @@
     }
     s7RegisterCactusNormalAttack();
 
+    // Versus twin sunflower idle animation (user-provided sprite sheet)
+    (function s7RegisterVersusTwinSunflower(){
+      try{
+        const durations=[180,180,180,180,180,180,180,180,180,180];
+        const total=durations.reduce((a,b)=>a+b,0);
+        const frames=Math.max(1,Math.round(total/(S7_ANIMATION_FIXED_DT*1000)));
+        S7_ANIM.registerClip({id:'plant.versus.twin.idle',frames,loop:true,source:{kind:'versus-twin-sunflower',asset:'twinSunflower'},
+          layers:{body:{asset:'versus.twinSunflower',z:0,pixelScale:.94/Math.max(83,84),pivotX:.5,pivotY:.86,tracks:{frameIndex:s7B03BNormalizedFrameTrack(durations,frames,true)}}}});
+      }catch(_){}
+    })();
+
     /* ============================================================================
      * B05E：7月25日(4).mov 双片段植物接口。
      * 仅用于 JSPVZ/B03A-C 没有待机动画、但视频中同时存在待机与技能段的植物。

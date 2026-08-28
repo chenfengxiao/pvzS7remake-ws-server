@@ -278,19 +278,19 @@
         const stage = dmg >= th[2] ? 3 : dmg >= th[1] ? 2 : dmg >= th[0] ? 1 : 0;
         const sx = layout.x + z.x * c;
         const sy = layout.y + z.row * c;
-        // Draw target base (🎯 emoji as fallback, shield image if loaded)
-        ctx.font = `${c * .6}px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("🎯", sx, sy + c * .5);
-        // Shield stage indicator
-        if (stage > 0) {
-          ctx.fillStyle = stage === 3 ? "#ef4444" : stage === 2 ? "#f97316" : "#eab308";
-          ctx.beginPath();
-          ctx.arc(sx, sy + c * .5, c * .35, 0, Math.PI * 2);
-          ctx.globalAlpha = .25 + stage * .15;
-          ctx.fill();
-          ctx.globalAlpha = 1;
+        // Draw shield PNG sprite by damage stage
+        const drawn = s7DrawSpriteAsset(ctx, `versus.target.shield${stage}`, sx, sy + c * .5, c, {pixelScale: .006, scale: 1.2, pivotX: .5, pivotY: .5});
+        if (!drawn) {
+          // Fallback: emoji + colored ring
+          ctx.font = `${c * .6}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🎯", sx, sy + c * .5);
+          if (stage > 0) {
+            ctx.fillStyle = stage === 3 ? "#ef4444" : stage === 2 ? "#f97316" : "#eab308";
+            ctx.beginPath(); ctx.arc(sx, sy + c * .5, c * .35, 0, Math.PI * 2);
+            ctx.globalAlpha = .25 + stage * .15; ctx.fill(); ctx.globalAlpha = 1;
+          }
         }
         // HP bar
         const hpRatio = Math.max(0, (z.hp || 0) / (z.maxHp || 200));
@@ -310,16 +310,17 @@
           if (!m || m.state === "used") continue;
           const mx = layout.x + m.x * c;
           const my = layout.y + m.row * c;
-          ctx.font = `${c * .45}px sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("🚜", mx, my + c * .55);
+          const drawn = s7DrawSpriteAsset(ctx, "versus.mower", mx, my + c * .55, c, {pixelScale: .005, scale: 1.3, pivotX: .5, pivotY: .5});
+          if (!drawn) {
+            ctx.font = `${c * .45}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🚜", mx, my + c * .55);
+          }
           if (m.state === "triggered" || m.state === "running") {
             ctx.fillStyle = "#4ade80";
             ctx.globalAlpha = .3;
-            ctx.beginPath();
-            ctx.arc(mx, my + c * .55, c * .4, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(mx, my + c * .55, c * .4, 0, Math.PI * 2); ctx.fill();
             ctx.globalAlpha = 1;
           }
         }
@@ -482,7 +483,7 @@
     function drawPlant(p, x, y, c) {
       const d = PLANTS[p.key] || PLANTS.barley;
       const barleyPepperDormant = !!p.s7?.barleyPepperDormant;
-      const displayEmoji = barleyPepperDormant ? "🌶️💥" : d.emoji;
+      const displayEmoji = p.versusCore === "twin" ? "🌻🌻" : barleyPepperDormant ? "🌶️💥" : d.emoji;
       ctx.save();
       const userGridPlant = s7HasUserGridPlant(p?.key);
       const squashSpriteDy = p.key === "squash" ? .4 * c : 0;

@@ -11,6 +11,16 @@ function cardName(side,id){if(NAMES[id])return NAMES[id];try{return side==="plan
 function now(){return performance.now()/1000}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 
+// --- Versus asset registration (sprites + audio) ---
+(function registerVersusAssets(){
+ try{
+  for(let i=0;i<4;i++) S7_SPRITES.register(`versus.target.shield${i}`,`./assets/versus/target_shield_stage${i}.png`);
+  S7_SPRITES.register("versus.mower","./assets/versus/LawnCleaner.png");
+  S7_SPRITES.register("versus.twinSunflower","./assets/plants_video_skills/41_twinsunflower.png",{frameWidth:83,frameHeight:84,columns:5,frameCount:10});
+  S7_AUDIO.register("lawnmower","./assets/versus/lawnmower.mp3",{volume:.8});
+ }catch(_){}
+})();
+
 // --- Target objective helpers ---
 function targetStageFromDamage(dmg){const t=R.targetDamageStageThresholds;return dmg>=t[2]?3:dmg>=t[1]?2:dmg>=t[0]?1:0}
 function isVersusTarget(z){return !!z?.versusObjective}
@@ -18,7 +28,7 @@ function isResourceProducer(id){return id===FIXED.plant||id===FIXED.zombie}
 
 // --- Mower ---
 function makeVersusMower(row){return{row,x:R.mowerHomeX,state:"ready",speed:0,triggeredAt:null}}
-function mowerTrigger(row){const m=B.versus.mowers[row];if(!m||m.state!=="ready")return false;m.state="triggered";m.triggeredAt=state.time;m.speed=0;return true}
+function mowerTrigger(row){const m=B.versus.mowers[row];if(!m||m.state!=="ready")return false;m.state="triggered";m.triggeredAt=state.time;m.speed=0;try{S7_AUDIO.play("lawnmower")}catch(_){}return true}
 function mowerTick(dt){if(!B.versus?.mowers)return;for(const m of B.versus.mowers){if(m.state==="triggered"){m.state="running";m.speed=12}if(m.state==="running"){m.x+=m.speed*dt;for(const z of state.zombies){if(z&&!z.dead&&!z.friendly&&!z.versusObjective&&!z.versusStatic&&z.row===m.row&&z.x<=m.x+.3){killZombie(z,{mower:true})}}if(m.x>COLS+.5)m.state="used"}}}
 
 // --- Terminal candidates ---
