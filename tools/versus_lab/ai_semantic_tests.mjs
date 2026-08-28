@@ -18,7 +18,7 @@ function run(){
     const st = rt.getState();
     b.state.resources.zombie = 500;
     const before = st.zombies.filter(z=>!z.dead&&!z.versusStatic&&!z.versusObjective).length;
-    for (let i=0;i<300;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); }
+    for (let i=0;i<300;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); if (i%25===0) rt.S7VersusAI.decide('zombie', b); }
     // 前12秒内应有低成本僵尸进场（骗车/侦察）
     const after = st.zombies.filter(z=>!z.dead&&!z.versusStatic&&!z.versusObjective).length;
     failed += check('zombie早期低成本进场(骗车/侦察)', after > before, `before=${before} after=${after}`) ? 0 : 1;
@@ -41,17 +41,22 @@ function run(){
   {
     const rt = createS7HeadlessRuntime();
     const b = rt.S7VersusBattle;
-    b.start({mode:'practice', humanSide:null, plantCards:['cherrybomb','wallnut','repeater'], zombieCards:['normal'], online:false, isHost:true});
+    b.start({mode:'practice', humanSide:null, plantCards:['cherrybomb','wallnut','repeater'], zombieCards:['normal','bucket'], online:false, isHost:true});
     const st = rt.getState();
     b.state.resources.plant = 2000;
-    // 直接注入4个已付费 bucket 聚集（模拟高价值目标簇）
+    // 通过真实出牌购买 bucket 并聚集（有付费账本记录）；间隔推进以过 CD
+    b.state.resources.zombie = 3000;
+    const runFrames = n => { for (let i=0;i<n;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); } };
     for (let r=1;r<=3;r++){
-      const z = rt.makeZombie('bucket', r, 5, {variant:false});
-      z.versusDeploymentId = 99990 + r; // 与账本无关，paidValueOf 会读 ledger.byId -> undefined -> 回退25
-      st.zombies.push(z);
+      const rr = b.performAction({type:'play',side:'zombie',cardId:'bucket',row:r},'ai');
+      if (!rr.ok) return console.log('bucket deploy failed', rr);
+      const z = st.zombies.find(z=>z.id===rr.entityId);
+      if (z){ z.x = 5; z.stun = 1e9; } // 测试夹具：钉住不移动，保持聚集
+      runFrames(360); // ~14.4s 过 bucket CD(14s)
     }
+    b.state.resources.plant = 2000;
     const ashBefore = b.state.ledger.deployments.filter(d=>d.cardId==='cherrybomb').length;
-    for (let i=0;i<250;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); rt.S7VersusAI.decide('plant', b); }
+    for (let i=0;i<120;i++){ rt.update(rt.FIXED_FRAME_DT); if (i%5===0) b.tick(0.2); if (i%10===0) rt.S7VersusAI.decide('plant', b); }
     const ashAfter = b.state.ledger.deployments.filter(d=>d.cardId==='cherrybomb').length;
     failed += check('灰烬对聚集付费僵尸引爆', ashAfter > ashBefore, `before=${ashBefore} after=${ashAfter}`) ? 0 : 1;
   }

@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import {runMatch} from './match_runner.mjs';
 
-const [,, seedStart, count, outPath, overridesJson] = process.argv;
+const [,, seedStart, count, outPath, overridesJson, maxSecondsArg] = process.argv;
 const overrides = overridesJson ? JSON.parse(fs.readFileSync(overridesJson, 'utf8')) : null;
 const start = Number(seedStart), n = Number(count);
 
@@ -30,7 +30,7 @@ for (let i = 0; i < n; i++){
   const seed = start + i;
   const pd = PLANT_DECKS[seed % PLANT_DECKS.length];
   const zd = ZOMBIE_DECKS[(seed >>> 2) % ZOMBIE_DECKS.length];
-  const m = runMatch({seed, plantCards: pd, zombieCards: zd, overrides, maxSeconds: 2500, policyPatch: overrides?.__policy});
+  const m = runMatch({seed, plantCards: pd, zombieCards: zd, overrides, maxSeconds: Number(maxSecondsArg) || 2500, policyPatch: overrides?.__policy});
   const rows = m.ledger.deployments.map(d => ({side: d.side, cardId: d.cardId, paid: d.paidCost, res: Math.round((d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent) * 10) / 10, obj: Math.round(d.objectiveTargetDamage), outcome: d.outcome, t: Math.round(d.startTime)}));
   fs.writeSync(out, JSON.stringify({seed, winner: m.result?.winner || 'none', reason: m.result?.reason || '', time: Math.round(m.time), plantDeck: pd, zombieDeck: zd, deps: rows, mower: m.ledger.mowerClearedPaidValue, house: m.ledger.housePressurePaidValue}) + '\n');
 }

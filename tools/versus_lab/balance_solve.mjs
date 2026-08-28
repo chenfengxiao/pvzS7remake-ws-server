@@ -7,6 +7,8 @@ import {fileURLToPath} from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '../../dist/versus_lab/balance');
+// 求解轮用 900s 截断视野（v8.3 默认 maxGameSeconds=900 同款做法）；终审(qualification)仍用真实 2400s 全量
+const SOLVE_MAX_SECONDS = Number(process.env.SOLVE_MAX_SECONDS || 900);
 const LOCKED = {cherrybomb: 150, jalapeno: 125, doomshroom: 200};
 const LOCKED_CD = 50;
 
@@ -37,7 +39,7 @@ async function runBatch(seedBase, count, overrides){
   }
   await Promise.all(jobs.map(j => new Promise((resolve, reject) => {
     const child = import('node:child_process').then(cp => {
-      const c = cp.spawn('node', [path.join(HERE, 'batch_worker.mjs'), String(j.start), String(j.n), j.out, ovPath], {stdio: ['ignore', 'inherit', 'inherit']});
+      const c = cp.spawn('node', [path.join(HERE, 'batch_worker.mjs'), String(j.start), String(j.n), j.out, ovPath, String(SOLVE_MAX_SECONDS)], {stdio: ['ignore', 'inherit', 'inherit']});
       c.on('close', code => code === 0 ? resolve() : reject(new Error('worker failed ' + code)));
       c.on('error', reject);
     });

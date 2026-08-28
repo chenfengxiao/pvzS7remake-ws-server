@@ -138,7 +138,7 @@ function placePlant(id,row,col){
 }
 function explodeAsh(id,row,col){
  const damage=1800;let hits=0;const dep=ledgerRegisterDeployment("plant",id,cfg("plant",id)?.cost||0,null);
- for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z)||z.versusStatic)continue;/* 灰烬只解僵尸进攻：Target/墓碑均不受灰烬伤害 */let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id)ledgerCredit(dep,z,Math.max(0,before-ledgerEffectiveHp(z)),"ash")}}}
+ for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z)||z.versusStatic)continue;/* 灰烬只解僵尸进攻：Target/墓碑均不受灰烬伤害 */let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id){const died=!!(z.dead||z.dying);const eff=died?before:Math.max(0,before-ledgerEffectiveHp(z));ledgerCredit(dep,z,eff,"ash")}}}}
  try{addEffect(row,col+.5,id==="jalapeno"?"辣椒":"灰烬","#fb7185",.8)}catch(_){}return {ok:true,hits}
 }
 function variantRate(t){const u=Math.max(0,t/60-2);return u<=0?0:clamp(.72*(1-Math.exp(-Math.pow(u/4.2,1.45))),0,.72)}
