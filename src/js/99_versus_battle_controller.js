@@ -104,7 +104,7 @@ function productionTick(dt){
 function beginVersusEnd(winner,detail={}){if(B.versus.result||B.versus.phase!=="battle")return false;B.versus.phase="ending";B.versus.result={winner,reason:detail.reason||"",at:state.time};B.versus.endSequence={age:0,winner,committed:false};return true}
 function resolveTerminalCandidates(){const list=B.versus.terminalCandidates;if(!list.length||B.versus.phase!=="battle")return;list.sort((a,b)=>a.tick-b.tick||a.seq-b.seq);const first=list[0];const tied=list.filter(e=>e.tick===first.tick&&e.seq===first.seq);if(new Set(tied.map(x=>x.winner)).size>1)beginVersusEnd("draw",{reason:"同帧同时达成双方胜利条件"});else beginVersusEnd(first.winner,first);list.length=0}
 function endSequenceTick(dt){const seq=B.versus.endSequence;if(!seq||seq.committed)return;seq.age+=dt;if(seq.age>=2.6){seq.committed=true;commitVersusResult()}}
-function commitVersusResult(){if(B.versus.resultCommitted)return;B.versus.resultCommitted=true;try{ledgerFinalize()}catch(_){}B.active=false;state.running=false;window._mpBattleActive=false;document.body?.classList.remove("versusBattleActive");try{window.S7VersusUI?.showResult?.(B.versus.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.versus.result)}catch(_){}}
+function commitVersusResult(){if(B.versus.resultCommitted)return;B.versus.resultCommitted=true;try{ledgerFinalize()}catch(_){}B.active=false;state.running=false;window._mpBattleActive=false;document.body?.classList.remove("versusBattleActive");try{const e=document.getElementById('versusHpMultBadge');if(e)e.style.display='none'}catch(_){}try{window.S7VersusUI?.showResult?.(B.versus.result)}catch(_){}try{window.S7VersusOnline?.hostReportResult?.(B.versus.result)}catch(_){}}
 
 const B={active:false,mode:null,humanSide:null,role:null,online:false,isHost:false,room:null,plantCards:[],zombieCards:[],selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0,versus:null,_lastTickTime:0,ledger:null};
 function ensureState(){
@@ -199,6 +199,9 @@ function tick(dtOverride){
  if(B.versus.phase==="battle")checkEnd();
  else if(B.versus.phase==="ending")endSequenceTick(dt);
  if(B.mode==="practice"&&B.humanSide)try{window.S7VersusPractice?.aiTick?.()}catch(_){}
+ // 更新僵尸血量倍率显示
+ try{const e=document.getElementById('versusHpMultBadge');if(e){const mult=timeHpMult(state.time);const t=e.querySelector('b');if(t)t.textContent=mult.toFixed(3).replace(/\.?0+$/,'')+'×';e.style.display='';}}
+ catch(_){}
 }
 setInterval(tick,200);
 function cardsFor(side){return [side==="plant"?FIXED.plant:FIXED.zombie].concat(side==="plant"?B.plantCards:B.zombieCards)}

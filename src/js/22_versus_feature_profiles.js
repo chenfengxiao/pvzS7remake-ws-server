@@ -121,7 +121,7 @@
     gravestoneCooldownSeconds: 12,
     twinCost: 100,
     twinCooldownSeconds: 8,
-    twinProductionAmount: 25,
+    twinProductionAmount: 50,
     twinProductionPeriodSeconds: 10,
     twinBrightenSeconds: 1.0,
     mowerHomeX: -0.5,
@@ -154,7 +154,7 @@
     economy: {
       startingSun: 75,
       startingBrain: 75,
-      plantCore: { id: "twinSunflower", resourceCost: 250, hp: 500, productionAmount: 25, productionPeriodSeconds: 10, pureEconomy: true },
+      plantCore: { id: "twinSunflower", resourceCost: 250, hp: 500, productionAmount: 50, productionPeriodSeconds: 10, pureEconomy: true },
       zombieCore: { id: "zombieGravestone", resourceCost: 50, hp: 400, productionAmount: 25, productionPeriodSeconds: 10, pureEconomy: true }
     },
     cardCooldown: {
