@@ -8,7 +8,7 @@ const STATUS_HEARTBEAT_MS = 20000;
 const STATUS_TTL_MS = 65000;
 const CLIENT_IDLE_MS = 240000;
 const RECONNECT_MS = 3000;
-const MAX_ENVELOPE_BYTES = 128 * 1024;
+const MAX_ENVELOPE_BYTES = 640 * 1024;
 
 function b64uToBuffer(s) {
   s = String(s || '').replace(/-/g, '+').replace(/_/g, '/');
