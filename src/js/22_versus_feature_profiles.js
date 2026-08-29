@@ -18,7 +18,7 @@
     wallnut: [12, 3, "defense"], tallnut: [15, 5, "defense"], cactus: [9.5, 2, "normal"], explodenut: [25.5, 12, "burst"],
     chomper: [15, 5, "control"], garlic: [14, 5, "control"], spikerock: [16.5, 4, "defense"], snowpea: [11, 3, "normal"],
     repeater: [10.5, 3, "normal"], puff: [8.5, 0, "normal"], scaredy: [11.5, 2, "normal"], squash: [33, 10, "burst"],
-    threepeater: [18.5, 4, "normal"], seashroom: [9, 2, "normal"], splitpea: [10, 3, "normal"], cabbage: [10, 2, "normal"],
+    threepeater: [18.5, 4, "normal"], seashroom: [9, 2, "normal"], splitpea: [10, 3, "normal"], cabbage: [15, 2, "normal"],
     cattail: [28.5, 8, "global"], firelotus: [24, 7, "control"], reverseRepeater: [9, 3, "normal"], ghost: [16, 5, "control"],
     sniper: [23.5, 7, "global"], sunflower: [13, 0, "economy"], sunshroom: [11, 0, "economy"], hypno: [22, 8, "control"],
     iceshroom: [25.5, 20, "burst"], kelp: [22, 8, "control"], torchwood: [16.5, 5, "support"], plantern: [14, 4, "support"],

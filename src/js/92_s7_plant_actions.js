@@ -554,18 +554,18 @@
 
     function s7SquashTarget(p, fromX, chained = false) {
       const origin = fromX != null ? fromX : p.col;
-      // 前2后1：找出origin前面2格、后面1格范围内的僵尸
+      // 前2后1：找出origin前面2格、后面1格范围内的僵尸（不索敌墓碑与靶子）
       const lo = origin - 1.05;
       const hi = origin + 2.55;
       if (p.s7?.squashLastHitId != null) {
-        const last = state.zombies.find(z => !z.dead && !z.dying && !z.friendly && !z.s7KelpPoison && z.id === p.s7
+        const last = state.zombies.find(z => !z.dead && !z.dying && !z.friendly && !z.s7KelpPoison && !z.versusStatic && !z.versusObjective && z.id === p.s7
           .squashLastHitId && z.row === p.row && canPlantTargetZombie(z, {
             row: p.row
           }) && z.x >= lo && z.x <= hi);
         if (last) return last;
         p.s7.squashLastHitId = null
       }
-      return state.zombies.filter(z => !z.dead && !z.dying && !z.friendly && !z.s7KelpPoison && z.row === p.row &&
+      return state.zombies.filter(z => !z.dead && !z.dying && !z.friendly && !z.s7KelpPoison && !z.versusStatic && !z.versusObjective && z.row === p.row &&
         canPlantTargetZombie(z, {
           row: p.row
         }) && z.x >= lo && z.x <= hi).sort((a, b) => a.x - b.x)[0] || null
@@ -601,7 +601,7 @@
           sp.dmgCd += 1;
           const owner = state.plants.find(p => !p.dead && p.id === sp.ownerId && p.key === "spikerock") || null;
           for (const q of state.zombies) {
-            if (q.dead || q.friendly || isBalloonAir(q) || isUnderground(q) || q.row !== sp.row || Math.abs(q.x - sp
+            if (q.dead || q.friendly || graveVeilsTarget(q) || isBalloonAir(q) || isUnderground(q) || q.row !== sp.row || Math.abs(q.x - sp
               .x) >= .7) continue;
             s7DirectHit(q, 100, owner, {
               ignore2: true
@@ -921,7 +921,7 @@
         }
         case "spikerock": {
           let hit = false;
-          const targets = state.zombies.filter(q => !q.dead && !q.friendly && !isBalloonAir(q) && !isUnderground(q) && q
+          const targets = state.zombies.filter(q => !q.dead && !q.friendly && !graveVeilsTarget(q) && !isBalloonAir(q) && !isUnderground(q) && q
             .row === row && Math.abs(q.x - (col + .5)) < .65);
           for (const q of targets) {
             if (q.type === "zomboni" && q.s7?.variant) {
@@ -1241,10 +1241,16 @@
           return did
         }
         case "cabbage": {
-          const targets = s7UniqueTargets(row, col, 3, {
+          let targets = s7UniqueTargets(row, col, 3, {
             range: 9,
             canHitDiving: true
           });
+          // Versus 冻结规则：卷心菜最多锁定本行最靠前（最小 x）的一个墓碑，不散射多个墓碑。
+          const graveTargets = targets.filter(q => q.versusStatic === "grave");
+          if (graveTargets.length > 1) {
+            const keep = graveTargets.reduce((m, q) => q.x < m.x ? q : m);
+            targets = targets.filter(q => q.versusStatic !== "grave" || q === keep)
+          }
           if (!targets.length) return false;
           const times = lv >= 5 ? 3 : 1;
           const bounce = lv >= 3 ? 1 : 0;

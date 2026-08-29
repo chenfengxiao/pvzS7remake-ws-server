@@ -92,6 +92,10 @@ function bindEntry(d){
     console.error("[S7 Versus] static entry DOM incomplete");
     return false;
   }
+  // 从 localStorage 恢复昵称
+  try{const saved=localStorage.getItem("pvz_ts_versus_nick");if(saved)nickInput.value=saved}catch(_){}
+  // 输入昵称时自动保存到 localStorage
+  nickInput.addEventListener("input",()=>{try{localStorage.setItem("pvz_ts_versus_nick",nickInput.value.trim())}catch(_){}});
   createBtn.addEventListener("click",()=>beginEntryAction('create',d));
   joinBtn.addEventListener("click",()=>beginEntryAction('join',d));
   const refreshBtn=d.querySelector("#versusRefreshRoomsBtn");
