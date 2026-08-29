@@ -165,7 +165,8 @@
       s7UpdateDetachedParts(step);
       s7AnimationTick();
       s7PerformanceCleanup();
-      if (state.teams.every(t => !t.alive)) finish()
+      // Versus 不采用“阵容全灭”判定：胜负只由 摧毁目标 / 小推车 / 僵尸进家 决定。
+      if (!state.versus?.active && state.teams.every(t => !t.alive)) finish()
     }
 
     // -----------------------------------------------------------------------------
@@ -273,28 +274,35 @@
     function drawVersusEntities() {
       if (!state?.versus?.active) return;
       const c = layout.cell;
-      // 1. Target shield overlay (damage stage)
+      // 1. Target Zombie（原版 DS 身体动画 + 盾牌破损阶段 + HP 条）
       for (const z of finiteArray(state.zombies)) {
-        if (!z?.versusObjective || z.dead) continue;
-        const dmg = (z.maxHp || 200) - (z.hp || 0);
-        const th = [60, 100, 160];
-        const stage = dmg >= th[2] ? 3 : dmg >= th[1] ? 2 : dmg >= th[0] ? 1 : 0;
+        if (!z?.versusObjective) continue;
         const sx = layout.x + z.x * c;
         const sy = layout.y + z.row * c;
-        // Draw shield PNG sprite by damage stage
-        const drawn = s7DrawSpriteAsset(ctx, `versus.target.shield${stage}`, sx, sy + c * .5, c, {pixelScale: .006, scale: 1.2, pivotX: .5, pivotY: .5});
-        if (!drawn) {
-          // Fallback: emoji + colored ring
+        const seq = state?.versus?.endSequence;
+        // 身体：结算 victory → 死亡 death → 存活 idle
+        const idleMs = 80, deathMs = 70, victoryMs = 70;
+        let bodyAsset = "versus.target.idle", fi = 0;
+        if (state?.versus?.phase === "ending" && seq) {
+          bodyAsset = "versus.target.victory";
+          fi = Math.floor(seq.age / (victoryMs / 1000)) % 26;
+        } else if (z.dead) {
+          bodyAsset = "versus.target.death";
+          const t0 = z._targetDiedAt || state.time;
+          fi = Math.min(12, Math.max(0, Math.floor((state.time - t0) / (deathMs / 1000))));
+        } else {
+          bodyAsset = "versus.target.idle";
+          fi = Math.floor(state.time / (idleMs / 1000)) % 32;
+        }
+        const bodyDrawn = s7DrawSpriteAsset(ctx, bodyAsset, sx, sy + c, c, {pixelScale: .0064, frameIndex: fi, pivotX: .5, pivotY: .9375, scale: 1});
+        if (!bodyDrawn) {
+          // Fallback: emoji + colored ring（贴图未加载时）
           ctx.font = `${c * .6}px sans-serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillText("🎯", sx, sy + c * .5);
-          if (stage > 0) {
-            ctx.fillStyle = stage === 3 ? "#ef4444" : stage === 2 ? "#f97316" : "#eab308";
-            ctx.beginPath(); ctx.arc(sx, sy + c * .5, c * .35, 0, Math.PI * 2);
-            ctx.globalAlpha = .25 + stage * .15; ctx.fill(); ctx.globalAlpha = 1;
-          }
+          ctx.fillText("🧟", sx, sy + c * .55);
         }
+        if (z.dead || state?.versus?.phase === "ending") continue; // 尸体不画 HP 条/数值
         // HP bar
         const hpRatio = Math.max(0, (z.hp || 0) / (z.maxHp || 200));
         ctx.fillStyle = "rgba(0,0,0,.4)";
@@ -682,7 +690,7 @@
         ctx.font = `${c*.14}px serif`;
         ctx.fillText("🙈", x, y - c * .24)
       }
-      if (PLANT_RULES[p.key] && p.s7) {
+      if (PLANT_RULES[p.key] && p.s7 && p.versusCore !== "twin") {
         const badgeReady = s7AnimationRenderMode === S7_ANIMATION_RENDER_MODES.TIMELINE && s7ThemeImageReady(S7_TIMELINE_THEME.levelBadges);
         const level = clamp(Math.floor(finiteNumber(p.s7.level, 0)), 0, 5);
         if (p.s7.level !== level) p.s7.level = level;

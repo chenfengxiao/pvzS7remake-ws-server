@@ -170,7 +170,7 @@
       specialSunFlight: .96
     });
     const S7_SUNFLOWER_SHINE_TARGETS = new Set(Object.freeze([
-      "starfruit", "melon", "fume", "gloom", "potato", "gatling", "winter", "repeater", "reverseRepeater",
+      "starfruit", "melon", "fume", "gloom", "gatling", "winter", "repeater", "reverseRepeater",
       "scaredy", "ghost", "snowpea", "cabbage", "threepeater", "splitpea", "puff", "seashroom", "cattail",
       "firelotus", "spikerock", "cactus", "timegrass"
     ]));

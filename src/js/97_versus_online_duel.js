@@ -1,7 +1,7 @@
 // 97_versus_online_duel.js - host-authoritative realtime 1v1 Versus over the shared multiplayer transports
 (function(){
 "use strict";
-const O={room:null,playerId:null,host:false,side:null,entry:null,pendingEntry:null};
+const O={room:null,playerId:null,host:false,side:null,entry:null,pendingEntry:null,refreshing:false,roomListTimer:null};
 const $=id=>document.getElementById(id);
 const nav=()=>window.S7ScreenNav;
 const show=id=>nav()?.show(id,{hideHome:false}) ?? $(id)?.classList.remove('hidden');
@@ -94,6 +94,8 @@ function bindEntry(d){
   }
   createBtn.addEventListener("click",()=>beginEntryAction('create',d));
   joinBtn.addEventListener("click",()=>beginEntryAction('join',d));
+  const refreshBtn=d.querySelector("#versusRefreshRoomsBtn");
+  if(refreshBtn)refreshBtn.addEventListener("click",refreshRoomList);
   backBtn.addEventListener("click",()=>{
     clearEntryPending();
     hide("versusOnlineEntryScreen");
@@ -152,6 +154,77 @@ function connectThen(fn,onFail){
     transportStatus("❌ "+msg,"error");fail(new Error(msg));
   },9500);
 }
+function refreshRoomList(){
+  if(O.refreshing)return;
+  const listEl=$("versusRoomBrowserList");
+  O.refreshing=true;
+  const refreshBtn=$("versusRefreshRoomsBtn");
+  if(refreshBtn){refreshBtn.disabled=true;refreshBtn.textContent="刷新中…"}
+  if(listEl)listEl.innerHTML='<div class="versusRoomBrowserEmpty">正在连接服务器并获取房间列表…</div>';
+  connectThen(()=>{
+    const ok=send({type:"listRooms"});
+    if(!ok){
+      O.refreshing=false;
+      if(refreshBtn){refreshBtn.disabled=false;refreshBtn.textContent="刷新房间列表"}
+      if(listEl)listEl.innerHTML='<div class="versusRoomBrowserEmpty">服务器连接状态异常，房间列表请求未发送。</div>';
+      return;
+    }
+    // 等待 roomList 消息到达后再恢复按钮
+    O.roomListTimer=setTimeout(()=>{
+      O.refreshing=false;
+      if(refreshBtn){refreshBtn.disabled=false;refreshBtn.textContent="刷新房间列表"}
+      if(listEl&&listEl.dataset.loaded!=="1")listEl.innerHTML='<div class="versusRoomBrowserEmpty">暂无房间（或服务器未返回列表）。</div>';
+    },4000);
+  },err=>{
+    O.refreshing=false;
+    if(refreshBtn){refreshBtn.disabled=false;refreshBtn.textContent="刷新房间列表"}
+    if(listEl)listEl.innerHTML='<div class="versusRoomBrowserEmpty">❌ '+(err?.message||err||'连接服务器失败')+'</div>';
+  });
+}
+function versusRoomStateLabel(r){
+  if(r.state==="lobby")return {text:"等待中",cls:"wait"};
+  if(r.state==="versusDraft"||r.state==="versusReady")return {text:"选卡中",cls:"playing"};
+  if(r.state==="battling")return {text:"战斗中",cls:"battling"};
+  return {text:r.state||"—",cls:""};
+}
+function renderRoomList(rooms){
+  const listEl=$("versusRoomBrowserList");
+  if(!listEl)return;
+  O.refreshing=false;
+  if(O.roomListTimer){clearTimeout(O.roomListTimer);O.roomListTimer=null}
+  const refreshBtn=$("versusRefreshRoomsBtn");
+  if(refreshBtn){refreshBtn.disabled=false;refreshBtn.textContent="刷新房间列表"}
+  const versusRooms=(rooms||[]).filter(r=>r.mode==="versus"||r.kind==="versus");
+  if(!versusRooms.length){
+    listEl.dataset.loaded="1";
+    listEl.innerHTML='<div class="versusRoomBrowserEmpty">当前服务器暂无进行中的双人对战房间，点击上方「创建房间」开一局。</div>';
+    return;
+  }
+  listEl.dataset.loaded="1";
+  listEl.innerHTML="";
+  versusRooms.forEach(r=>{
+    const st=versusRoomStateLabel(r);
+    const full=(r.playerCount||0)>=(r.maxPlayers||2);
+    const joinable=r.state==="lobby"&&!full;
+    const row=document.createElement("div");
+    row.className="versusRoomBrowserRow"+(joinable?"":" disabled");
+    row.innerHTML=
+      '<span class="versusRoomBrowserId">'+esc(r.id)+'</span>'+
+      '<span class="versusRoomBrowserHost">'+esc(r.hostName||"玩家")+'</span>'+
+      '<span class="versusRoomBrowserCount">'+(r.playerCount||0)+'/'+(r.maxPlayers||2)+'</span>'+
+      '<span class="versusRoomBrowserState '+st.cls+'">'+st.text+(full&&r.state==="lobby"?" · 已满":"")+'</span>'+
+      '<span class="versusRoomBrowserJoin">'+(joinable?"点击加入":"—")+'</span>';
+    if(joinable){
+      row.addEventListener("click",()=>{
+        const d=ensureEntry();
+        const roomInput=d.querySelector("#versusJoinRoomId");
+        if(roomInput)roomInput.value=r.id;
+        beginEntryAction('join',d);
+      });
+    }
+    listEl.appendChild(row);
+  });
+}
 function showEntryForSelectedServer(cfg){
   nav()?.hideHome();
   ensureEntry();
@@ -165,6 +238,8 @@ function showEntryForSelectedServer(cfg){
   else if(sid==="2") transportStatus("2服将于创建/加入房间时验证：MQTT Broker → 家庭 iMac retained 状态 → 加密 welcome 握手。","idle");
   else transportStatus("尚未连接1服；创建/加入房间时建立连接。","idle");
   show('versusOnlineEntryScreen');
+  // 进入双人对战入口页即自动拉取一次服务器现有房间列表（1服/2服均支持）。
+  refreshRoomList();
 }
 
 function open(){
@@ -288,9 +363,10 @@ function used(v,id){return [...(v.picks?.plant||[]),...(v.picks?.zombie||[]),...
 function renderDraft(){const r=O.room,v=r?.versus;if(!r||!v)return;hide('roomScreen');show('versusOnlineDraftScreen');const st=draftStep(v);$('#versusDraftProgress').textContent=`${v.step||0} / ${st.total||0}`;$('#versusDraftRuleBadge').textContent=`${v.slots||6}槽 · ${v.bp?'有BP':'No-BP'} · 僵尸先手`;$('#versusDraftZombieName').textContent=nick(v.sides.zombie);$('#versusDraftPlantName').textContent=nick(v.sides.plant);const chip=(side)=>(v.picks?.[side]||[]).map(id=>`<span class="versusPickChip">${window.S7VersusBattle.cardName(side,id)}</span>`).join('')||'<span class="versusPickChip">待选择</span>';$('#versusZombiePickSlots').innerHTML=chip('zombie');$('#versusPlantPickSlots').innerHTML=chip('plant');$('#versusZombieBanLine').textContent='被Ban：'+((v.bans?.zombie||[]).map(id=>window.S7VersusBattle.cardName('zombie',id)).join('、')||'无');$('#versusPlantBanLine').textContent='被Ban：'+((v.bans?.plant||[]).map(id=>window.S7VersusBattle.cardName('plant',id)).join('、')||'无');if(st.done){$('#versusDraftTurnBanner').innerHTML='<small>选卡完成</small><strong>双方卡组已锁定</strong><span>等待房主开始</span>';$('#versusDraftInstruction').textContent='选卡完成';$('#versusOnlineCardGrid').innerHTML='';$('#versusDraftStartBattleBtn').classList.toggle('hidden',!O.host);return}const mine=v.sides?.[st.side]===O.playerId;$('#versusDraftTurnBanner').innerHTML=`<small>${st.kind==='ban'?'BAN':'PICK'}</small><strong>${st.side==='zombie'?'🧟 僵尸方':'🌱 植物方'}${mine?'（你）':''}</strong><span>${mine?'轮到你操作':'等待对方'}</span>`;$('#versusDraftInstruction').textContent=mine?`轮到你 ${st.kind==='ban'?'Ban 对方1张卡':'Pick 1张自己的卡'}`:`等待${st.side==='zombie'?'僵尸':'植物'}方操作`;const ids=Object.keys(window.S7VersusBattle.CARDS[st.target]||{});$('#versusOnlineCardGrid').innerHTML=ids.map(id=>{const c=window.S7VersusBattle.cfg(st.target,id),dis=used(v,id);return `<button class="versusDraftCard ${dis?'disabled':''}" data-id="${id}"><b>${window.S7VersusBattle.cardName(st.target,id)}</b><span>${c.cost} ${st.target==='plant'?'阳光':'脑光'}</span><small>CD ${c.cd}s${c.guaranteed?` · 100%变种 ${c.guaranteed}`:''}</small></button>`}).join('');$('#versusOnlineCardGrid').querySelectorAll('.versusDraftCard').forEach(b=>b.onclick=()=>{if(mine&&!used(v,b.dataset.id))send({type:'versusDraftAction',cardId:b.dataset.id})});$('#versusDraftStartBattleBtn').classList.add('hidden')}
 function onBattleStart(m){const my=O.playerId,host=m.hostId===my,side=m.sides?.plant===my?'plant':'zombie';O.side=side;hide('versusOnlineDraftScreen');if(host){document.getElementById('game')?.classList.remove('hidden');document.getElementById('startScreen')?.classList.add('hidden');window.S7VersusBattle.start({mode:'online',online:true,isHost:true,humanSide:side,role:side,room:O.room,plantCards:m.picks.plant,zombieCards:m.picks.zombie});window.S7VersusRealtime?.startHost?.(side)}else{show('versusRealtimeScreen');window.S7VersusRealtime?.startGuest?.(side)}}
 function hostReportResult(result){if(!O.host||!result)return;send({type:'versusEnd',winner:result.winner,reason:result.reason,time:result.time})}
-function showResult(res){show('versusResultOverlay');$('#versusResultTitle').textContent=res.winner==='draw'?'平局':res.winner==='plant'?'🌱 植物方胜利':'🧟 僵尸方胜利';$('#versusResultReason').textContent=res.reason||'';$('#versusResultStats').textContent=`用时 ${Math.floor((res.time||0)/60)}:${String(Math.floor((res.time||0)%60)).padStart(2,'0')}`;$('#versusResultRematchBtn').style.display=(O.host||window.S7VersusBattle?.state?.mode==='practice')?'inline-block':'none'}
+function showResult(res){const win=res.winner==='draw'?'draw':res.winner==='plant'?'plant':'zombie';show('versusResultOverlay');const ov=document.getElementById('versusResultOverlay');ov.classList.remove('win-plant','win-zombie','win-draw');ov.classList.add(win==='draw'?'win-draw':win==='plant'?'win-plant':'win-zombie');$('#versusResultEmblem').textContent=win==='draw'?'🤝':win==='plant'?'🏆':'💀';$('#versusResultTitle').textContent=win==='draw'?'平局':win==='plant'?'🌱 植物方胜利':'🧟 僵尸方胜利';$('#versusResultReason').textContent=res.reason||'';const vs=window.S7VersusBattle?.state?.versus;const parts=[`用时 ${Math.floor((res.time||0)/60)}:${String(Math.floor((res.time||0)%60)).padStart(2,'0')}`];if(vs?.target)parts.push(`摧毁目标 ${vs.target.destroyed}/${vs.target.required}`);$('#versusResultStats').textContent=parts.join(' · ');$('#versusResultRematchBtn').style.display=(O.host||window.S7VersusBattle?.state?.mode==='practice')?'inline-block':'none'}
 function handle(msg){
   if(!msg)return;
+  if(msg.type==='roomList'){renderRoomList(msg.rooms);return;}
   if(msg.type==='versusRoomCreated'||msg.type==='versusRoomJoined'||(msg.type==='roomResumed'&&msg.room?.kind==='versus')){
     clearEntryPending();
     O.room=msg.room;O.playerId=msg.playerId||window.s7WSPlayerId?.();renderRoom();

@@ -864,6 +864,10 @@
         s7MoveZombieByKnockback(z, targetX, { maxX: COLS + .3, reason: "大嘴花车辆击退" });
         z.attackCd = Math.max(z.attackCd || 0, .75);
         addEffect(z.row, z.x, "大嘴花击退冰车0.625格", "#fca5a5", .5)
+      } else if (p.key === "spikerock" && kind === "crush" && z && !z.dead && (z.type === "zomboni" || z.type === "catapult" || z.type === "bobsledSled")) {
+        // 地刺王：车辆碾压时尖刺扎破轮胎 → 秒杀车辆（冰车/投篮车/雪橇车）。
+        try { killZombie(z, { source: p, spikeCrush: true }) } catch (_) { z.hp = 0; z.dead = true }
+        addEffect(z.row, z.x, "地刺王扎破车辆", "#f87171", .5)
       }
     }
 
@@ -1546,7 +1550,8 @@
     }
     function cleanupFrameEntities() {
       compactArrayInPlace(state.plants, p => p && !p.dead);
-      compactArrayInPlace(state.zombies, z => z && !z.dead);
+      // 保留 Versus 靶子尸体：死亡/胜利动画需在结算序列播完后再移除。
+      compactArrayInPlace(state.zombies, z => z && (!z.dead || z.versusObjective));
       compactArrayInPlace(state.bullets, b => b && !b.dead)
     }
 

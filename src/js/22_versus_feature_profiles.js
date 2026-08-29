@@ -31,17 +31,17 @@
 
 
   const PLANT_RESOURCE_COSTS = Object.freeze({
-    wallnut:25, tallnut:25, cactus:180, explodenut:150, chomper:100, garlic:90, spikerock:150, snowpea:255,
-    repeater:300, puff:195, scaredy:135, squash:285, threepeater:645, seashroom:165, splitpea:105, cabbage:210,
-    cattail:510, firelotus:345, reverseRepeater:125, ghost:200, sniper:360, sunflower:135, sunshroom:135, hypno:210,
-    iceshroom:200, kelp:180, torchwood:105, plantern:75, blover:45, magnet:120, kernel:250, umbrella:75,
-    marigold:75, goldmagnet:150, timegrass:175, barley:285, starfruit:400, fume:250, gloom:200, potato:405,
-    melon:450, gatling:540, winter:250, twinSunflower:250, cherrybomb:150, jalapeno:125, doomshroom:200
+    wallnut:25, tallnut:25, cactus:180, explodenut:150, chomper:100, garlic:90, spikerock:125, snowpea:200,
+    repeater:200, puff:195, scaredy:135, squash:285, threepeater:645, seashroom:165, splitpea:105, cabbage:210,
+    cattail:400, firelotus:345, reverseRepeater:125, ghost:200, sniper:360, sunflower:135, sunshroom:135, hypno:210,
+    iceshroom:200, kelp:180, torchwood:105, plantern:75, blover:45, magnet:120, kernel:200, umbrella:75,
+    marigold:75, goldmagnet:150, timegrass:175, barley:285, starfruit:350, fume:200, gloom:200, potato:405,
+    melon:375, gatling:450, winter:200, twinSunflower:250, cherrybomb:150, jalapeno:125, doomshroom:200
   });
 
   const ZOMBIE_RESOURCE_COSTS = Object.freeze({
-    blind:135, normal:25, flag:45, cone:50, peaz:100, snorkel:50, pole:50,
-    bucket:50, balloon:50, dolphin:60, squashz:150, yeti:125, newspaper:165, screen:165, digger:50, pogo:30,
+    blind:135, normal:55, flag:45, cone:100, peaz:100, snorkel:50, pole:100,
+    bucket:120, balloon:100, dolphin:100, squashz:150, yeti:125, newspaper:165, screen:165, digger:100, pogo:75,
     jack:165, bungee:150, jalapenoz:165, wallz:165, football:165, ladder:180, gatlingz:210,
     dancing:200, zomboni:315, catapult:210, immortal:285, bobsledSled:360, tallz:250, garg:300, giga:550
   });

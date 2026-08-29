@@ -86,9 +86,14 @@ let failed = 0;
   const d2 = L.byId[L.byEntity[rp2.entityId]];
   const gargCost = b.CARDS.zombie.garg.cost;
   const sumDirect = (d1 ? d1.resolvedPaidValueDirect : 0) + (d2 ? d2.resolvedPaidValueDirect : 0);
+  const sumDmgEq = (d1 ? d1.resolvedPaidValueDamageEquivalent : 0) + (d2 ? d2.resolvedPaidValueDamageEquivalent : 0);
   failed += check('paid victim marked killed', gargDep && gargDep.outcome === 'killed', 'outcome=' + (gargDep && gargDep.outcome));
   failed += check('paid victim claimed exactly its cost', gargDep && gargDep.paidValueClaimed === gargCost, 'claimed=' + (gargDep && gargDep.paidValueClaimed) + ' cost=' + gargCost);
   failed += check('no double-count: sum of killers <= victim cost', sumDirect <= gargCost + 1e-6, 'sum=' + sumDirect + ' cost=' + gargCost);
+  // Total exchange measure is the EHP-proportional damage value; a killed victim's
+  // full value must be credited at most once across ALL killers (no direct+dmgEq double count).
+  failed += check('no double-count: total damage-equivalent across killers <= victim cost',
+    sumDmgEq <= gargCost + 1e-6, 'sumDmgEq=' + sumDmgEq + ' cost=' + gargCost);
 }
 
 // 4) Free core damage is strategic value, NOT paid value.

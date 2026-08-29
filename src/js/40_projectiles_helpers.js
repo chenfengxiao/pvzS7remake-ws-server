@@ -363,7 +363,7 @@
       imp.impLandingCell = s7UmbrellaCellForX(imp.x);
       return imp
     }
-    const S7_UMBRELLA_LEAP_KILL_TYPES = new Set(["polecmd", "pole", "pogo", "dolphin", "imp", "bungee"]);
+    const S7_UMBRELLA_LEAP_KILL_TYPES = new Set(["polecmd", "pole", "pogo", "dolphin", "imp", "bungee", "balloon"]);
     const S7_SMALL_UMBRELLA_HP = 20;
 
     // -----------------------------------------------------------------------------
@@ -512,7 +512,7 @@
 
     function s7UmbrellaAirborneZombie(z) {
       if (!z || z.dead || z.friendly || !S7_UMBRELLA_LEAP_KILL_TYPES.has(z.type)) return false;
-      if (z.type === "balloon") return isBalloonAir(z);
+      if (z.type === "balloon") return isBalloonAir(z) || !z.air; // 飞行与落地的气球都可被保护伞弹飞
       if (z.type === "imp") return !!z.flyingImp || !!z.air || (z.airTimer || 0) > 0 || !!z.impLandingPending;
       if (z.type === "pogo") return (z.pogoAirTimer || 0) > 0;
       if (z.type === "bungee") return true;

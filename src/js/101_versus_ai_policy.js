@@ -87,7 +87,7 @@ function decidePlant(B,api){
     let hit=false;
     if(id==="jalapeno")hit=z.row===row;
     else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;
-    else hit=Math.abs(z.row-row)<=2&&Math.abs(z.x-(col+.5))<=3.5;
+    else hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=2.0;
     if(!hit)continue;
     const paid=paidValueOf(z);
     v+=paid; // 只计真实付费价值，免费/召唤不计（与账本口径一致）
@@ -96,7 +96,8 @@ function decidePlant(B,api){
    if(!best||v>best.value)best={row,col,value:v,key,paidFighters}
   }
   const emergency=state.zombies.some(z=>isFighter(z)&&z.x<P.emergencyX&&(mowers[z.row]?.state==="used"));
-  const ratio=emergency?P.ashEmergencyRatio:P.ashMinValueRatio;
+  let ratio=emergency?P.ashEmergencyRatio:P.ashMinValueRatio;
+  if(id==="doomshroom")ratio=Math.min(ratio,1.05); // 毁灭菇更早释放：单次解决 200-350 付费价值健康带
   if(best&&best.value>=c.cost*ratio){const r=tryPlay(id,best.row,best.col);if(r&&r.ok){memoAsh[best.key]=state.time;return r}}
  }
  // 3) 经济：补双子（100成本，10s产25 → 40s回本）

@@ -98,7 +98,7 @@ let t0 = Date.now();
       for (const d of m.ledger.deployments){
         if (d.cardId === forcedCard && d.side === side){
           uses++; paid += d.paidCost;
-          res += d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent;
+          res += d.resolvedPaidValueDamageEquivalent;
         }
       }
     }

@@ -293,7 +293,7 @@
     }
 
     function s7GrantPlantExp(p, amt, laneMultiplier = null) {
-      if (!p || !PLANT_RULES[p.key] || amt <= 0 || !s7CanReceiveExp(p)) return;
+      if (!p || p.versusCore === "twin" || !PLANT_RULES[p.key] || amt <= 0 || !s7CanReceiveExp(p)) return;
       if (!p.s7) s7InitPlant(p, true);
       // 经验倍率按“接收经验的本路”计算；每株存活吸金磁独立乘1.25，不再要求达到3阶。
       // 批量分配时由调用者传入同一路已计算的倍率，避免每株植物重复扫描整张植物表。
@@ -1321,8 +1321,8 @@
       if (!state) return [];
       row = Math.max(0, Math.min(ROWS - 1, Math.round(finiteNumber(row, 0))));
       // 星星只把已经跨过9/10列可伤线的敌方僵尸纳入索敌；未出土矿工不诱导锁敌。
-      // 未出土矿工、未露头潜水不诱导锁敌；气球仍可作为可见目标，但命中规则会另行判断。
-      return state.zombies.filter(z => z && !z.dead && !z.dying && !z.friendly && z.row === row && isDamageableZombie(z) && !isUnderground(z) && !isDiving(z)).sort((a, b) =>
+      // 未出土矿工、未露头潜水、飞行气球不诱导锁敌（星弹打不到飞行，避免锁住后一直卡弹）。
+      return state.zombies.filter(z => z && !z.dead && !z.dying && !z.friendly && z.row === row && isDamageableZombie(z) && !isUnderground(z) && !isDiving(z) && !isBalloonAir(z)).sort((a, b) =>
         Number(!!a.blind) - Number(!!b.blind) || finiteNumber(a.x, 999) - finiteNumber(b.x, 999) || (a.id || 0) - (b.id || 0))
     }
 

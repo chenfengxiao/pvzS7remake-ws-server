@@ -15,12 +15,12 @@ const DT = rt.FIXED_FRAME_DT;
 if (overrides) battle.overrideCards(overrides);
 
 const PLANT_DECKS = [
-  ['repeater','wallnut','gatling','cherrybomb','hypno'],
-  ['fume','snowpea','melon','jalapeno','spikerock'],
-  ['repeater','wallnut','cattail','doomshroom','tallnut'],
-  ['starfruit','fume','winter','cherrybomb','wallnut'],
-  ['gatling','snowpea','squash','jalapeno','spikerock'],
-  ['repeater','melon','kernel','cherrybomb','wallnut']
+  ['repeater','wallnut','snowpea','cherrybomb','hypno'],
+  ['fume','snowpea','cabbage','jalapeno','spikerock'],
+  ['repeater','wallnut','splitpea','doomshroom','tallnut'],
+  ['snowpea','fume','winter','cherrybomb','wallnut'],
+  ['cabbage','snowpea','squash','jalapeno','spikerock'],
+  ['repeater','kernel','iceshroom','cherrybomb','wallnut']
 ];
 const ZOMBIE_DECKS = [
   ['normal','cone','bucket','football','garg'],
@@ -50,7 +50,7 @@ function runOne(seed, pd, zd){
   const ledger = battle.getLedger();
   const st2 = rt.getState();
   const result2 = battle.state.versus?.result || null;
-  const rows = ledger.deployments.map(d => ({side: d.side, cardId: d.cardId, paid: d.paidCost, res: Math.round((d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent) * 10) / 10, obj: Math.round(d.objectiveTargetDamage), outcome: d.outcome, t: Math.round(d.startTime)}));
+  const rows = ledger.deployments.map(d => ({side: d.side, cardId: d.cardId, paid: d.paidCost, res: Math.round(d.resolvedPaidValueDamageEquivalent * 10) / 10, obj: Math.round(d.objectiveTargetDamage), outcome: d.outcome, t: Math.round(d.startTime)}));
   return {seed, winner: result2?.winner || 'none', reason: result2?.reason || '', time: Math.round(st2.time), plantDeck: pd, zombieDeck: zd, deps: rows, mower: ledger.mowerClearedPaidValue, house: ledger.housePressurePaidValue};
 }
 

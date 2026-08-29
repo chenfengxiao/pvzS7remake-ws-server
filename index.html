@@ -124,8 +124,18 @@
   </div>
 </div>
 
-<div class="hidden" id="versusResultOverlay">
-  <div class="dialog versusResultDialog"><span class="versusRoomTag">Versus 对局结束</span><h1 id="versusResultTitle">比赛结束</h1><p id="versusResultReason"></p><div class="versusResultStats" id="versusResultStats"></div><div class="row"><button class="primary" id="versusResultRematchBtn">再来一局</button><button class="danger" id="versusResultExitBtn">退出</button></div></div>
+<div class="hidden versusResultWrap" id="versusResultOverlay">
+  <div class="dialog versusResultDialog">
+    <div class="versusResultEmblem" id="versusResultEmblem">🏆</div>
+    <span class="versusRoomTag">Versus 对局结束</span>
+    <h1 id="versusResultTitle">比赛结束</h1>
+    <p id="versusResultReason"></p>
+    <div class="versusResultStats" id="versusResultStats"></div>
+    <div class="versusResultActions">
+      <button class="primary" id="versusResultRematchBtn">再来一局</button>
+      <button class="danger" id="versusResultExitBtn">退出</button>
+    </div>
+  </div>
 </div>
 
 <!-- 双人 Versus：选服后的静态创建 / 加入入口。
@@ -140,6 +150,15 @@
       <button class="primary" id="versusCreateRoomBtn">创建房间</button>
       <input id="versusJoinRoomId" placeholder="房间号" maxlength="8">
       <button id="versusJoinRoomBtn">加入房间</button>
+    </div>
+    <div class="versusRoomBrowser">
+      <div class="versusRoomBrowserHead">
+        <span>服务器现有房间</span>
+        <button class="primary" id="versusRefreshRoomsBtn" type="button">刷新房间列表</button>
+      </div>
+      <div class="versusRoomBrowserList" id="versusRoomBrowserList">
+        <div class="versusRoomBrowserEmpty">点击「刷新房间列表」查看本服务器的双人对战房间，点击房间即可加入。</div>
+      </div>
     </div>
     <p class="versusPracticeSummary" id="versusServerEntrySummary">房主承担全部战斗计算；房客接收房主画面并回传操作。</p>
     <p class="versusTransportStatus" id="versusTransportStatus" aria-live="polite">尚未连接服务器；创建/加入房间时才建立网络连接。</p>

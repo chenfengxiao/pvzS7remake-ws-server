@@ -42,11 +42,11 @@ function evaluate(policyPatch, seeds, opponents){
         timeSum += m.time;
         const deps = m.ledger.deployments.filter(d => d.side === side);
         const spent = deps.reduce((s, d) => s + d.paidCost, 0);
-        const got = deps.reduce((s, d) => s + d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent, 0);
+        const got = deps.reduce((s, d) => s + d.resolvedPaidValueDamageEquivalent, 0);
         if (spent > 0) resolvedRatioSum += got / spent;
         const ash = deps.filter(d => ['cherrybomb','jalapeno','doomshroom'].includes(d.cardId));
         ashUses += ash.length;
-        ashWaste += ash.filter(d => d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent < d.paidCost * 0.5).length;
+        ashWaste += ash.filter(d => d.resolvedPaidValueDamageEquivalent < d.paidCost * 0.5).length;
       }
     }
   }
@@ -83,11 +83,11 @@ function evaluate2(patch, seeds){
       timeSum += m.time;
       const deps = m.ledger.deployments.filter(d => d.side === side);
       const spent = deps.reduce((s, d) => s + d.paidCost, 0);
-      const got = deps.reduce((s, d) => s + d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent, 0);
+      const got = deps.reduce((s, d) => s + d.resolvedPaidValueDamageEquivalent, 0);
       if (spent > 0) ratioSum += got / spent;
       const ash = deps.filter(d => ['cherrybomb','jalapeno','doomshroom'].includes(d.cardId));
       ashUses += ash.length;
-      ashWaste += ash.filter(d => d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent < d.paidCost * 0.5).length;
+      ashWaste += ash.filter(d => d.resolvedPaidValueDamageEquivalent < d.paidCost * 0.5).length;
     }
   }
   // 胜率为主, 交换效率与灰烬浪费为辅; vs legacy 胜率目标高, 镜像自对弈反映上限

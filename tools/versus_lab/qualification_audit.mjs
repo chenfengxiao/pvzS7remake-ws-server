@@ -34,7 +34,7 @@ function audit(matches, cards, overrides){
   const stat = {};
   const sideWR = {plant: 0, zombie: 0, draw: 0};
   const deckWR = {}; // best-response proxy: deck archetype winrates
-  const ashDoom = {uses: 0, resolved: []};
+  const ashDoom = {uses: 0, resolved: [], over: []};
   for (const m of matches){
     const w = m.winner === 'plant' ? 'plant' : m.winner === 'zombie' ? 'zombie' : 'draw';
     sideWR[w]++;
@@ -54,7 +54,7 @@ function audit(matches, cards, overrides){
       if (d.outcome === 'breached') s.breached++;
       if (m.winner === d.side) s.wonWhenUsed++;
       if (!seen.has(k2)){ seen.add(k2); s.matches.add(m.seed); }
-      if (d.cardId === 'doomshroom') ashDoom.resolved.push(d.res);
+      if (d.cardId === 'doomshroom'){ ashDoom.uses++; ashDoom.resolved.push(d.res); if (d.res >= 500) ashDoom.over.push({seed: m.seed, res: Math.round(d.res)}); }
     }
   }
   const total = matches.length;
@@ -86,10 +86,19 @@ function audit(matches, cards, overrides){
   }
   // best-response 表：每个卡组对位胜率
   const matchups = Object.entries(deckWR).map(([k, v]) => ({matchup: k, n: v.n, plantWR: Math.round((v.plant / v.n) * 100) / 100, draw: Math.round((v.draw / v.n) * 100) / 100})).sort((a, b) => b.n - a.n);
-  // 毁灭菇优质使用带判定（目标 200-350 合理 / 常态≈500 过强 / 好时机<200 过弱）
-  const doomStats = {uses: ashDoom.uses, avgResolved: ashDoom.resolved.length ? Math.round(ashDoom.resolved.reduce((a, b) => a + b, 0) / ashDoom.resolved.length) : null, band: null};
-  if (doomStats.avgResolved != null) doomStats.band = doomStats.avgResolved >= 500 ? '过强(≈500+)' : doomStats.avgResolved >= 200 ? '合理(200-350)' : '过弱(<200)';
-  return {total, sideWR: {plant: Math.round((sideWR.plant / total) * 1000) / 1000, zombie: Math.round((sideWR.zombie / total) * 1000) / 1000, draw: Math.round((sideWR.draw / total) * 1000) / 1000}, rows, anomalies, matchups, doom: doomStats};
+  // 毁灭菇优质使用带判定（目标 200-350 合理 / 常态≈500 过强 / 好时机<200 过弱）+ 每次使用 resolvedValue 分布
+  const doomStats = {uses: ashDoom.uses, avgResolved: ashDoom.resolved.length ? Math.round(ashDoom.resolved.reduce((a, b) => a + b, 0) / ashDoom.resolved.length) : null, band: null, dist: null, over500: null};
+  if (doomStats.avgResolved != null){
+    doomStats.band = doomStats.avgResolved >= 500 ? '过强(≈500+)' : doomStats.avgResolved >= 350 ? '偏强(350-500)' : doomStats.avgResolved >= 200 ? '合理(200-350)' : '过弱(<200)';
+    const buckets = {'<100': 0, '100-200': 0, '200-350': 0, '350-500': 0, '500+': 0};
+    for (const v of ashDoom.resolved){
+      if (v < 100) buckets['<100']++; else if (v < 200) buckets['100-200']++; else if (v < 350) buckets['200-350']++; else if (v < 500) buckets['350-500']++; else buckets['500+']++;
+    }
+    doomStats.dist = buckets;
+    doomStats.over500 = ashDoom.over.slice(0, 60);
+  }
+  const plantWR = Math.round((sideWR.plant / total) * 1000) / 1000, zombieWR = Math.round((sideWR.zombie / total) * 1000) / 1000;
+  return {total, sideWR: {plant: plantWR, zombie: zombieWR, draw: Math.round((sideWR.draw / total) * 1000) / 1000}, wrSanity: Math.abs(plantWR - zombieWR) <= 0.12, rows, anomalies, matchups, doom: doomStats};
 }
 
 async function main(){
@@ -99,7 +108,7 @@ async function main(){
   const rt = (await import('./headless_runtime.mjs')).createS7HeadlessRuntime();
   const cards = JSON.parse(JSON.stringify(rt.S7VersusBattle.CARDS));
   const t0 = Date.now();
-  const CHUNK = 600, WORKERS = 3;
+  const CHUNK = 600, WORKERS = 4;
   let all = [];
   let done = 0;
   while (done < TOTAL){

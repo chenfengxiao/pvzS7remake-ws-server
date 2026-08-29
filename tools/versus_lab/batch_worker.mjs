@@ -9,12 +9,12 @@ const start = Number(seedStart), n = Number(count);
 
 // Deck diversity: deterministic archetype pairing by seed.
 const PLANT_DECKS = [
-  ['repeater','wallnut','gatling','cherrybomb','hypno'],
-  ['fume','snowpea','melon','jalapeno','spikerock'],
-  ['repeater','wallnut','cattail','doomshroom','tallnut'],
-  ['starfruit','fume','winter','cherrybomb','wallnut'],
-  ['gatling','snowpea','squash','jalapeno','spikerock'],
-  ['repeater','melon','kernel','cherrybomb','wallnut']
+  ['repeater','wallnut','snowpea','cherrybomb','hypno'],
+  ['fume','snowpea','cabbage','jalapeno','spikerock'],
+  ['repeater','wallnut','splitpea','doomshroom','tallnut'],
+  ['snowpea','fume','winter','cherrybomb','wallnut'],
+  ['cabbage','snowpea','squash','jalapeno','spikerock'],
+  ['repeater','kernel','iceshroom','cherrybomb','wallnut']
 ];
 const ZOMBIE_DECKS = [
   ['normal','cone','bucket','football','garg'],
@@ -31,7 +31,7 @@ for (let i = 0; i < n; i++){
   const pd = PLANT_DECKS[seed % PLANT_DECKS.length];
   const zd = ZOMBIE_DECKS[(seed >>> 2) % ZOMBIE_DECKS.length];
   const m = runMatch({seed, plantCards: pd, zombieCards: zd, overrides, maxSeconds: Number(maxSecondsArg) || 2500, policyPatch: overrides?.__policy});
-  const rows = m.ledger.deployments.map(d => ({side: d.side, cardId: d.cardId, paid: d.paidCost, res: Math.round((d.resolvedPaidValueDirect + d.resolvedPaidValueDamageEquivalent) * 10) / 10, obj: Math.round(d.objectiveTargetDamage), outcome: d.outcome, t: Math.round(d.startTime)}));
+  const rows = m.ledger.deployments.map(d => ({side: d.side, cardId: d.cardId, paid: d.paidCost, res: Math.round(d.resolvedPaidValueDamageEquivalent * 10) / 10, obj: Math.round(d.objectiveTargetDamage), outcome: d.outcome, t: Math.round(d.startTime)}));
   fs.writeSync(out, JSON.stringify({seed, winner: m.result?.winner || 'none', reason: m.result?.reason || '', time: Math.round(m.time), plantDeck: pd, zombieDeck: zd, deps: rows, mower: m.ledger.mowerClearedPaidValue, house: m.ledger.housePressurePaidValue}) + '\n');
 }
 fs.closeSync(out);
