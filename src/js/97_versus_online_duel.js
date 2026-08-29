@@ -2,7 +2,7 @@
 (function(){
 "use strict";
 const O={room:null,playerId:null,host:false,side:null,entry:null,pendingEntry:null,refreshing:false,roomListTimer:null};
-const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(String(id).replace(/^#/,''));
 const nav=()=>window.S7ScreenNav;
 const show=id=>nav()?.show(id,{hideHome:false}) ?? $(id)?.classList.remove('hidden');
 const hide=id=>nav()?.hide(id) ?? $(id)?.classList.add('hidden');
