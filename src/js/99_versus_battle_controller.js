@@ -126,7 +126,7 @@ function setupBoard(){
  B.targets=Array.from({length:R.targetCount},(_,row)=>makeVersusTarget(row));
  state.zombies.push(...B.graves,...B.targets);
 }
-function resetRuntime(opt={}){B.ledger={seq:0,deployments:[],byId:{},byEntity:{},mowerClearedPaidValue:0,housePressurePaidValue:0,charmInflictedPaidValue:0};Object.assign(B,{active:true,mode:opt.mode||"practice",humanSide:opt.humanSide||null,role:opt.role||null,online:!!opt.online,isHost:!!opt.isHost,room:opt.room||null,plantCards:(opt.plantCards||[]).slice(),zombieCards:(opt.zombieCards||[]).slice(),selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0});ensureState();B.versus=state.versus;setupBoard()}
+function resetRuntime(opt={}){B.ledger={seq:0,deployments:[],byId:{},byEntity:{},mowerClearedPaidValue:0,housePressurePaidValue:0,charmInflictedPaidValue:0};if(opt.online){try{const info=window.s7BattleRngInfo?.();if(!info||!info.active)window.s7SetBattleSeed?.(((Math.random()*0xFFFFFFFF)>>>0)||1)}catch(_){}}Object.assign(B,{active:true,mode:opt.mode||"practice",humanSide:opt.humanSide||null,role:opt.role||null,online:!!opt.online,isHost:!!opt.isHost,room:opt.room||null,plantCards:(opt.plantCards||[]).slice(),zombieCards:(opt.zombieCards||[]).slice(),selected:{plant:0,zombie:0},resources:{plant:R.startResource,zombie:R.startResource},cooldowns:{plant:{},zombie:{}},variantCount:{},variantMeter:{},guaranteedArmed:false,result:null,targets:[],graves:[],humanActionCount:0,aiActionCount:0});ensureState();B.versus=state.versus;setupBoard()}
 function cardReady(side,id){return (B.cooldowns[side][id]||0)<=state.time+1e-6}
 function canBuy(side,id,cost){return B.active&&cardReady(side,id)&&B.resources[side]>=cost}
 function setCd(side,id){
@@ -168,7 +168,7 @@ function performAction(action,source="human"){
  if(!canBuy(side,id,cost))return {ok:false,reason:B.resources[side]<cost?"资源不足":"冷却中"};
  const isAshPlay=side==="plant"&&PLANT_ASH.has(id);
  let out;
- if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.min(8.5,Number(action.x)||8.5),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
+ if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.max(6,Math.min(8.8,finiteNumber(action.x,8.8))),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
  if(!out?.ok)return out;
  if(!isAshPlay)ledgerRegisterDeployment(side,id,cost,out);
  B.resources[side]-=cost;setCd(side,id);
@@ -203,7 +203,7 @@ function tick(dtOverride){
 setInterval(tick,200);
 function cardsFor(side){return [side==="plant"?FIXED.plant:FIXED.zombie].concat(side==="plant"?B.plantCards:B.zombieCards)}
 function hitTest(clientX,clientY,rect){const x=(clientX-rect.left)/rect.width,y=(clientY-rect.top)/rect.height;const row=Math.floor((y-(layout.y/innerHeight))/(layout.cell/innerHeight));const col=Math.floor((x-(layout.x/innerWidth))/(layout.cell/innerWidth));return {row:clamp(row,0,4),col:clamp(col,0,8)}}
-function actionFromPointer(side,clientX,clientY,rect){const h=hitTest(clientX,clientY,rect);const list=cardsFor(side),idx=B.selected[side]||0,id=list[idx]||list[0];if(side==="plant")return {type:"play",side,cardId:id,row:h.row,col:h.col};return {type:"play",side,cardId:id,row:h.row,x:8.8,guaranteed:B.guaranteedArmed}}
+function actionFromPointer(side,clientX,clientY,rect){const h=hitTest(clientX,clientY,rect);const list=cardsFor(side),idx=B.selected[side]||0,id=list[idx]||list[0];if(side==="plant")return {type:"play",side,cardId:id,row:h.row,col:h.col};const nx=(clientX-rect.left)/rect.width,bx=(nx-(layout.x/innerWidth))/(layout.cell/innerWidth);return {type:"play",side,cardId:id,row:h.row,x:bx,guaranteed:B.guaranteedArmed}}
 function rectHit(r,x,y){return !!r&&x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h}
 function packetIcon(side,id){if(id===FIXED.plant)return "🌻🌻";if(id===FIXED.zombie)return "🪦";try{return (side==="plant"?PLANTS[id]?.emoji:ZOMBIES[id]?.emoji)||(side==="plant"?"🌿":"🧟")}catch(_){return side==="plant"?"🌿":"🧟"}}
 function shortName(side,id){if(id===FIXED.plant)return "向";if(id===FIXED.zombie)return "碑";try{return (side==="plant"?PLANTS[id]?.name:ZOMBIES[id]?.name)?.slice(0,1)||id}catch(_){return id}}
