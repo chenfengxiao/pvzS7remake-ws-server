@@ -392,6 +392,66 @@
         ctx.fill();
         ctx.globalAlpha = 1;
       }
+      // 6. Ash plants (樱桃/辣椒/毁灭菇)
+      const ashSpec = window.S7VersusBattle?.ASH_SPEC, ashVis = window.S7VersusBattle?.ASH_VISUALS;
+      const useTimeline = (typeof s7AnimationRenderMode !== 'undefined' && s7AnimationRenderMode === 'timeline');
+      for (const p of finiteArray(state.plants)) {
+        if (!p || p.dead || !p.versusAsh) continue;
+        const as = p.versusAsh, kind = as.kind;
+        const spec = ashSpec?.[kind], vis = ashVis?.[kind];
+        if (!spec || !vis) continue;
+        const elapsed = state.time - as.spawnTime;
+        const cx = layout.x + (p.col + .5) * c, cy = layout.y + (p.row + .5) * c;
+        if (!as.detonated) {
+          // ARMING phase: draw plant body (timeline sprite or legacy emoji)
+          if (useTimeline) {
+            const frame = Math.min(Math.floor(elapsed * 25), spec.sheet.frames - 1);
+            const s = spec.sheet;
+            const sx = (frame % s.cols) * s.fw, sy = Math.floor(frame / s.cols) * s.fh;
+            const sc = c * .85 / Math.max(s.fw, s.fh);
+            try { ctx.drawImage(S7_SPRITES.get('versus.' + spec.asset.replace(/_./g, m => m[1].toUpperCase())), sx, sy, s.fw, s.fh, cx - s.anchor[0] * sc, cy - s.anchor[1] * sc, s.fw * sc, s.fh * sc) } catch (_) {}
+          } else {
+            // Legacy emoji: subtle shake 0~0.7s, scale-up 0.7~0.96s
+            const t = elapsed, scale = t < .7 ? 1 + .03 * Math.sin(t * 15) : 1 + .15 * ((t - .7) / .26);
+            ctx.save(); ctx.translate(cx, cy); ctx.scale(scale, scale);
+            ctx.font = c * .5 + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(vis.emoji, 0, 0); ctx.restore();
+          }
+        } else {
+          // DETONATED: draw explosion fx
+          const detElapsed = elapsed - spec.warmupSec;
+          const detDur = kind === 'doomshroom' ? .6 : .4;
+          const alpha = Math.max(0, 1 - detElapsed / detDur);
+          if (detElapsed < detDur) {
+            const exScale = 1 + detElapsed * 2.5;
+            if (kind === 'jalapeno') {
+              // 整行🔥
+              ctx.save(); ctx.globalAlpha = alpha;
+              ctx.font = c * .55 + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              for (let cc = 0; cc < 9; cc++) { ctx.fillText('🔥', layout.x + (cc + .5) * c, cy) }
+              ctx.restore();
+            } else if (kind === 'doomshroom') {
+              ctx.save(); ctx.globalAlpha = alpha * .8;
+              ctx.font = c * .8 * exScale + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(vis.chargeEmoji || '☢️', cx, cy); ctx.restore();
+              ctx.save(); ctx.globalAlpha = alpha;
+              ctx.font = c * 1.0 * exScale + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(vis.explosionEmoji || '💥', cx, cy); ctx.restore();
+            } else {
+              ctx.save(); ctx.globalAlpha = alpha;
+              ctx.font = c * .9 * exScale + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(vis.explosionEmoji || '💥', cx, cy); ctx.restore();
+            }
+          } else if (kind === 'doomshroom' && detElapsed < 5) {
+            // 弹坑残留
+            ctx.save(); ctx.globalAlpha = .6;
+            ctx.font = c * .45 + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(vis.craterEmoji || '🕳️', cx, cy); ctx.restore();
+          }
+          if (detElapsed > detDur && kind !== 'doomshroom') p.dead = true;
+          if (detElapsed > 180 && kind === 'doomshroom') p.dead = true;
+        }
+      }
     }
 
     function drawGridEffects() {

@@ -6,6 +6,8 @@ const R=S7_VERSUS_RULES;
 const ECON_CD={twin:R.twinCooldownSeconds??8,grave:R.gravestoneCooldownSeconds??12};
 const CARDS={"plant":{"wallnut":{"cost":25,"cd":12,"guaranteed":null,"command":false},"tallnut":{"cost":25,"cd":15,"guaranteed":null,"command":false},"cactus":{"cost":180,"cd":9.5,"guaranteed":null,"command":false},"explodenut":{"cost":150,"cd":25.5,"guaranteed":null,"command":false},"chomper":{"cost":100,"cd":15.0,"guaranteed":null,"command":false},"garlic":{"cost":90,"cd":14.0,"guaranteed":null,"command":false},"spikerock":{"cost":125,"cd":16.5,"guaranteed":null,"command":false},"snowpea":{"cost":200,"cd":11,"guaranteed":null,"command":false},"repeater":{"cost":200,"cd":10.5,"guaranteed":null,"command":false},"puff":{"cost":195,"cd":8.5,"guaranteed":null,"command":false},"scaredy":{"cost":135,"cd":11.5,"guaranteed":null,"command":false},"squash":{"cost":285,"cd":33.0,"guaranteed":null,"command":false},"threepeater":{"cost":645,"cd":18.5,"guaranteed":null,"command":false},"seashroom":{"cost":165,"cd":9.0,"guaranteed":null,"command":false},"splitpea":{"cost":105,"cd":10.0,"guaranteed":null,"command":false},"cabbage":{"cost":210,"cd":10.0,"guaranteed":null,"command":false},"cattail":{"cost":400,"cd":28.5,"guaranteed":null,"command":false},"firelotus":{"cost":345,"cd":24.0,"guaranteed":null,"command":false},"reverseRepeater":{"cost":125,"cd":9.0,"guaranteed":null,"command":false},"ghost":{"cost":200,"cd":16.0,"guaranteed":null,"command":false},"sniper":{"cost":360,"cd":23.5,"guaranteed":null,"command":false},"sunflower":{"cost":135,"cd":13.0,"guaranteed":null,"command":false},"sunshroom":{"cost":135,"cd":11.0,"guaranteed":null,"command":false},"hypno":{"cost":210,"cd":22.0,"guaranteed":null,"command":false},"iceshroom":{"cost":200,"cd":25.5,"guaranteed":null,"command":false},"kelp":{"cost":180,"cd":22.0,"guaranteed":null,"command":false},"torchwood":{"cost":105,"cd":16.5,"guaranteed":null,"command":false},"plantern":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"blover":{"cost":45,"cd":16.0,"guaranteed":null,"command":false},"magnet":{"cost":120,"cd":15.5,"guaranteed":null,"command":false},"kernel":{"cost":200,"cd":11,"guaranteed":null,"command":false},"umbrella":{"cost":75,"cd":16.0,"guaranteed":null,"command":false},"marigold":{"cost":75,"cd":14.0,"guaranteed":null,"command":false},"goldmagnet":{"cost":150,"cd":19.5,"guaranteed":null,"command":false},"timegrass":{"cost":175,"cd":27.5,"guaranteed":null,"command":false},"barley":{"cost":285,"cd":18.5,"guaranteed":null,"command":false},"starfruit":{"cost":350,"cd":19.5,"guaranteed":null,"command":false},"fume":{"cost":200,"cd":9,"guaranteed":null,"command":false},"gloom":{"cost":200,"cd":19.0,"guaranteed":null,"command":false},"potato":{"cost":405,"cd":33.0,"guaranteed":null,"command":false},"melon":{"cost":375,"cd":17.5,"guaranteed":null,"command":false},"gatling":{"cost":450,"cd":29.5,"guaranteed":null,"command":false},"winter":{"cost":200,"cd":23.5,"guaranteed":null,"command":false},"cherrybomb":{"cost":150,"cd":50.0,"guaranteed":null,"command":false},"jalapeno":{"cost":125,"cd":50.0,"guaranteed":null,"command":false},"doomshroom":{"cost":200,"cd":50.0,"guaranteed":null,"command":false}},"zombie":{"blind":{"cost":135,"cd":10.5,"guaranteed":null,"command":false},"normal":{"cost":55,"cd":5,"guaranteed":null,"command":false},"flag":{"cost":45,"cd":8.5,"guaranteed":null,"command":false},"snorkel":{"cost":50,"cd":15.0,"guaranteed":60.0,"command":false},"bobsledSled":{"cost":360,"cd":32.0,"guaranteed":540.0,"command":false},"peaz":{"cost":100,"cd":16.0,"guaranteed":200.0,"command":false},"gatlingz":{"cost":210,"cd":24.0,"guaranteed":300.0,"command":false},"squashz":{"cost":150,"cd":20.0,"guaranteed":195.0,"command":false},"jalapenoz":{"cost":165,"cd":30.0,"guaranteed":210.0,"command":false},"cone":{"cost":100,"cd":8.5,"guaranteed":null,"command":false},"bucket":{"cost":120,"cd":14,"guaranteed":195.0,"command":false},"newspaper":{"cost":165,"cd":12.0,"guaranteed":250.0,"command":false},"screen":{"cost":165,"cd":15.0,"guaranteed":225.0,"command":false},"football":{"cost":165,"cd":18.0,"guaranteed":250.0,"command":false},"digger":{"cost":100,"cd":18,"guaranteed":125.0,"command":false},"pogo":{"cost":75,"cd":14.5,"guaranteed":105.0,"command":false},"pole":{"cost":100,"cd":15,"guaranteed":150.0,"command":false},"jack":{"cost":165,"cd":11.0,"guaranteed":250.0,"command":false},"ladder":{"cost":180,"cd":18.0,"guaranteed":210.0,"command":false},"dolphin":{"cost":100,"cd":15.5,"guaranteed":75.0,"command":false},"dancer":{"cost":360,"cd":28.5,"guaranteed":450.0,"command":false},"balloon":{"cost":100,"cd":17,"guaranteed":150.0,"command":false},"wallz":{"cost":165,"cd":12.5,"guaranteed":250.0,"command":false},"tallz":{"cost":250,"cd":13.0,"guaranteed":375.0,"command":false},"zomboni":{"cost":315,"cd":31.5,"guaranteed":375.0,"command":false},"yeti":{"cost":125,"cd":12.0,"guaranteed":150.0,"command":false},"catapult":{"cost":210,"cd":28.0,"guaranteed":255.0,"command":false},"bungee":{"cost":150,"cd":26.5,"guaranteed":225.0,"command":false},"garg":{"cost":300,"cd":50.0,"guaranteed":500.0,"command":false},"giga":{"cost":550,"cd":50.0,"guaranteed":850.0,"command":false},"immortal":{"cost":285,"cd":29.5,"guaranteed":345.0,"command":false},"bombdoor":{"cost":525,"cd":35.0,"guaranteed":null,"command":true},"blackolive":{"cost":375,"cd":32.0,"guaranteed":null,"command":true},"polecmd":{"cost":390,"cd":32.0,"guaranteed":null,"command":true},"warflag":{"cost":405,"cd":36.0,"guaranteed":null,"command":true},"tacticflag":{"cost":255,"cd":38.0,"guaranteed":null,"command":true},"mysteryGrave":{"cost":250,"cd":8,"guaranteed":null,"command":false}}};
 const PLANT_ASH=new Set(["cherrybomb","jalapeno","doomshroom"]);
+const ASH_SPEC=Object.freeze({cherrybomb:{asset:"cherry_bomb",damage:1800,warmupSec:.96,rangeKind:"gridRect",rowR:1,colR:1,sheet:{fw:430,fh:380,cols:7,frames:39,anchor:[218,269]}},jalapeno:{asset:"jalapeno",damage:1800,warmupSec:.96,rangeKind:"wholeLane",sheet:{fw:854,fh:190,cols:5,frames:57,anchor:[479,149]}},doomshroom:{asset:"doom_shroom",damage:1800,warmupSec:.96,rangeKind:"gridRect",rowR:3,colR:3,sheet:{fw:470,fh:450,cols:7,frames:65,anchor:[235,225]}}});
+const ASH_VISUALS=Object.freeze({cherrybomb:{emoji:"🍒🍒",explosionEmoji:"💥"},jalapeno:{emoji:"🌶️",explosionEmoji:"🔥"},doomshroom:{emoji:"💣🍄",chargeEmoji:"☢️",explosionEmoji:"💥",craterEmoji:"🕳️"}});
 const FIXED={plant:"twinSunflower",zombie:"zombieGravestone",mystery:"mysteryGrave"};
 const NAMES={twinSunflower:"双子向日葵",zombieGravestone:"墓碑",mysteryGrave:"召唤墓碑",cherrybomb:"樱桃炸弹",jalapeno:"火爆辣椒",doomshroom:"毁灭菇",garg:"白眼巨人",giga:"红眼巨人",blackolive:"黑橄榄",bombdoor:"防爆门指令",polecmd:"撑杆指令",warflag:"战争旗帜",tacticflag:"战术旗帜"};
 const BLIND_BOX_POOL=["normal","cone","bucket","screen","pole","snorkel","balloon","dolphin","football","pogo"];
@@ -20,6 +22,9 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
   for(let i=0;i<4;i++) S7_SPRITES.register(`versus.target.shield${i}`,`./assets/versus/target_shield_stage${i}.png`);
   S7_SPRITES.register("versus.mower","./assets/versus/LawnCleaner.png");
   S7_SPRITES.register("versus.twinSunflower","./assets/versus/twin_sunflower_runtime_5x2_10f.png",{frameWidth:83,frameHeight:84,columns:5,frameCount:10});
+  S7_SPRITES.register("versus.cherryBomb","./assets/versus/cherry_bomb_runtime_25fps_sheet.png",{frameWidth:430,frameHeight:380,columns:7,frameCount:39});
+  S7_SPRITES.register("versus.jalapeno","./assets/versus/jalapeno_runtime_25fps_sheet.png",{frameWidth:854,frameHeight:190,columns:5,frameCount:57});
+  S7_SPRITES.register("versus.doomShroom","./assets/versus/doom_shroom_runtime_25fps_sheet.png",{frameWidth:470,frameHeight:450,columns:7,frameCount:65});
   // Target Zombie DS 原版身体（idle 32帧 / death 13帧 / victory 26帧，128×128，8列）
   S7_SPRITES.register("versus.target.idle","./assets/final_runtime/target_zombie_idle.png",{frameWidth:128,frameHeight:128,columns:8,frameCount:32});
   S7_SPRITES.register("versus.target.death","./assets/final_runtime/target_zombie_death.png",{frameWidth:128,frameHeight:128,columns:8,frameCount:13});
@@ -97,11 +102,11 @@ function productionTick(dt){
   const econ=z.versusEconomy;
   if(econ.phase==="idle"&&state.time>=econ.nextProduceAt){econ.phase="bright";econ.phaseStartedAt=state.time;econ.pendingAmount=R.twinProductionAmount}
   if(econ.phase==="bright"&&state.time>=econ.phaseStartedAt+R.twinBrightenSeconds){B.versus.resourceTokens.push(makeResourceToken("zombie",econ.pendingAmount,z.row,z.x,z.id));econ.phase="idle";econ.nextProduceAt+=upPeriod}
-  // 升级墓碑每30秒召唤盲盒僵尸
+  // 升级墓碑每30秒召唤盲盒僵尸（标准血量，不受timeHpMult限制）
   if(z.versusUpgraded&&!B.versus.suddenDeath){
    if(z.versusBlindBoxTimer==null)z.versusBlindBoxTimer=0;
    z.versusBlindBoxTimer+=dt;
-   if(z.versusBlindBoxTimer>=R.blindBoxSummonInterval){z.versusBlindBoxTimer=0;const pick=BLIND_BOX_POOL[(state.time*7+Math.random()*BLIND_BOX_POOL.length|0)%BLIND_BOX_POOL.length];deployZombie(pick,z.row,false,z.x)}
+   if(z.versusBlindBoxTimer>=R.blindBoxSummonInterval){z.versusBlindBoxTimer=0;const pick=BLIND_BOX_POOL[((state.time*7+Math.random()*BLIND_BOX_POOL.length)|0)%BLIND_BOX_POOL.length];const nz=makeZombie(pick,z.row,null,{variant:false});nz.x=z.x;if(nz.baseX!=null)nz.baseX=nz.x;state.zombies.push(nz)}
   }
  }}
  if(!sd&&state.time>=R.suddenDeathAtSeconds){B.versus.suddenDeath=true;B.versus.lastSkySupply=state.time}
@@ -147,14 +152,23 @@ function setCd(side,id){
 function placePlant(id,row,col){
  if(row<0||row>=5||col<0||col>=9)return {ok:false,reason:"格子无效"};
  if(state.plants.some(p=>!p.dead&&p.row===row&&p.col===col))return {ok:false,reason:"该格已有植物"};
- if(PLANT_ASH.has(id))return explodeAsh(id,row,col);
+ if(state.plants.some(p=>p.versusAsh&&p.versusAsh.kind==="doomshroom"&&p.versusAsh.detonated&&!p.dead&&p.row===row&&p.col===col&&(state.time-(p.versusAsh.spawnTime+.96))<180))return {ok:false,reason:"毁灭菇弹坑上无法种植"};
+ if(PLANT_ASH.has(id)){const p=makePlant(id,row,col);p.versusAsh={kind:id,spawnTime:state.time,detonateAt:state.time+.96,detonated:false,alive:true,row,col};state.plants.push(p);return {ok:true,entityId:p.id}}
  if(id===FIXED.plant){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再种经济单位"};const p=corePlant(row,col);state.plants.push(p);return {ok:true}}
  if(!PLANTS[id])return {ok:false,reason:"植物不存在"};const p=makePlant(id,row,col);state.plants.push(p);return {ok:true,entityId:p.id}
 }
-function explodeAsh(id,row,col){
- const damage=1800;let hits=0;const dep=ledgerRegisterDeployment("plant",id,cfg("plant",id)?.cost||0,null);
- for(const z of state.zombies){if(z&&!z.dead&&!z.friendly){if(isVersusTarget(z)||z.versusStatic)continue;/* 灰烬只解僵尸进攻：Target/墓碑均不受灰烬伤害 */let hit=false;if(id==="jalapeno")hit=z.row===row;else if(id==="cherrybomb")hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=1.5;else hit=Math.abs(z.row-row)<=1&&Math.abs(z.x-(col+.5))<=2.0;if(hit){const before=ledgerEffectiveHp(z);damageZombie(z,damage,{ash:true,noTransform:true});hits++;if(dep&&dep.cardId===id){const died=!!(z.dead||z.dying);const eff=died?before:Math.max(0,before-ledgerEffectiveHp(z));ledgerCredit(dep,z,eff,"ash")}}}}
- try{addEffect(row,col+.5,id==="jalapeno"?"辣椒":"灰烬","#fb7185",.8)}catch(_){}return {ok:true,hits}
+function detonateAsh(p){
+ const spec=ASH_SPEC[p.versusAsh.kind];if(!spec)return;
+ const ash=p.versusAsh;ash.detonated=true;ash.alive=false;p.dead=true;
+ const dep=ledgerRegisterDeployment("plant",ash.kind,cfg("plant",ash.kind)?.cost||0,null);
+ const seen=new Set;
+ for(const z of state.zombies){if(!z||z.dead||z.friendly)continue;if(z.versusStatic||isVersusTarget(z))continue;
+  const hit=spec.rangeKind==="wholeLane"?z.row===ash.row:spec.rangeKind==="gridRect"&&Math.abs(z.row-ash.row)<=spec.rowR&&Math.abs(z.x-(ash.col+.5))<=spec.colR;
+  if(!hit||seen.has(z.id))continue;seen.add(z.id);
+  const before=ledgerEffectiveHp(z);damageZombie(z,spec.damage,{ash:true,noTransform:true});
+  if(dep){const died=!!(z.dead||z.dying);const eff=died?before:Math.max(0,before-ledgerEffectiveHp(z));ledgerCredit(dep,z,eff,"ash")}
+ }
+ try{addEffect(ash.col+.5,ash.row+.5,ash.kind==="jalapeno"?"辣椒":"灰烬","#fb7185",1.2)}catch(_){}
 }
 function variantRate(t){const u=Math.max(0,t/60-2);return u<=0?0:clamp(.72*(1-Math.exp(-Math.pow(u/4.2,1.45))),0,.72)}
 function consumeNaturalVariant(id){const c=cfg("zombie",id);if(!c?.guaranteed)return false;const cur=clamp(Number(B.variantMeter[id]||0),0,.999999),next=cur+variantRate(state.time);if(next>=1-1e-12){B.variantMeter[id]=Math.max(0,next-1);return true}B.variantMeter[id]=next;return false}
@@ -207,6 +221,8 @@ function tick(dtOverride){
  if(!B.active||!state)return;
  const dt=(typeof dtOverride==="number"&&isFinite(dtOverride))?Math.max(0,dtOverride):Math.min(.2,now()-(B._lastTickTime||now()));B._lastTickTime=now();
  productionTick(dt);updateResourceTokens(dt);mowerTick(dt);
+ // 灰烬植物倒计时引爆
+ for(const p of state.plants){if(p.dead||!p.versusAsh||p.versusAsh.detonated)continue;if(state.time>=p.versusAsh.detonateAt)detonateAsh(p)}
  if(B.versus.phase==="battle")checkEnd();
  else if(B.versus.phase==="ending")endSequenceTick(dt);
  if(B.mode==="practice"&&B.humanSide)try{window.S7VersusPractice?.aiTick?.()}catch(_){}
@@ -219,8 +235,8 @@ function cardsFor(side){return [side==="plant"?FIXED.plant:FIXED.zombie].concat(
 function hitTest(clientX,clientY,rect){const x=(clientX-rect.left)/rect.width,y=(clientY-rect.top)/rect.height;const row=Math.floor((y-(layout.y/innerHeight))/(layout.cell/innerHeight));const col=Math.floor((x-(layout.x/innerWidth))/(layout.cell/innerWidth));return {row:clamp(row,0,4),col:clamp(col,0,8)}}
 function actionFromPointer(side,clientX,clientY,rect){const h=hitTest(clientX,clientY,rect);const list=cardsFor(side),idx=B.selected[side]||0,id=list[idx]||list[0];if(side==="plant")return {type:"play",side,cardId:id,row:h.row,col:h.col};const nx=(clientX-rect.left)/rect.width,bx=(nx-(layout.x/innerWidth))/(layout.cell/innerWidth);return {type:"play",side,cardId:id,row:h.row,x:bx,guaranteed:B.guaranteedArmed}}
 function rectHit(r,x,y){return !!r&&x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h}
-function packetIcon(side,id){if(id===FIXED.plant)return "🌻🌻";if(id===FIXED.zombie)return "🪦";try{return (side==="plant"?PLANTS[id]?.emoji:ZOMBIES[id]?.emoji)||(side==="plant"?"🌿":"🧟")}catch(_){return side==="plant"?"🌿":"🧟"}}
-function shortName(side,id){if(id===FIXED.plant)return "向";if(id===FIXED.zombie)return "碑";try{return (side==="plant"?PLANTS[id]?.name:ZOMBIES[id]?.name)?.slice(0,1)||id}catch(_){return id}}
+function packetIcon(side,id){if(id===FIXED.plant)return "🌻🌻";if(id===FIXED.zombie)return "🪦";if(id===FIXED.mystery)return "❓🪦";if(ASH_VISUALS[id])return ASH_VISUALS[id].emoji;try{return (side==="plant"?PLANTS[id]?.emoji:ZOMBIES[id]?.emoji)||(side==="plant"?"🌿":"🧟")}catch(_){return side==="plant"?"🌿":"🧟"}}
+function shortName(side,id){if(id===FIXED.plant)return "向";if(id===FIXED.zombie)return "碑";if(id===FIXED.mystery)return "召";if(ASH_VISUALS[id])return ASH_VISUALS[id].emoji;try{return (side==="plant"?PLANTS[id]?.name:ZOMBIES[id]?.name)?.slice(0,1)||id}catch(_){return id}}
 function fixedCost(side,id){if(id===FIXED.plant)return R.twinCost;if(id===FIXED.zombie)return R.gravestoneCost;return cfg(side,id)?.cost||0}
 function hudMetrics(W=innerWidth,H=innerHeight){
  const margin=W<760?6:10,gap=4,barH=W<760?46:62;
@@ -337,5 +353,5 @@ function overrideCards(overrides){
  }
  return CARDS;
 }
-window.S7VersusBattle={CARDS,FIXED,overrideCards,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,tick,getLedger:()=>B.ledger,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
+window.S7VersusBattle={CARDS,FIXED,ASH_SPEC,ASH_VISUALS,overrideCards,state:B,cfg,cardName,start:function(opt){resetRuntime(opt);return B},performAction,actionFromPointer,drawHud,handleHudPointer,hudMetrics,cardsFor,handleTargetDeath,handleHomeApproach,finish:function(winner,reason){beginVersusEnd(winner,{reason})},keyAction,shortName,tick,getLedger:()=>B.ledger,getSnapshot:()=>({active:B.active,result:B.versus?.result||null,resources:{...B.resources},time:state?.time||0,plantCards:B.plantCards.slice(),zombieCards:B.zombieCards.slice(),variantCount:{...B.variantCount},variantMeter:{...B.variantMeter}})};
 })();
