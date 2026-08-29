@@ -97,7 +97,10 @@ function productionTick(dt){
   if(econ.phase==="bright"&&state.time>=econ.phaseStartedAt+R.twinBrightenSeconds){B.versus.resourceTokens.push(makeResourceToken("zombie",econ.pendingAmount,z.row,z.x,z.id));econ.phase="idle";econ.nextProduceAt+=R.twinProductionPeriodSeconds}
  }}
  if(!sd&&state.time>=R.suddenDeathAtSeconds){B.versus.suddenDeath=true;B.versus.lastSkySupply=state.time}
- if(sd){const elapsed=state.time-(B.versus.lastSkySupply||0);if(elapsed>=R.skySupplyIntervalSeconds){const steps=Math.floor(elapsed/R.skySupplyIntervalSeconds);B.resources.plant+=R.skySupplyAmount*steps;B.resources.zombie+=R.skySupplyAmount*steps;B.versus.lastSkySupply+=steps*R.skySupplyIntervalSeconds}}
+ // 天降阳光：开局即有，死斗翻倍
+ const skyAmount=sd?R.skySupplyAmount*2:R.skySupplyAmount;
+ const skyElapsed=state.time-(B.versus.lastSkySupply||0);
+ if(skyElapsed>=R.skySupplyIntervalSeconds){const steps=Math.floor(skyElapsed/R.skySupplyIntervalSeconds);B.resources.plant+=skyAmount*steps;B.resources.zombie+=skyAmount*steps;B.versus.lastSkySupply+=steps*R.skySupplyIntervalSeconds}
 }
 
 // --- End sequence ---
