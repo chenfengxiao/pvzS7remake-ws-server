@@ -25,7 +25,8 @@ function startBattle(){const d=P.draft;if(!d)return;hide('versusPracticeDraftScr
 function aiTick(){const B=window.S7VersusBattle?.state;if(!B?.active||B.mode!=='practice'||B.versus?.phase!=='battle')return;const ai=P.side==='plant'?'zombie':'plant';if(state.time-P.lastAiAt<1.0)return;P.lastAiAt=state.time;window.S7VersusAI?.decide(ai,window.S7VersusBattle)}
 function canvasPointer(ev){
  const B=window.S7VersusBattle?.state;if(!B?.active||B.mode!=='practice')return;
- const rect=canvas.getBoundingClientRect(),side=P.side;if(!side)return;
+ const c=document.getElementById('canvas');if(!c)return;
+ const rect=c.getBoundingClientRect(),side=P.side;if(!side)return;
  const px=(ev.clientX-rect.left)/Math.max(1,rect.width)*innerWidth,py=(ev.clientY-rect.top)/Math.max(1,rect.height)*innerHeight;
  if(window.S7VersusBattle.handleHudPointer?.(side,px,py,innerWidth,innerHeight))return;
  const insideBoard=px>=layout.x&&px<=layout.x+layout.w&&py>=layout.y&&py<=layout.y+layout.cell*5;if(!insideBoard)return;
@@ -48,7 +49,7 @@ function bindControls(){
   el('versusPracticeBackBtn')?.addEventListener('click',closeRoom);
   el('versusPracticeCancelDraftBtn')?.addEventListener('click',()=>{hide('versusPracticeDraftScreen');show('versusPracticeSetupScreen')});
   el('versusPracticeStartBattleBtn')?.addEventListener('click',startBattle);
-  if(typeof canvas!=='undefined')canvas?.addEventListener('pointerdown',canvasPointer);
+  document.getElementById('canvas')?.addEventListener('pointerdown',canvasPointer);
   el('versusResultRematchBtn')?.addEventListener('click',()=>{if(window.S7VersusBattle?.state?.mode!=='practice')return;hide('versusResultOverlay');hide('game');P.roomOpen=true;show('versusPracticeSetupScreen')});
   el('versusResultExitBtn')?.addEventListener('click',exit);
 }

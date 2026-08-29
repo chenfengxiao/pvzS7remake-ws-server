@@ -432,7 +432,7 @@
     const SPEED_LEVELS = [.25, .5, 1, 2, 4];
 
     function s7SetSpeed(v) {
-      if (!state) return;
+      if (!state || state.versus?.active) return; // 对战中禁止调速（防开挂/防两端不同步）
       state.speed = SPEED_LEVELS.includes(v) ? v : 1;
       const b = document.getElementById("btnSpeed");
       if (b) b.textContent = state.speed + "×";
@@ -507,7 +507,7 @@
     }
 
     function startOrResetBattle() {
-      if (!state) return;
+      if (!state || state.versus?.active) return; // 对战中禁止重开战斗
       if (state.battle) {
         state.battle = false;
         state.preRun = false;
@@ -541,7 +541,7 @@
     }
 
     function clearAllPlants() {
-      if (!state) return;
+      if (!state || state.versus?.active) return; // 对战中禁止清植物
       state.plants = [];
       state.bullets = [];
       glove = null;
@@ -554,13 +554,13 @@
     }
 
     function killAllZombies() {
-      if (!state) return;
+      if (!state || state.versus?.active) return; // 对战中禁止秒杀僵尸
       clearAllZombiesAndProjectiles();
       redrawUi()
     }
 
     function reviveLane(row) {
-      if (!state || row < 0 || row >= ROWS) return;
+      if (!state || state.versus?.active || row < 0 || row >= ROWS) return; // 对战中禁止复活本行
       const t = state.teams[row];
       if (!t) return;
       if (!t.alive) {
@@ -599,6 +599,7 @@
     }
 
     function loadPlantLayout() {
+      if (state?.versus?.active) return; // 对战中禁止读阵容（防开挂刷植物）
       if (!state || !savedLayout || !savedLayout.length) {
         log("无可加载的存储阵容。");
         return
@@ -1460,6 +1461,7 @@
     function handleQuadKeyboardEvent(e, directChild = false) {
       const action = quadActionFromKeyEvent(e);
       if (!action) return false;
+      if (state?.versus?.active) return false; // 双人对战中禁用全部调试快捷键
       e.preventDefault();
       e.stopPropagation();
       if (directChild) {
@@ -1783,7 +1785,7 @@
         const BATCH_PLANT_NAMES = Object.freeze(_reverseMap);
         const ROW_NAMES = ["一路", "二路", "三路", "四路", "五路"];
         function s7BatchPlantFromInputs() {
-          if (!state) return 0;
+          if (!state || state.versus?.active) return 0; // 对战中禁止批量种植（防开挂）
           let count = 0;
           for (let row = 0; row < ROWS; row++) {
             const input = document.getElementById("batchRow" + row);
@@ -1863,12 +1865,13 @@
         if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
         if (quadTestIsVisible() && handleQuadKeyboardEvent(e, false)) return;
         const k = normalizedHotkey(e);
+        if (!state) return;
+        if (state.versus?.active) return; // 双人对战期间禁用全部调试快捷键（防开挂）
         if (k === "g") {
           toggleRandomAutoValid();
           e.preventDefault();
           return
         }
-        if (!state) return;
         if (k === "space") {
           state.paused = !state.paused;
           e.preventDefault()

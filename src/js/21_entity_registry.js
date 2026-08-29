@@ -1246,7 +1246,7 @@
     }
 
     function randomizePlantColumns(startCol, endCol) {
-      if (!state) return;
+      if (!state || state.versus?.active) return; // 对战中禁止随机植物（防开挂）
       startCol = Math.max(0, Math.min(PLANT_COLS, Math.floor(startCol)));
       endCol = Math.max(startCol, Math.min(PLANT_COLS, Math.floor(endCol)));
       const removed = finiteArray(state.plants).filter(p => !p.dead && p.col >= startCol && p.col < endCol);

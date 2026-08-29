@@ -309,6 +309,7 @@ function restoreClassicRoomChrome(){
 }
 function exitVersusRoom(message){
   hide('roomScreen');hide('versusOnlineDraftScreen');hide('versusRealtimeScreen');hide('versusRoomPanel');
+  document.getElementById('game')?.classList.add('hidden');
   restoreClassicRoomChrome();
   O.room=null;O.playerId=null;O.host=false;O.side=null;
   if(message){const toast=document.getElementById('lobbyToast');if(toast){toast.textContent=message;toast.style.opacity='1'}else alert(message)}
@@ -385,7 +386,7 @@ function handle(msg){
   if(msg.type==='versusDraftState'&&msg.room){O.room=msg.room;renderDraft();return}
   if(msg.type==='versusBattleStart'){onBattleStart(msg);return}
   if(msg.type==='versusEnded'){window.S7VersusBattle?.finish?.(msg.winner,msg.reason);showResult(msg);return}
-  if(msg.type==='versusRematchReady'){hide('versusResultOverlay');hide('versusRealtimeScreen');renderRoom();return}
+  if(msg.type==='versusRematchReady'){hide('versusResultOverlay');hide('versusRealtimeScreen');document.getElementById('game')?.classList.add('hidden');renderRoom();return}
   if(msg.type==='kicked'&&O.room){exitVersusRoom('你已被房主踢出房间');return}
   if(msg.type==='roomClosed'&&O.room){exitVersusRoom(msg.message||'房间已关闭');return}
   if(msg.type==='resumeFailed'&&O.room){exitVersusRoom(msg.message||'房间会话已失效');return}
