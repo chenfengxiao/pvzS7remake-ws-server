@@ -252,7 +252,7 @@ export function startHomeMqttTunnel(options = {}) {
   }
   function publishStatus(online) {
     if (!mqtt.connected) return;
-    const body = JSON.stringify({ v: 1, online: !!online, expiresAt: Date.now() + (online ? STATUS_TTL_MS : 1000), serverVersion: options.serverVersion || '1.7.8' });
+    const body = JSON.stringify({ v: 1, online: !!online, expiresAt: Date.now() + (online ? STATUS_TTL_MS : 1000), serverVersion: options.serverVersion || '1.8.0' });
     mqtt.publish(`${root}/status`, body, true);
   }
   function dropAll(notifyApp) {
@@ -335,7 +335,7 @@ export function startHomeMqttTunnel(options = {}) {
       } else if (decoded.seq <= sock.seqIn) return;
       else sock.seqIn = decoded.seq;
       sock.lastSeen = Date.now();
-      bridge._publishControl(sock, { __tunnel: 'welcome', serverVersion: options.serverVersion || '1.7.8', serverTime: Date.now() });
+      bridge._publishControl(sock, { __tunnel: 'welcome', serverVersion: options.serverVersion || '1.8.0', serverTime: Date.now() });
       return;
     }
     if (!sock || sock.readyState !== 1) return;

@@ -12,10 +12,10 @@ function open(){return new Promise((resolve,reject)=>{const ws=new WebSocket(`ws
   for(let i=0;i<50&&!out.includes('listening on');i++)await sleep(100);
   if(!out.includes('listening on'))throw new Error('server did not start: '+out);
   const host=await open(),guest=await open();
-  host.send(JSON.stringify({type:'createVersusRoom',nick:'房主',ver:'1.7.8'}));
+  host.send(JSON.stringify({type:'createVersusRoom',nick:'房主',ver:'1.8.0'}));
   const created=await onceMsg(host,m=>m.type==='versusRoomCreated');
   const rid=created.room.id,hostId=created.playerId;
-  guest.send(JSON.stringify({type:'joinVersusRoom',roomId:rid,nick:'房客',ver:'1.7.8'}));
+  guest.send(JSON.stringify({type:'joinVersusRoom',roomId:rid,nick:'房客',ver:'1.8.0'}));
   const joined=await onceMsg(guest,m=>m.type==='versusRoomJoined');
   const guestId=joined.playerId;
   const two=await onceMsg(host,m=>m.type==='roomUpdate'&&m.room?.kind==='versus'&&m.room.players.length===2);

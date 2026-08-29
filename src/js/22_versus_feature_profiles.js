@@ -135,7 +135,7 @@
   const versus = freezeTree({
     id: "versus",
     version: "0.1.0-balance-lab",
-    baseProfile: "s7@1.7.8",
+    baseProfile: "s7@1.8.0",
     isolated: true,
     draft: {
       sequenceVersion: "s7-versus-bp-b2p3b2p23-v2",
@@ -200,7 +200,7 @@
   });
 
   const profiles = freezeTree({
-    "base:s7@1.7.8": { id: "s7", version: "1.7.8", isolated: true },
+    "base:s7@1.8.0": { id: "s7", version: "1.8.0", isolated: true },
     // Historical alias retained so older Versus telemetry/replays can still be inspected.
     "base:s7@1.7.6": { id: "s7", version: "1.7.6", isolated: true, legacy: true },
     "profile:versus@0.1.0-balance-lab": versus
@@ -208,7 +208,7 @@
 
   function getProfile(id = "versus") {
     if (id === "versus" || id === "profile:versus@0.1.0-balance-lab") return versus;
-    if (id === "s7" || id === "base:s7@1.7.8") return profiles["base:s7@1.7.8"];
+    if (id === "s7" || id === "base:s7@1.8.0") return profiles["base:s7@1.7.8"];
     if (id === "base:s7@1.7.6") return profiles["base:s7@1.7.6"];
     return null;
   }

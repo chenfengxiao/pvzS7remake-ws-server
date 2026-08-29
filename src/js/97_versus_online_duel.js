@@ -9,7 +9,7 @@ const hide=id=>nav()?.hide(id) ?? $(id)?.classList.add('hidden');
 const send=o=>window.s7WSSend?.(o);
 
 function gameVersion(){
-  return String(window.s7GetGameVersion?.()||"1.7.8");
+  return String(window.s7GetGameVersion?.()||"1.8.0");
 }
 function transportStatus(text,kind){
   const el=$("versusTransportStatus");

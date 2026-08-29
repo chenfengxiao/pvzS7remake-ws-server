@@ -6,7 +6,7 @@ import { randomBytes } from 'crypto';
 import { startHomeMqttTunnel } from './home_mqtt_tunnel.js';
 
 const PORT = process.env.PORT || 3000;
-const SERVER_VERSION = "1.7.8";
+const SERVER_VERSION = "1.8.0";
 const MAX_ROOMS = 100;
 const MAX_PLAYERS = 5;
 const LANE_COUNT = 5;
