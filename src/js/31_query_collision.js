@@ -124,8 +124,22 @@
       return false
     }
 
+    // 墓碑遮蔽：本行只要存在存活墓碑，该行的靶子僵尸进入虚化状态，
+    // 任何植物都无法索敌或攻击到它（AOE/穿透/爆炸同样豁免）。
+    function graveVeilsTarget(z) {
+      if (!z || z.versusStatic !== "target") return false;
+      if (!state || !state.versus || !Array.isArray(state.zombies)) return false;
+      const row = z.row;
+      for (let i = 0; i < state.zombies.length; i++) {
+        const q = state.zombies[i];
+        if (q && !q.dead && q.versusStatic === "grave" && q.row === row) return true
+      }
+      return false
+    }
+
     function canPlantTargetZombie(z, opts = {}) {
       if (!validHostile(z, opts.row ?? null)) return false;
+      if (graveVeilsTarget(z)) return false;
       if (z.flags?.bungee) return false;
       if (isUnderground(z)) {
         if (opts.airOnly) return false;
@@ -146,6 +160,7 @@
 
     function canExplosionAffectZombie(z, opt = {}) {
       if (!z || z.dead || z.friendly || !isDamageableZombie(z)) return false;
+      if (graveVeilsTarget(z)) return false;
       if (z.flags?.bungee) return false;
       if (isBalloonAir(z)) return optCanAffectFlyingBalloon(opt);
       if (isUnderground(z)) return optCanAffectUndergroundDigger(opt);

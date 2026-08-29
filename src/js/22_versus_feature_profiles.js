@@ -116,7 +116,7 @@
     zombieColumns: Object.freeze([6, 8]),
     freePlantCores: Object.freeze([{row:1,col:0},{row:3,col:0}]),
     freeZombieCores: Object.freeze([{row:1,x:8.5},{row:3,x:8.5}]),
-    gravestoneHp: 400,
+    gravestoneHp: 800,
     gravestoneCost: 50,
     gravestoneCooldownSeconds: 12,
     twinCost: 100,

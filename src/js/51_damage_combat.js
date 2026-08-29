@@ -1424,7 +1424,7 @@
       if (b.firelotusAoe > 0) {
         const targetFireBefore = Math.max(0, s7Elem(z).fire || 0);
         const targets = state.zombies.filter(q => !q.dead && !q.dying && !q.friendly && q.row === z.row &&
-          isDamageableZombie(q) && canAffectZombieState(q, {
+          isDamageableZombie(q) && !graveVeilsTarget(q) && canAffectZombieState(q, {
             source: b.from,
             element: true
           }) && Math.abs(q.x - z.x) <= b.firelotusAoe && !(q.landingInvuln > 0));
@@ -1480,7 +1480,7 @@
       if (b.aoe > 0) {
         if (b.kind === "winter") s7IceStarHypnoSplashHeal(z.row, z.x, b.aoe, b.from);
         const splashTargets = state.zombies.filter(q => q !== z && !q.dead && !q.friendly && q.row === z.row && Math
-          .abs(q.x - z.x) <= b.aoe && !(q.landingInvuln > 0 && !b.sniperBullet));
+          .abs(q.x - z.x) <= b.aoe && !(q.landingInvuln > 0 && !b.sniperBullet) && !graveVeilsTarget(q));
         const n = splashTargets.length;
         if (n > 0) {
           if (b.fullAoeDamage) {
@@ -1529,7 +1529,7 @@
           s7LaunchCabbageBounce(b, z.x, z.row + .5, z.id, "hit")
         } else {
           const next = state.zombies.filter(q => q !== z && !q.dead && !q.friendly && q.row === z.row &&
-            isDamageableZombie(q) && q.x > z.x + .12).sort((a, b) => a.x - b.x)[0];
+            isDamageableZombie(q) && !graveVeilsTarget(q) && q.x > z.x + .12).sort((a, b) => a.x - b.x)[0];
           if (next) addPultBullet(b.from, next, b.damage, {
             kind: b.kind || "pult",
             startX: z.x,

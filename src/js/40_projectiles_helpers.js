@@ -163,7 +163,7 @@
       row = Math.max(0, Math.min(ROWS - 1, Math.round(finiteNumber(row, 0))));
       fromX = finiteNumber(fromX, 0);
       return state.zombies.filter(q => q && !q.dead && !q.dying && !q.friendly && q.row === row && q.id !== excludeId &&
-        isDamageableZombie(q) && q.x > fromX + .12).sort((a, b) => finiteNumber(a.x, 999) - finiteNumber(b.x, 999))[0] ||
+        isDamageableZombie(q) && !graveVeilsTarget(q) && q.x > fromX + .12).sort((a, b) => finiteNumber(a.x, 999) - finiteNumber(b.x, 999))[0] ||
         null
     }
 
