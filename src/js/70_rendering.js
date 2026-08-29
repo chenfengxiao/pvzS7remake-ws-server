@@ -324,6 +324,7 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("🪦", gx, gy + c * .55);
+        if(z.versusUpgraded){ctx.font=`${c*.28}px sans-serif`;ctx.fillText("❓",gx+c*.2,gy+c*.3)}
         if (entityTextVisible) {
           ctx.fillStyle = "#e0e7ff";
           ctx.font = `bold ${c * .09}px sans-serif`;

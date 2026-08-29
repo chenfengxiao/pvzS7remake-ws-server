@@ -107,6 +107,7 @@
     suddenDeathAtSeconds: 300,
     skySupplyIntervalSeconds: 12,
     skySupplyAmount: 25,
+    blindBoxSummonInterval: 30,
     targetCount: 5,
     targetKillsToWin: 3,
     targetX: 9.0,
