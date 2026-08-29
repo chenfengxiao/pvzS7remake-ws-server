@@ -106,7 +106,7 @@ function productionTick(dt){
   if(z.versusUpgraded&&!B.versus.suddenDeath){
    if(z.versusBlindBoxTimer==null)z.versusBlindBoxTimer=0;
    z.versusBlindBoxTimer+=dt;
-   if(z.versusBlindBoxTimer>=R.blindBoxSummonInterval){z.versusBlindBoxTimer=0;const pick=BLIND_BOX_POOL[((state.time*7+Math.random()*BLIND_BOX_POOL.length)|0)%BLIND_BOX_POOL.length];const nz=makeZombie(pick,z.row,null,{variant:false});nz.x=z.x;if(nz.baseX!=null)nz.baseX=nz.x;state.zombies.push(nz)}
+   if(z.versusBlindBoxTimer>=R.blindBoxSummonInterval){z.versusBlindBoxTimer=0;z.versusBlindBoxCount=(z.versusBlindBoxCount||0)+1;const pick=BLIND_BOX_POOL[Math.abs(((z.id||1)*13+z.versusBlindBoxCount*7)%BLIND_BOX_POOL.length)];const nz=makeZombie(pick,z.row,null,{variant:false});nz.x=z.x;if(nz.baseX!=null)nz.baseX=nz.x;state.zombies.push(nz)}
   }
  }}
  if(!sd&&state.time>=R.suddenDeathAtSeconds){B.versus.suddenDeath=true;B.versus.lastSkySupply=state.time}
@@ -151,15 +151,15 @@ function setCd(side,id){
  B.cooldowns[side][id]=state.time+(cfg(side,id)?.cd||1)}
 function placePlant(id,row,col){
  if(row<0||row>=5||col<0||col>=9)return {ok:false,reason:"格子无效"};
+ if(state.plants.some(p=>p.versusAsh&&p.versusAsh.kind==="doomshroom"&&p.versusAsh.detonated&&p.row===row&&p.col===col&&(state.time-(p.versusAsh.spawnTime+.96))<180))return {ok:false,reason:"毁灭菇弹坑上无法种植"};
  if(state.plants.some(p=>!p.dead&&p.row===row&&p.col===col))return {ok:false,reason:"该格已有植物"};
- if(state.plants.some(p=>p.versusAsh&&p.versusAsh.kind==="doomshroom"&&p.versusAsh.detonated&&!p.dead&&p.row===row&&p.col===col&&(state.time-(p.versusAsh.spawnTime+.96))<180))return {ok:false,reason:"毁灭菇弹坑上无法种植"};
  if(PLANT_ASH.has(id)){const p=makePlant(id,row,col);p.versusAsh={kind:id,spawnTime:state.time,detonateAt:state.time+.96,detonated:false,alive:true,row,col};state.plants.push(p);return {ok:true,entityId:p.id}}
  if(id===FIXED.plant){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再种经济单位"};const p=corePlant(row,col);state.plants.push(p);return {ok:true}}
  if(!PLANTS[id])return {ok:false,reason:"植物不存在"};const p=makePlant(id,row,col);state.plants.push(p);return {ok:true,entityId:p.id}
 }
 function detonateAsh(p){
  const spec=ASH_SPEC[p.versusAsh.kind];if(!spec)return;
- const ash=p.versusAsh;ash.detonated=true;ash.alive=false;p.dead=true;
+ const ash=p.versusAsh;ash.detonated=true;ash.alive=false;
  const dep=ledgerRegisterDeployment("plant",ash.kind,cfg("plant",ash.kind)?.cost||0,null);
  const seen=new Set;
  for(const z of state.zombies){if(!z||z.dead||z.friendly)continue;if(z.versusStatic||isVersusTarget(z))continue;
@@ -185,7 +185,7 @@ function performAction(action,source="human"){
  const side=action.side,id=action.cardId;if(side!=="plant"&&side!=="zombie")return {ok:false,reason:"阵营无效"};
  if(action.type==="select"){B.selected[side]=Math.max(0,Number(action.index)||0);return {ok:true}}
  if(action.type==="toggleGuaranteed"&&side==="zombie"){B.guaranteedArmed=!B.guaranteedArmed;return {ok:true,armed:B.guaranteedArmed}}
- if(action.type==="shovel"&&side==="plant"){const p=state.plants.find(p=>!p.dead&&p.row===action.row&&p.col===action.col);if(!p)return {ok:false,reason:"这里没有可铲植物"};removePlant(p);return {ok:true}}
+ if(action.type==="shovel"&&side==="plant"){const p=state.plants.find(p=>!p.dead&&!p.versusAsh?.detonated&&p.row===action.row&&p.col===action.col);if(!p)return {ok:false,reason:"这里没有可铲植物"};removePlant(p);return {ok:true}}
  const c=cfg(side,id);if(!c&&id!==FIXED.plant&&id!==FIXED.zombie)return {ok:false,reason:"卡牌不存在"};
  let cost=c?.cost||0,guaranteed=false;
  if(side==="zombie"&&action.guaranteed&&c?.guaranteed){cost=c.guaranteed;guaranteed=true}

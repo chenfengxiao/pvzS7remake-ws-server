@@ -1091,7 +1091,7 @@
     }
 
     function makePlant(key, row, col) {
-      const d = PLANTS[key] || PLANTS.peashooter;
+      const d = PLANTS[key] || PLANTS.barley;
       const initCd = key === "cob" ? d.firstCd || 7 : key === "hypno" ? Math.max(30, finiteNumber((Array.isArray(d.cd) ? d.cd[0] : d.cd), 30)) : s7BattleRnd(0, .25);
       const p = {
         id: uid++,

@@ -396,7 +396,7 @@
       const ashSpec = window.S7VersusBattle?.ASH_SPEC, ashVis = window.S7VersusBattle?.ASH_VISUALS;
       const useTimeline = (typeof s7AnimationRenderMode !== 'undefined' && s7AnimationRenderMode === 'timeline');
       for (const p of finiteArray(state.plants)) {
-        if (!p || p.dead || !p.versusAsh) continue;
+        if (!p || !p.versusAsh || (p.dead && !p.versusAsh.detonated)) continue;
         const as = p.versusAsh, kind = as.kind;
         const spec = ashSpec?.[kind], vis = ashVis?.[kind];
         if (!spec || !vis) continue;
@@ -442,8 +442,8 @@
               ctx.font = c * .9 * exScale + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
               ctx.fillText(vis.explosionEmoji || '💥', cx, cy); ctx.restore();
             }
-          } else if (kind === 'doomshroom' && detElapsed < 5) {
-            // 弹坑残留
+          } else if (kind === 'doomshroom' && detElapsed < 180) {
+            // 弹坑残留（与180秒禁种期一致）
             ctx.save(); ctx.globalAlpha = .6;
             ctx.font = c * .45 + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(vis.craterEmoji || '🕳️', cx, cy); ctx.restore();

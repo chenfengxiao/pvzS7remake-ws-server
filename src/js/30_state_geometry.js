@@ -271,7 +271,7 @@
     }
 
     function zombieCanTargetPlant(p) {
-      return !!(p && !p.dead && !p.s7?.barleyPepperDormant && !PLANTS[p.key]?.zombieIgnore && !(p.key === "scaredy" && p
+      return !!(p && !p.dead && !p.versusAsh?.detonated && !p.s7?.barleyPepperDormant && !PLANTS[p.key]?.zombieIgnore && !(p.key === "scaredy" && p
         .s7?.hiding))
     }
 
