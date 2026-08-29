@@ -396,6 +396,7 @@ window.S7VersusOnline={open,showEntryForSelectedServer,handle,hostReportResult,g
 window.S7VersusUI={showResult};
 
 function bindControls(){
+  try{ensureEntry()}catch(_){} // 初始化即绑定入口按钮，避免“第一次点击无反应”
   $('versusPlantSideCard')?.addEventListener('click',()=>send({type:'versusClaim',side:'plant'}));
   $('versusZombieSideCard')?.addEventListener('click',()=>send({type:'versusClaim',side:'zombie'}));
   $('versusSwapSidesBtn')?.addEventListener('click',()=>send({type:'versusSwapSides'}));
