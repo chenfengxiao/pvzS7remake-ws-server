@@ -363,7 +363,7 @@
             }
           }
           z.x -= sp * dt;
-          if (!z.friendly && z.x < -.35 && !z.dying) defeatLane(z.row);
+          if (!z.friendly && z.x < -.35 && !z.dying) { if(state.versus?.active){window.S7VersusBattle?.handleHomeApproach?.(z)} else defeatLane(z.row); }
           if (z.friendly && z.x > COLS + .6) z.dead = true;
           continue
         }

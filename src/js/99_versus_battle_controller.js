@@ -168,7 +168,7 @@ function performAction(action,source="human"){
  if(!canBuy(side,id,cost))return {ok:false,reason:B.resources[side]<cost?"资源不足":"冷却中"};
  const isAshPlay=side==="plant"&&PLANT_ASH.has(id);
  let out;
- if(side==="plant")out=placePlant(id,action.row,action.col);else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const g=staticZombie("normal",action.row,Math.max(6,Math.min(8.8,finiteNumber(action.x,8.8))),R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
+ if(side==="plant"){const pc=R.plantColumns;if(action.col<pc[0]||action.col>pc[1])return {ok:false,reason:"植物只能种植在1-6列"};out=placePlant(id,action.row,action.col)}else if(id===FIXED.zombie){if(B.versus.suddenDeath)return {ok:false,reason:"Sudden Death 后不能再放经济单位"};const gcol=clamp(Math.round(finiteNumber(action.x,8.8)-.5),6,8);if(state.zombies.some(z=>!z.dead&&z.versusStatic==="grave"&&z.row===action.row&&Math.round(z.x-.5)===gcol))return {ok:false,reason:"该格已有墓碑"};const g=staticZombie("normal",action.row,gcol+.5,R.gravestoneHp,"grave");state.zombies.push(g);B.graves.push(g);out={ok:true,entityId:g.id}}else out=deployZombie(id,action.row,guaranteed,action.x);
  if(!out?.ok)return out;
  if(!isAshPlay)ledgerRegisterDeployment(side,id,cost,out);
  B.resources[side]-=cost;setCd(side,id);
@@ -219,25 +219,25 @@ function hudMetrics(W=innerWidth,H=innerHeight){
  }
  if(W<760){
   const w=W-margin*2,plant=row('plant',margin,6,w,true),zombie=row('zombie',margin,56,w,false),cw=42,ch=24,cy=106;
-  return {plant,zombie,center:null,controls:{text:{x:W-margin-cw*2-gap,y:cy,w:cw,h:ch},anim:{x:W-margin-cw,y:cy,w:cw,h:ch},tool:{x:margin,y:cy,w:64,h:ch},variant:{x:margin+68,y:cy,w:82,h:ch}}};
+  return {plant,zombie,center:null,controls:{text:{x:W-margin-cw*2-gap,y:cy,w:cw,h:ch},anim:{x:W-margin-cw,y:cy,w:cw,h:ch},tool:{x:margin,y:cy,w:64,h:ch},variant:{x:margin+68,y:cy,w:92,h:30}}};
  }
  const totalW=W-margin*2,centerW=Math.max(74,Math.min(96,totalW*.075)),half=(totalW-centerW-gap*2)/2;
  const plant=row('plant',margin,8,half,true),centerX=margin+half+gap,zombie=row('zombie',centerX+centerW+gap,8,half,false);
  const center={x:centerX,y:8,w:centerW,h:barH};
- return {plant,zombie,center,controls:{text:{x:centerX+4,y:34,w:(centerW-12)/2,h:25},anim:{x:centerX+8+(centerW-12)/2,y:34,w:(centerW-12)/2,h:25},tool:{x:margin,y:74,w:64,h:25},variant:{x:W-margin-86,y:74,w:86,h:25}}};
+ return {plant,zombie,center,controls:{text:{x:centerX+4,y:34,w:(centerW-12)/2,h:25},anim:{x:centerX+8+(centerW-12)/2,y:34,w:(centerW-12)/2,h:25},tool:{x:margin,y:74,w:64,h:25},variant:{x:W-margin-104,y:74,w:104,h:30}}};
 }
 function drawRounded(r,fill,stroke,radius=7){ctx.beginPath();const q=Math.min(radius,r.w/2,r.h/2),x=r.x,y=r.y,w=r.w,h=r.h;ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}}
 function drawPacket(side,packet,selected){
- const id=packet.id,c=cfg(side,id),ready=cardReady(side,id),cost=fixedCost(side,id),can=B.resources[side]>=cost&&ready;
+ const id=packet.id,c=cfg(side,id),ready=cardReady(side,id),cost=fixedCost(side,id),variantPrice=side==='zombie'&&B.guaranteedArmed&&!!c?.guaranteed,displayCost=variantPrice?c.guaranteed:cost,can=B.resources[side]>=displayCost&&ready;
  const sd=B.versus?.suddenDeath;
  drawRounded(packet,side==='plant'?'#d8c28f':'#9aa6b2',selected?'#facc15':'rgba(30,41,59,.92)',4);
  const inset={x:packet.x+3,y:packet.y+3,w:Math.max(1,packet.w-6),h:Math.max(1,packet.h-6)};drawRounded(inset,side==='plant'?'#ebe0b8':'#b9c2ca',null,3);
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#17202a';ctx.font=`${Math.max(14,Math.min(25,packet.h*.42))}px sans-serif`;ctx.fillText(packetIcon(side,id),packet.x+packet.w/2,packet.y+packet.h*.43);
- ctx.font=`bold ${Math.max(8,Math.min(11,packet.w*.14))}px sans-serif`;ctx.fillStyle='#1f2937';ctx.fillText(String(cost),packet.x+packet.w/2,packet.y+packet.h-8);
+ ctx.font=`bold ${Math.max(8,Math.min(11,packet.w*.14))}px sans-serif`;ctx.fillStyle=variantPrice?'#ff3b30':'#1f2937';ctx.fillText((variantPrice?'⚡ ':'')+String(displayCost),packet.x+packet.w/2,packet.y+packet.h-8);
  ctx.textAlign='left';ctx.font=`bold ${Math.max(7,Math.min(10,packet.w*.13))}px sans-serif`;ctx.fillStyle='#111827';ctx.fillText(String(packet.index+1),packet.x+5,packet.y+9);
  if(sd&&isResourceProducer(id)){ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(packet.x+4,packet.y+4);ctx.lineTo(packet.x+packet.w-4,packet.y+packet.h-4);ctx.stroke()}
  if(!can){const rem=Math.max(0,(B.cooldowns[side][id]||0)-state.time),ratio=rem>0?clamp(rem/Math.max(.001,c?.cd||1),0,1):1;ctx.fillStyle='rgba(10,15,20,.58)';ctx.fillRect(packet.x+1,packet.y+packet.h*(1-ratio),packet.w-2,packet.h*ratio);if(rem>0){ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`bold ${Math.max(8,Math.min(11,packet.w*.14))}px sans-serif`;ctx.fillText(rem.toFixed(1),packet.x+packet.w/2,packet.y+packet.h*.55)}}
- if(side==='zombie'&&c?.guaranteed){const k=clamp(Number(B.variantMeter[id]||0),0,1);ctx.fillStyle='#22d3ee';ctx.fillRect(packet.x+3,packet.y+packet.h-3,Math.max(1,(packet.w-6)*k),2)}
+ if(side==='zombie'&&c?.guaranteed){const k=clamp(Number(B.variantMeter[id]||0),0,1);ctx.fillStyle='#ff3b30';ctx.fillRect(packet.x+3,packet.y+packet.h-3,Math.max(1,(packet.w-6)*k),2)}if(variantPrice){ctx.strokeStyle='#ff3b30';ctx.lineWidth=2;ctx.strokeRect(packet.x+1.5,packet.y+1.5,packet.w-3,packet.h-3)}
  if(selected){ctx.strokeStyle='#fde047';ctx.lineWidth=3;ctx.strokeRect(packet.x+1.5,packet.y+1.5,Math.max(1,packet.w-3),Math.max(1,packet.h-3))}
 }
 function textIsVisible(){try{return typeof entityTextVisible==='boolean'?entityTextVisible:true}catch(_){return true}}
@@ -249,7 +249,7 @@ function drawHud(){
  if(m.center){drawRounded(m.center,wood,'#3b2315',7);ctx.textAlign='center';ctx.fillStyle='#fff7d6';ctx.font='bold 12px sans-serif';const t=state.time;ctx.fillText(`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`,m.center.x+m.center.w/2,m.center.y+15);const dest=B.versus?.target?.destroyed||0;ctx.font='bold 9px sans-serif';ctx.fillStyle='#fbbf24';ctx.fillText(`${dest}/${R.targetKillsToWin}`,m.center.x+m.center.w/2,m.center.y+30)}
  const drawCtl=(r,label,on)=>{drawRounded(r,on?'#365314':'rgba(58,35,21,.95)',on?'#bef264':'#9a6b45',5);ctx.fillStyle='#fff7ed';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 10px sans-serif';ctx.fillText(label,r.x+r.w/2,r.y+r.h/2)};
  drawCtl(m.controls.text,`B 文字${textIsVisible()?'开':'关'}`,textIsVisible());drawCtl(m.controls.anim,`V ${animIsTimeline()?'动画':'旧绘'}`,animIsTimeline());
- const side=B.humanSide||B.role;if(side==='plant')drawCtl(m.controls.tool,'🪏 Q',!!B.shovelMode);else if(side==='zombie'){const list=cardsFor('zombie'),id=list[B.selected.zombie||0],c=cfg('zombie',id);if(c?.guaranteed)drawCtl(m.controls.variant,`F 100%`,B.guaranteedArmed)}
+ const side=B.humanSide||B.role;if(side==='plant')drawCtl(m.controls.tool,'🪏 Q',!!B.shovelMode);else if(side==='zombie'){const list=cardsFor('zombie'),id=list[B.selected.zombie||0],c=cfg('zombie',id);if(c?.guaranteed){const r=m.controls.variant,armed=B.guaranteedArmed;drawRounded(r,armed?'#15803d':'#7c2d12',armed?'#fde047':'#f59e0b',7);ctx.strokeStyle=armed?'#fde047':'#fbbf24';ctx.lineWidth=2;ctx.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);ctx.fillStyle='#fff7ed';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 12px sans-serif';ctx.fillText((armed?'⚡ ':'')+'F 100%',r.x+r.w/2,r.y+r.h/2)}}
  if(B.versus?.suddenDeath&&state.time<R.suddenDeathAtSeconds+1.5){ctx.fillStyle='rgba(220,38,38,.85)';ctx.fillRect(0,H*.3,W,40);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='bold 24px sans-serif';ctx.fillText('SUDDEN DEATH',W/2,H*.3+28)}
  if(B.versus?.phase==="ending"&&B.versus.endSequence){const seq=B.versus.endSequence;if(seq.age>.7){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);if(seq.age>1.05){ctx.fillStyle=seq.winner==='plant'?'#4ade80':seq.winner==='zombie'?'#f87171':'#fbbf24';ctx.textAlign='center';ctx.font='bold 32px sans-serif';ctx.fillText(seq.winner==='plant'?'🌱 植物胜利':seq.winner==='zombie'?'🧟 僵尸胜利':'平局',W/2,H*.4)}}}
  ctx.restore()
