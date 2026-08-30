@@ -543,6 +543,7 @@
 
     function plantShortName(p) {
       if (p?.versusCore === "twin") return "向";
+      if (p?.versusAsh) return { cherrybomb: "樱", jalapeno: "辣", doomshroom: "毁" } [p.versusAsh.kind] || "灰";
       return PLANT_SHORT_NAMES[p?.key] || PLANTS[p?.key]?.name?.slice(0, 1) || "植"
     }
 

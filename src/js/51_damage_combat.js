@@ -1036,6 +1036,11 @@
     const ZOMBIE_HIT_DIAMETER = .5;
     const ZOMBIE_HIT_RADIUS = ZOMBIE_HIT_DIAMETER / 2;
 
+    // 巨人类（白眼/红眼）与车类（冰车/雪橇车/投篮车）贴图远大于普通僵尸，受击判定半径翻倍
+    function zombieHitRadius(z) {
+      return z && (z.flags?.garg || z.vehicle) ? ZOMBIE_HIT_RADIUS * 2 : ZOMBIE_HIT_RADIUS
+    }
+
     // 窝瓜的攻击区域本体严格为落点左右各 0.5 格。
     // 僵尸使用半径 0.25 格的统一受击圆，因此区域相交时，
     // 僵尸中心距离落点不超过 0.5 + 0.25 = 0.75 格才会命中。
@@ -1047,7 +1052,7 @@
     }
 
     function projectileTouchesZombieSprite(b, z) {
-      const r = ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0);
+      const r = zombieHitRadius(z) + (b?.hitRadiusBonus || 0);
       const dx = finiteNumber(b?.x, -999) - finiteNumber(z?.x, 999);
       const dy = finiteNumber(b?.y, -999) - (finiteNumber(z?.row, 999) + .5);
       return dx * dx + dy * dy <= (r + 1e-9) * (r + 1e-9)
@@ -1063,14 +1068,14 @@
       const t = clamp(((zx - oldX) * vx + (zy - oldY) * vy) / len2, 0, 1);
       const px = oldX + vx * t;
       const py = oldY + vy * t;
-      const r = ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0) + 1e-9;
+      const r = zombieHitRadius(z) + (b?.hitRadiusBonus || 0) + 1e-9;
       const dx = zx - px;
       const dy = zy - py;
       return dx * dx + dy * dy <= r * r
     }
 
     function projectileCanTouchZombieForHit(b, z, oldX, oldY, newX, newY) {
-      const r = ZOMBIE_HIT_RADIUS + (b?.hitRadiusBonus || 0);
+      const r = zombieHitRadius(z) + (b?.hitRadiusBonus || 0);
       if (b?.fullscreenHit) {
         const zx = finiteNumber(z?.x, 999);
         const x1 = finiteNumber(oldX, finiteNumber(b?.x, 0));
@@ -1083,7 +1088,7 @@
 
     function s7SquashAoeTouchesZombie(z, centerX) {
       return !!z && Math.abs(finiteNumber(z.x, 999) - finiteNumber(centerX, -999)) <= SQUASH_AOE_HALF_WIDTH +
-        ZOMBIE_HIT_RADIUS + 1e-9
+        zombieHitRadius(z) + 1e-9
     }
 
     // -----------------------------------------------------------------------------

@@ -468,6 +468,8 @@
           if (detElapsed > 180 && kind === 'doomshroom') p.dead = true;
           }
         }
+        // 灰烬植物不走 drawPlant（避免大麦兜底重影），文字徽标在这里单独画
+        drawEntityTextBadge(plantShortName(p), cx, cy - c * .01, c, "#dcfce7");
       }
     }
 
