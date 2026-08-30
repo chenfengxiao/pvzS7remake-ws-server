@@ -9,7 +9,7 @@ const PLANT_ASH=new Set(["cherrybomb","jalapeno","doomshroom"]);
 const ASH_SPEC=Object.freeze({cherrybomb:{asset:"cherry_bomb",damage:1800,warmupSec:.96,rangeKind:"gridRect",rowR:1,colR:1,sheet:{fw:430,fh:380,cols:7,frames:39,anchor:[218,269]}},jalapeno:{asset:"jalapeno",damage:1800,warmupSec:.96,rangeKind:"wholeLane",sheet:{fw:854,fh:190,cols:5,frames:57,anchor:[479,149]}},doomshroom:{asset:"doom_shroom",damage:1800,warmupSec:.96,rangeKind:"gridRect",rowR:3,colR:3,sheet:{fw:470,fh:450,cols:7,frames:65,anchor:[235,225]}}});
 const ASH_VISUALS=Object.freeze({cherrybomb:{emoji:"🍒🍒",explosionEmoji:"💥"},jalapeno:{emoji:"🌶️",explosionEmoji:"🔥"},doomshroom:{emoji:"💣🍄",chargeEmoji:"☢️",explosionEmoji:"💥",craterEmoji:"🕳️"}});
 const FIXED={plant:"twinSunflower",zombie:"zombieGravestone",mystery:"mysteryGrave"};
-const NAMES={twinSunflower:"双子向日葵",zombieGravestone:"墓碑",mysteryGrave:"召唤墓碑",cherrybomb:"樱桃炸弹",jalapeno:"火爆辣椒",doomshroom:"毁灭菇",garg:"白眼巨人",giga:"红眼巨人",blackolive:"黑橄榄",bombdoor:"防爆门指令",polecmd:"撑杆指令",warflag:"战争旗帜",tacticflag:"战术旗帜",blind:"盲盒路障"};
+const NAMES={twinSunflower:"双子向日葵",zombieGravestone:"墓碑",mysteryGrave:"召唤墓碑",cherrybomb:"樱",jalapeno:"辣",doomshroom:"毁",garg:"白眼巨人",giga:"红眼巨人",blackolive:"黑橄榄",bombdoor:"防爆门指令",polecmd:"撑杆指令",warflag:"战争旗帜",tacticflag:"战术旗帜",blind:"盲盒路障"};
 function cfg(side,id){return CARDS[side]?.[id]||null}
 function cardName(side,id){if(NAMES[id])return NAMES[id];try{return side==="plant"?(PLANTS[id]?.name||id):(ZOMBIES[id]?.name||id)}catch(_){return id}}
 function now(){return performance.now()/1000}

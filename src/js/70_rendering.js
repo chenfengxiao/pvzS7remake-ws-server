@@ -200,7 +200,7 @@
       stackMap.clear();
       let stackArrayCount = 0;
       for (const p of finiteArray(state.plants)) {
-        if (!p || p.dead) continue;
+        if (!p || p.dead || p.versusAsh) continue;
         const key = p.row + "," + p.col;
         let arr = stackMap.get(key);
         if (!arr) {
@@ -408,8 +408,8 @@
             const frame = Math.min(Math.floor(elapsed * 25), spec.sheet.frames - 1);
             const s = spec.sheet;
             const sx = (frame % s.cols) * s.fw, sy = Math.floor(frame / s.cols) * s.fh;
-            const sc = c * .85 / Math.max(s.fw, s.fh);
-            try { ctx.drawImage(S7_SPRITES.get('versus.' + spec.asset.replace(/_./g, m => m[1].toUpperCase())), sx, sy, s.fw, s.fh, cx - s.anchor[0] * sc, cy - s.anchor[1] * sc, s.fw * sc, s.fh * sc) } catch (_) {}
+            const sc = kind === 'jalapeno' ? c * 1.0 / s.fh : c * .85 / Math.max(s.fw, s.fh);
+            try { ctx.drawImage(S7_SPRITES.image('versus.' + spec.asset.replace(/_./g, m => m[1].toUpperCase())), sx, sy, s.fw, s.fh, cx - s.anchor[0] * sc, cy - s.anchor[1] * sc, s.fw * sc, s.fh * sc) } catch (_) {}
           } else {
             // Legacy emoji: subtle shake 0~0.7s, scale-up 0.7~0.96s
             const t = elapsed, scale = t < .7 ? 1 + .03 * Math.sin(t * 15) : 1 + .15 * ((t - .7) / .26);
@@ -420,6 +420,22 @@
         } else {
           // DETONATED: draw explosion fx
           const detElapsed = elapsed - spec.warmupSec;
+          if (useTimeline) {
+            // 精灵表含完整爆炸动画：从引爆帧继续播到 sheet 结束，再进入清理/弹坑阶段
+            const sheetDur = spec.sheet.frames / 25 - spec.warmupSec;
+            if (detElapsed < sheetDur) {
+              const frame = Math.min(Math.floor(elapsed * 25), spec.sheet.frames - 1);
+              const s = spec.sheet;
+              const sx = (frame % s.cols) * s.fw, sy = Math.floor(frame / s.cols) * s.fh;
+              const sc = kind === 'jalapeno' ? c * 1.0 / s.fh : c * .85 / Math.max(s.fw, s.fh);
+              try { ctx.drawImage(S7_SPRITES.image('versus.' + spec.asset.replace(/_./g, m => m[1].toUpperCase())), sx, sy, s.fw, s.fh, cx - s.anchor[0] * sc, cy - s.anchor[1] * sc, s.fw * sc, s.fh * sc) } catch (_) {}
+            } else if (kind === 'doomshroom' && detElapsed < 180) {
+              ctx.save(); ctx.globalAlpha = .6;
+              ctx.font = c * .45 + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(vis.craterEmoji || '🕳️', cx, cy); ctx.restore();
+            }
+            if (detElapsed >= sheetDur) { if (kind === 'doomshroom') { if (detElapsed > 180) p.dead = true } else p.dead = true }
+          } else {
           const detDur = kind === 'doomshroom' ? .6 : .4;
           const alpha = Math.max(0, 1 - detElapsed / detDur);
           if (detElapsed < detDur) {
@@ -450,6 +466,7 @@
           }
           if (detElapsed > detDur && kind !== 'doomshroom') p.dead = true;
           if (detElapsed > 180 && kind === 'doomshroom') p.dead = true;
+          }
         }
       }
     }
